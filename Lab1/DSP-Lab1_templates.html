@@ -40,18 +40,24 @@
         .copy-btn:hover { background: #4a8842; }
 
         pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
-        .todo { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 0.85em; }
-        .comment { color: #6c757d; font-style: italic; }
         
+        /* 代码高亮样式 */
+        .keyword { color: #0000ff; }
+        .comment { color: #228b22; font-style: italic; }
+        .string { color: #a020f0; }
+        .number { color: #ff0000; }
+        
+        /* 待办事项样式 */
+        .todo-tag { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; font-size: 0.9em; margin-right: 5px; }
+
         .info-banner { background: #e7f3ff; border-left: 4px solid #2d57a4; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
         .warning-banner { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-        .success-banner { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="control-panel">
-            <h2 style="margin:0; color:#2d57a4;">📝 DSP Lab 1 - 空白模板</h2>
+            <h2 style="margin:0; color:#2d57a4;">📝 DSP Lab 1 - 学生实验模板</h2>
             <div>
                 <button class="control-btn" onclick="expandAll()">全部展开</button>
                 <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
@@ -59,30 +65,21 @@
         </div>
 
         <div class="info-banner">
-            <strong>📌 使用说明：</strong>
+            <strong>📌 编程规范说明：</strong>
             <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
-                <li>本模板只提供最基本框架，<strong>核心算法需要你自己设计实现</strong></li>
-                <li>点击蓝色标题栏折叠/展开，点击绿色按钮复制代码</li>
-                <li><span class="todo">TODO</span> 标记处需要你完成，实现方式不限</li>
-                <li>共4个文件（3个脚本 + 1个函数），完成后提交</li>
+                <li>代码中已预定义了关键变量（如 <code>x = [];</code>），<strong>请勿修改变量名</strong>。</li>
+                <li>请在 <code>% TODO</code> 注释指引下编写代码，将计算结果赋值给对应的变量。</li>
+                <li>每个脚本末尾包含<strong>自检代码</strong>，运行脚本时若看到红字警告，说明变量未正确赋值。</li>
             </ul>
         </div>
 
         <div class="warning-banner">
-            <strong>⚠️ 重要提醒：</strong>
-            <ul style="margin:5px 0 0 20px; padding:0;">
-                <li><strong>exercise3</strong> 需要 <code>tones.mat</code> 文件（由教师提供）</li>
-                <li>提交格式：<code>学号_姓名_Lab1</code> 文件夹，包含4个.m文件</li>
-            </ul>
-        </div>
-
-        <div class="success-banner">
-            <strong>✅ 提交清单：</strong>
+            <strong>⚠️ 提交检查：</strong>
             <ul style="margin:5px 0 0 20px; padding:0;">
                 <li>exercise1_exponential_spectrum.m</li>
                 <li>exercise2_convolution_theorem.m</li>
                 <li>exercise3_tone_analysis.m</li>
-                <li>MyDFT.m（独立函数文件）</li>
+                <li>MyDFT.m (函数文件)</li>
             </ul>
         </div>
 
@@ -102,27 +99,50 @@
 
 clear; clc; close all;
 
-<span class="comment">%% 参数定义</span>
+%% 1. 参数定义
 a = 0.9;
 N_signal = 8;
 
-<span class="todo">TODO</span> <span class="comment">% 生成指数序列 x[n] = a^n, n=0,1,...,N_signal-1</span>
+%% 2. 序列生成
+x = [];          <span class="comment">% <span class="todo-tag">TODO</span> 生成指数序列 x[n] = a^n, n=0..N_signal-1</span>
+
+%% 3. DTFT计算
+omega = linspace(0, 2*pi, 512);
+X_dtft = [];     <span class="comment">% <span class="todo-tag">TODO</span> 计算DTFT (在omega上采样)</span>
+
+%% 4. DFT计算 (关键变量，请勿改名)
+X_dft_8   = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算 8点 DFT</span>
+X_dft_16  = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算 16点 DFT</span>
+X_dft_128 = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算 128点 DFT</span>
+
+%% 5. 绘图
+% <span class="todo-tag">TODO</span> 绘图要求：2行3列子图
+% 1. 原始序列 x[n]
+% 2. DTFT幅度谱 |X|
+% 3. DTFT相位谱 Angle
+% 4. 8点DFT (stem) vs DTFT (plot)
+% 5. 16点DFT (stem) vs DTFT (plot)
+% 6. 128点DFT (stem) vs DTFT (plot)
+
+figure('Name', 'Exercise 1: 指数序列频谱分析');
+% 在此处编写绘图代码...
 
 
-<span class="todo">TODO</span> <span class="comment">% 计算DTFT (在omega = linspace(0, 2*pi, 512)上采样)</span>
-
-
-<span class="todo">TODO</span> <span class="comment">% 计算8点、16点、128点DFT，存储结果</span>
-
-
-<span class="todo">TODO</span> <span class="comment">% 绘图：对比DTFT与不同点数DFT
-% 要求：2行3列子图
-%   - 原始序列
-%   - DTFT幅度谱和相位谱  
-%   - 三种DFT叠加在DTFT上对比</span>
-
-
-fprintf('练习一完成!\n');
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  =======================================
+vars_chk = {'x', 'X_dft_8', 'X_dft_16', 'X_dft_128'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空，无法通过批改：\n   -> %s\n', miss{:});
+else
+    fprintf('✅ 练习一变量检查通过。\n');
+end
 </pre>
             </div>
         </div>
@@ -143,24 +163,44 @@ fprintf('练习一完成!\n');
 
 clear; clc; close all;
 
-<span class="todo">TODO</span> <span class="comment">% 定义两个序列 x 和 h (建议使用矩形脉冲)</span>
+%% 1. 序列定义
+x = [];          <span class="comment">% <span class="todo-tag">TODO</span> 定义序列 x (如 [1,1,1,1])</span>
+h = [];          <span class="comment">% <span class="todo-tag">TODO</span> 定义序列 h (如 [1,1,1,1])</span>
+
+%% 2. 线性卷积
+z_linear = [];   <span class="comment">% <span class="todo-tag">TODO</span> 计算线性卷积 (使用conv)</span>
+
+%% 3. 循环卷积 (关键变量，请勿改名)
+% 方法：DFT -> 点乘 -> IDFT
+z_circ = [];     <span class="comment">% <span class="todo-tag">TODO</span> 计算4点循环卷积结果</span>
+
+%% 4. FFT快速计算线性卷积
+% 提示：需要补零到 L >= Nx + Nh - 1
+z_fast_conv = []; <span class="comment">% <span class="todo-tag">TODO</span> 使用FFT计算线性卷积</span>
+
+%% 5. 绘图
+% <span class="todo-tag">TODO</span> 绘图要求：2行3列
+% 展示 x[n], h[n], 线性卷积, 循环卷积, 快速卷积结果
+
+figure('Name', 'Exercise 2: 卷积定理验证');
+% 在此处编写绘图代码...
 
 
-<span class="todo">TODO</span> <span class="comment">% 计算线性卷积</span>
-
-
-<span class="todo">TODO</span> <span class="comment">% 计算不同点数(如4点、8点、9点)的循环卷积
-% 方法：补零 -> FFT -> 相乘 -> IFFT</span>
-
-
-<span class="todo">TODO</span> <span class="comment">% 使用FFT快速计算线性卷积（确定合适的N值）</span>
-
-
-<span class="todo">TODO</span> <span class="comment">% 绘图：对比线性卷积和不同点数的循环卷积
-% 要求：2行3列，展示输入序列、线性卷积、各种循环卷积</span>
-
-
-fprintf('练习二完成!\n');
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  =======================================
+vars_chk = {'x', 'h', 'z_linear', 'z_circ', 'z_fast_conv'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空，无法通过批改：\n   -> %s\n', miss{:});
+else
+    fprintf('✅ 练习二变量检查通过。\n');
+end
 </pre>
             </div>
         </div>
@@ -178,25 +218,50 @@ fprintf('练习二完成!\n');
                 <pre id="code3">%% 练习三：实际信号频谱分析
 % 文件名: exercise3_tone_analysis.m
 % 学号：______  姓名：______
-% 依赖：tones.mat
 
 clear; clc; close all;
 
-<span class="todo">TODO</span> <span class="comment">% 加载 tones.mat (包含变量 y 和 Fs)</span>
+%% 1. 加载数据
+if exist('tones.mat', 'file')
+    load('tones.mat'); % 加载变量 y 和 Fs
+else
+    error('未找到 tones.mat 文件，请确保文件在当前目录下');
+end
+
+%% 2. 频谱分析 (关键变量，请勿改名)
+X_orig = [];     <span class="comment">% <span class="todo-tag">TODO</span> 原始长度N的FFT结果</span>
+X_25   = [];     <span class="comment">% <span class="todo-tag">TODO</span> N=25点的FFT结果 (用于批改点检测)</span>
+
+% 扩展分析 (可选变量名)
+X_2x   = [];     <span class="comment">% <span class="todo-tag">TODO</span> 2倍长度补零FFT</span>
+X_4x   = [];     <span class="comment">% <span class="todo-tag">TODO</span> 4倍长度补零FFT</span>
+
+%% 3. 峰值检测
+% <span class="todo-tag">TODO</span> 打印主要频率分量 (findpeaks)
 
 
-<span class="todo">TODO</span> <span class="comment">% 对信号进行多种分辨率的FFT分析
-% 建议：原长度、2倍长度、4倍长度</span>
+%% 4. 绘图
+% <span class="todo-tag">TODO</span> 绘制时域波形、不同分辨率的频谱对比图
+
+figure('Name', 'Exercise 3: 音调信号分析');
+% 在此处编写绘图代码...
 
 
-<span class="todo">TODO</span> <span class="comment">% 检测频谱中的峰值，识别主要频率分量</span>
-
-
-<span class="todo">TODO</span> <span class="comment">% 绘图：时域信号、不同分辨率频谱、相位谱
-% 要求：3行2列，展示完整分析过程</span>
-
-
-fprintf('练习三完成!\n');
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  =======================================
+vars_chk = {'X_orig', 'X_25'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空，无法通过批改：\n   -> %s\n', miss{:});
+else
+    fprintf('✅ 练习三变量检查通过。\n');
+end
 </pre>
             </div>
         </div>
@@ -217,30 +282,28 @@ fprintf('练习三完成!\n');
 %   x - 输入序列
 %   N - DFT点数（可选，默认为序列长度）
 % 输出：
-%   X - N点DFT结果
-%
-% DFT定义：X[k] = sum(x[n] * exp(-j*2*pi*k*n/N)), k=0,1,...,N-1
-%
-% 使用示例：
-%   X = MyDFT([1,2,3,4], 4);     % 4点DFT
-%   X = MyDFT([1,2,3,4], 8);     % 8点DFT（零填充）
-%
-% 测试方法（在命令窗口）：
-%   >> x = [1,2,3,4];
-%   >> MyDFT(x, 4)               % 调用你的函数
-%   >> fft(x, 4)                 % 对比MATLAB结果
+%   X - N点DFT结果 (必须赋值给此变量)
 
-<span class="todo">TODO</span> <span class="comment">% 参数处理：检查输入，设置默认N值</span>
+%% 1. 参数初始化
+if nargin < 2
+    % <span class="todo-tag">TODO</span> 如果未提供N，默认N为x的长度
+    N = length(x); 
+end
+
+%% 2. 预处理 (补零或截断)
+% <span class="todo-tag">TODO</span> 根据N和x的长度关系，对x进行处理
+x_processed = x; % 请修改此处逻辑
 
 
-<span class="todo">TODO</span> <span class="comment">% 长度处理：根据N和x的长度关系进行补零或截断</span>
+%% 3. DFT核心计算
+X = zeros(N, 1); % 初始化输出
+
+% <span class="todo-tag">TODO</span> 实现DFT公式：X[k] = sum(x[n] * exp(-j*2*pi*k*n/N))
+% 建议使用矩阵运算以提高效率，也可以使用双重循环
 
 
-<span class="todo">TODO</span> <span class="comment">% DFT计算：实现DFT公式
-% 方法不限：可以用双重循环，也可以用矩阵运算</span>
-
-
-<span class="todo">TODO</span> <span class="comment">% 输出处理：保持与输入x相同的行列形式</span>
+%% 4. 输出格式调整
+% <span class="todo-tag">TODO</span> 确保输出 X 的行列方向与输入 x 一致
 
 
 end
@@ -250,23 +313,21 @@ end
 
         <!-- 测试说明 -->
         <div style="background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 20px; margin-top: 30px;">
-            <h3 style="color: #2d57a4; margin-top: 0;">💡 MyDFT 本地测试建议</h3>
+            <h3 style="color: #2d57a4; margin-top: 0;">💡 本地验证建议</h3>
             
-            <p>建议在编写完 <code>MyDFT.m</code> 后，在 MATLAB 命令窗口中进行简单验证，确保结果与 MATLAB 内置函数一致：</p>
+            <p>建议在编写完代码后，在命令行窗口运行以下测试，确保你的 <code>MyDFT</code> 结果正确：</p>
             <pre style="background: white; padding: 15px; border-radius: 4px; border: 1px solid #dee2e6;">
-<span class="comment">% 示例1：基本功能测试</span>
->> x = [1, 2, 3, 4];
->> MyDFT(x, 4)          <span class="comment">% 应与 fft(x, 4) 结果一致</span>
+x = [1, 2, 3, 4];
 
-<span class="comment">% 示例2：零填充测试 (N > L)</span>
->> MyDFT(x, 8)          <span class="comment">% 应与 fft(x, 8) 结果一致</span>
+<span class="comment">% 测试1：基本功能</span>
+X1 = MyDFT(x, 4);
+err1 = norm(X1 - fft(x, 4));
+fprintf('Test 1 Error: %e\n', err1); <span class="comment">% 应该非常接近 0</span>
 
-<span class="comment">% 示例3：截断测试 (N < L)</span>
->> MyDFT(x, 2)          <span class="comment">% 应与 fft(x, 2) 结果一致</span></pre>
-
-            <p style="color: #6c757d; font-size: 0.9em; margin-top: 15px;">
-                注：<code>fft</code> 是 MATLAB 内置的快速傅里叶变换函数。
-            </p>
+<span class="comment">% 测试2：补零测试 (N=8)</span>
+X2 = MyDFT(x, 8);
+err2 = norm(X2 - fft(x, 8));
+fprintf('Test 2 Error: %e\n', err2); <span class="comment">% 应该非常接近 0</span></pre>
         </div>
 
     </div>
@@ -286,32 +347,23 @@ end
 
         function copyCode(event, id) {
             event.stopPropagation();
+            const container = document.getElementById(id);
             
-            // 1. 获取原始代码块
-            const originalBlock = document.getElementById(id);
+            // 创建临时容器，用于获取纯文本
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = container.innerHTML;
             
-            // 2. 克隆节点，以免修改影响页面上的显示
-            const clone = originalBlock.cloneNode(true);
-            
-            // 3. 找到所有的 TODO 标签
-            const todos = clone.querySelectorAll('.todo');
-            
-            // 4. 修改 TODO 的内容，在前面添加 '%'，使其成为 MATLAB 注释
-            // 这样复制出来就是 "% TODO % 注释内容"，在 MATLAB 中是合法的
-            todos.forEach(todo => {
-                todo.innerText = '% ' + todo.innerText;
-            });
+            // 核心逻辑：保持代码文本原样，但去除HTML标签
+            // 注意：pre 标签中的 innerText 会保留换行符
+            const cleanCode = tempDiv.innerText;
 
-            // 5. 创建临时 textarea 进行复制
             const el = document.createElement('textarea');
-            el.value = clone.innerText; // innerText 会保留换行符并去除 HTML 标签
-            
+            el.value = cleanCode;
             document.body.appendChild(el);
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
             
-            // 6. 按钮反馈效果
             const btn = event.target;
             const origText = btn.textContent;
             btn.textContent = '✓ 已复制';
