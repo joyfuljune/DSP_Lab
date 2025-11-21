@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP-Lab1-练习</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            }
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 50%, #5ca353 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2d57a4;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #608de0;
+            margin: 25px 0 15px 0;
+        }
+
+        .login-section, .quiz-section, .result-section {
+            display: none;
+        }
+
+        .login-section.active, .quiz-section.active, .result-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #2d57a4;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #7dadff;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(96, 141, 224, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(96, 141, 224, 0.5);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            border-left: 5px solid #608de0;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .question-title {
+            color: #2d57a4;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            margin: 15px 0;
+        }
+
+        .option {
+            display: block;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background: #e8f5ff;
+            border-color: #608de0;
+        }
+
+        .option.selected {
+            background: #608de0;
+            color: white;
+            border-color: #2d57a4;
+        }
+
+        .option.correct {
+            background: #5ca353;
+            color: white;
+            border-color: #4a8842;
+        }
+
+        .option.incorrect {
+            background: #D46A6A;
+            color: white;
+            border-color: #912d32;
+        }
+
+        .feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #e8f5e9;
+            color: #5ca353;
+            border-left: 5px solid #5ca353;
+        }
+
+        .feedback.incorrect {
+            background: #ffebee;
+            color: #912d32;
+            border-left: 5px solid #912d32;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5ca353 0%, #608de0 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-table th {
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 100%);
+            color: white;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .mastery-good {
+            color: #5ca353;
+            font-weight: bold;
+        }
+
+        .mastery-fair {
+            color: #D46A6A;
+            font-weight: bold;
+        }
+
+        .mastery-poor {
+            color: #912d32;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #fff8e1;
+            border-left: 5px solid #D46A6A;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-option:hover {
+            background: #e8f5ff;
+            border-color: #608de0;
+        }
+
+        .checkbox-option.correct {
+            background: #5ca353;
+            color: white;
+            border-color: #4a8842;
+        }
+
+        .checkbox-option.incorrect {
+            background: #D46A6A;
+            color: white;
+            border-color: #912d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 登录界面 -->
+        <div class="login-section active">
+            <h1>🎓 DSP-Lab1-练习</h1>
+            <div class="info-box">
+                <strong>📌 测验说明</strong>
+                <p>本系统将测试您对《利用FFT计算频谱及结果分析》实验的掌握程度。每个知识点将随机出题,答对后进入下一知识点,答错将继续该知识点的其他题目。</p>
+            </div>
+            
+            <div class="form-group">
+                <label>学号:</label>
+                <input type="text" id="studentId" placeholder="请输入学号">
+            </div>
+            
+            <div class="form-group">
+                <label>姓名:</label>
+                <input type="text" id="studentName" placeholder="请输入姓名">
+            </div>
+            
+            <button onclick="startQuiz()">开始测验</button>
+        </div>
+
+        <!-- 测验界面 -->
+        <div class="quiz-section">
+            <h1>DSP-Lab1-练习</h1>
+            <div id="studentInfo"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+            
+            <div id="currentTopic"></div>
+            
+            <div class="question-box">
+                <div class="question-title" id="questionTitle"></div>
+                <div id="questionContent"></div>
+                <div id="options" class="options"></div>
+                <div id="feedback"></div>
+                <button id="submitBtn" onclick="submitAnswer()">提交答案</button>
+                <button id="nextBtn" onclick="nextQuestion()" style="display:none;">下一题</button>
+            </div>
+        </div>
+
+        <!-- 结果界面 -->
+        <div class="result-section">
+            <h1>📊 测验结果报告</h1>
+            <div id="finalReport"></div>
+            <button onclick="saveScreenshot()" id="saveBtn">截图保存</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据结构 ====================
+        let studentData = {
+            id: '',
+            name: '',
+            topicStats: {},
+            currentTopicIndex: 0,
+            currentQuestionIndex: 0,
+            usedQuestions: {}
+        };
+
+        // 知识点定义
+        const topics = [
+            {
+                name: 'DTFT基本概念',
+                id: 'dtft',
+                description: '离散时间傅里叶变换的定义和性质'
+            },
+            {
+                name: 'DFT与频率采样',
+                id: 'dft',
+                description: 'DFT的计算和频率采样关系'
+            },
+            {
+                name: 'FFT快速算法',
+                id: 'fft',
+                description: 'FFT的MATLAB实现和应用'
+            },
+            {
+                name: '零填充与频率分辨率',
+                id: 'zero_padding',
+                description: '零填充对频谱分析的影响'
+            },
+            {
+                name: '卷积定理',
+                id: 'convolution',
+                description: '线性卷积和循环卷积'
+            },
+            {
+                name: '频谱分析',
+                id: 'spectrum',
+                description: '幅度谱和相位谱的理解'
+            },
+            {
+                name: '频率关系',
+                id: 'frequency',
+                description: '数字频率ω与DFT索引k的关系'
+            }
+        ];
+
+        // ==================== 题目生成函数 ====================
+        
+        // 生成随机整数
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // 生成随机序列
+        function generateSequence(length, min = -5, max = 5) {
+            return Array.from({length}, () => randInt(min, max));
+        }
+
+        // 生成随机衰减因子
+        function generateDecayFactor() {
+            return (Math.random() * 0.5 + 0.5).toFixed(1);
+        }
+
+        // 题库生成函数
+        const questionGenerators = {
+            dtft: [
+                // DTFT题目1: 单选 - DTFT性质
+                () => {
+                    const period = randInt(3, 5) * 2;
+                    return {
+                        type: 'single',
+                        question: `DTFT的频谱 $X(e^{j\\omega})$ 具有周期性,其周期为:`,
+                        options: [
+                            `$${period}\\pi$`,
+                            `$2\\pi$`,
+                            `$\\pi$`,
+                            `$4\\pi$`
+                        ],
+                        correct: 1,
+                        explanation: 'DTFT的频谱 $X(e^{j\\omega})$ 是以 $2\\pi$ 为周期的周期函数。'
+                    };
+                },
+                
+                // DTFT题目2: 判断 - 连续性
+                () => {
+                    return {
+                        type: 'single',
+                        question: `下列关于DTFT的描述,正确的是:`,
+                        options: [
+                            'DTFT的频谱是离散的',
+                            'DTFT的频谱是连续的',
+                            'DTFT只能用于周期信号',
+                            'DTFT的频谱不具有周期性'
+                        ],
+                        correct: 1,
+                        explanation: 'DTFT的频谱 $X(e^{j\\omega})$ 是关于频率 $\\omega$ 的连续函数。'
+                    };
+                },
+                
+                // DTFT题目3: 单选 - 单位脉冲
+                () => {
+                    const n0 = randInt(0, 5);
+                    return {
+                        type: 'single',
+                        question: `信号 $x[n] = \\delta[n-${n0}]$ 的DTFT为:`,
+                        options: [
+                            `$e^{-j\\omega \\cdot ${n0}}$`,
+                            `$e^{j\\omega \\cdot ${n0}}$`,
+                            `$1$`,
+                            `$0$`
+                        ],
+                        correct: 0,
+                        explanation: `根据时移性质,$\\delta[n-${n0}]$ 的DTFT为 $e^{-j\\omega \\cdot ${n0}}$。`
+                    };
+                },
+                
+                // DTFT题目4: 多选 - DTFT性质
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `对于实序列 $x[n]$ ,其DTFT $X(e^{j\\omega})$ 具有哪些性质?(多选)`,
+                        options: [
+                            '共轭对称性',
+                            '幅度谱为偶函数',
+                            '相位谱为奇函数',
+                            '幅度谱为奇函数'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '实序列的DTFT具有共轭对称性,因此幅度谱为偶函数,相位谱为奇函数。'
+                    };
+                },
+                
+                // DTFT题目5: 单选 - 计算复杂度
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在计算机中无法直接实现DTFT的主要原因是:`,
+                        options: [
+                            'DTFT的求和范围是从负无穷到正无穷',
+                            'DTFT需要实数运算',
+                            'DTFT计算太简单',
+                            'DTFT不适用于离散信号'
+                        ],
+                        correct: 0,
+                        explanation: 'DTFT的分析方程需要从负无穷到正无穷求和,在计算机中不可实现。'
+                    };
+                }
+            ],
+            
+            dft: [
+                // DFT题目1: 单选 - DFT点数
+                () => {
+                    const N = Math.pow(2, randInt(3, 6));
+                    const M = Math.floor(N / 2);
+                    return {
+                        type: 'single',
+                        question: `对长度为${M}的序列进行${N}点DFT,实际上是在原序列后补充了多少个零?`,
+                        options: [
+                            `${N - M}个`,
+                            `${M}个`,
+                            `${N}个`,
+                            `0个`
+                        ],
+                        correct: 0,
+                        explanation: `DFT点数为${N},序列长度为${M},需要补充${N - M}个零。`
+                    };
+                },
+                
+                // DFT题目2: 单选 - 频率采样
+                () => {
+                    const N = Math.pow(2, randInt(3, 5));
+                    const k = randInt(1, N - 1);
+                    return {
+                        type: 'single',
+                        question: `对于${N}点DFT,频率索引 $k=${k}$ 对应的归一化角频率 $\\omega_k$ 为:`,
+                        options: [
+                            `$\\frac{2\\pi \\cdot ${k}}{${N}}$`,
+                            `$\\frac{\\pi \\cdot ${k}}{${N}}$`,
+                            `$\\frac{${k}}{${N}}$`,
+                            `$2\\pi \\cdot ${k}$`
+                        ],
+                        correct: 0,
+                        explanation: `归一化角频率 $\\omega_k = \\frac{2\\pi k}{N} = \\frac{2\\pi \\cdot ${k}}{${N}}$。`
+                    };
+                },
+                
+                // DFT题目3: 判断
+                () => {
+                    return {
+                        type: 'single',
+                        question: `DFT结果包含了N个离散频率点处的DTFT结果,这些频率点:`,
+                        options: [
+                            '等间隔分布在[0, 2π)区间',
+                            '等间隔分布在[-π, π]区间',
+                            '随机分布',
+                            '非均匀分布'
+                        ],
+                        correct: 0,
+                        explanation: 'DFT的N个频率点等间隔分布在[0, 2π)区间内。'
+                    };
+                },
+                
+                // DFT题目4: 单选 - IDFT
+                () => {
+                    const N = Math.pow(2, randInt(3, 5));
+                    return {
+                        type: 'single',
+                        question: `${N}点IDFT(逆DFT)的公式中,求和结果需要乘以的系数是:`,
+                        options: [
+                            `$\\frac{1}{${N}}$`,
+                            `$${N}$`,
+                            `$\\frac{1}{2\\pi}$`,
+                            `$1$`
+                        ],
+                        correct: 0,
+                        explanation: `IDFT公式中需要乘以 $\\frac{1}{N} = \\frac{1}{${N}}$。`
+                    };
+                },
+                
+                // DFT题目5: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `关于DFT与DTFT的关系,下列说法正确的是:(多选)`,
+                        options: [
+                            'DFT是DTFT的采样版本',
+                            'DFT点数越多,越接近DTFT',
+                            'DFT完全等同于DTFT',
+                            'DFT可以通过FFT快速计算'
+                        ],
+                        correct: [0, 1, 3],
+                        explanation: 'DFT是对DTFT的频率采样,增加DFT点数可以更好地逼近DTFT,FFT是计算DFT的快速算法。'
+                    };
+                }
+            ],
+            
+            fft: [
+                // FFT题目1: 单选 - 复杂度
+                () => {
+                    const N = Math.pow(2, randInt(8, 10));
+                    return {
+                        type: 'single',
+                        question: `FFT算法将DFT的计算复杂度从 $O(N^2)$ 降低到:`,
+                        options: [
+                            '$O(N \\log N)$',
+                            '$O(N)$',
+                            '$O(\\log N)$',
+                            '$O(N^2)$'
+                        ],
+                        correct: 0,
+                        explanation: 'FFT算法的计算复杂度为 $O(N \\log N)$。'
+                    };
+                },
+                
+                // FFT题目2: 单选 - MATLAB函数
+                () => {
+                    const N = Math.pow(2, randInt(3, 5));
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,计算序列x的${N}点DFT的正确命令是:`,
+                        options: [
+                            `fft(x, ${N})`,
+                            `dft(x, ${N})`,
+                            `fft(x)`,
+                            `dtft(x, ${N})`
+                        ],
+                        correct: 0,
+                        explanation: `使用fft(x, N)计算N点DFT,N=${N}。`
+                    };
+                },
+                
+                // FFT题目3: 单选 - 效率优势
+                () => {
+                    const N = 1024;
+                    const ratio = 100;
+                    return {
+                        type: 'single',
+                        question: `对于${N}点的DFT,FFT相比直接计算DFT,计算效率大约提高了:`,
+                        options: [
+                            `约${ratio}倍`,
+                            `约10倍`,
+                            `约2倍`,
+                            `没有提高`
+                        ],
+                        correct: 0,
+                        explanation: `对于N=${N},FFT的效率优势约为${ratio}倍。`
+                    };
+                },
+                
+                // FFT题目4: 单选 - 最优点数
+                () => {
+                    return {
+                        type: 'single',
+                        question: `为了使FFT算法效率最高,DFT点数N最好选择:`,
+                        options: [
+                            '2的幂次(如64, 128, 256)',
+                            '任意偶数',
+                            '任意整数',
+                            '质数'
+                        ],
+                        correct: 0,
+                        explanation: 'FFT算法在N为2的幂次时效率最高。'
+                    };
+                },
+                
+                // FFT题目5: 单选 - IFFT
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,计算逆DFT(IDFT)的函数是:`,
+                        options: [
+                            'ifft',
+                            'idft',
+                            'inv_fft',
+                            'fft_inv'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB中使用ifft函数计算逆DFT。'
+                    };
+                }
+            ],
+            
+            zero_padding: [
+                // 零填充题目1: 单选 - 频率分辨率
+                () => {
+                    const N1 = Math.pow(2, randInt(4, 6));
+                    const N2 = N1 * 2;
+                    return {
+                        type: 'single',
+                        question: `对同一信号,${N2}点DFT相比${N1}点DFT,频率分辨率:`,
+                        options: [
+                            '提高了(更精细)',
+                            '降低了',
+                            '不变',
+                            '无法确定'
+                        ],
+                        correct: 0,
+                        explanation: `增加DFT点数可以提高频率分辨率,使频谱更精细。`
+                    };
+                },
+                
+                // 零填充题目2: 单选 - 信息量
+                () => {
+                    return {
+                        type: 'single',
+                        question: `零填充对信号频谱分析的影响是:`,
+                        options: [
+                            '提高频率分辨率,但不增加新信息',
+                            '增加新的频率分量',
+                            '改变原有频率分量的幅度',
+                            '没有任何作用'
+                        ],
+                        correct: 0,
+                        explanation: '零填充只是对DTFT进行更密集的采样,不会创造新信息。'
+                    };
+                },
+                
+                // 零填充题目3: 单选 - 频率分辨率公式
+                () => {
+                    const Fs = randInt(80, 120);
+                    const N = Math.pow(2, randInt(6, 8));
+                    const deltaF = (Fs / N).toFixed(2);
+                    return {
+                        type: 'single',
+                        question: `采样频率 $F_s=${Fs}$ Hz,进行${N}点DFT,频率分辨率 $\\Delta f$ 为:`,
+                        options: [
+                            `${deltaF} Hz`,
+                            `${(Fs / 2).toFixed(2)} Hz`,
+                            `${Fs} Hz`,
+                            `${(2 * Fs / N).toFixed(2)} Hz`
+                        ],
+                        correct: 0,
+                        explanation: `频率分辨率 $\\Delta f = \\frac{F_s}{N} = \\frac{${Fs}}{${N}} = ${deltaF}$ Hz。`
+                    };
+                },
+                
+                // 零填充题目4: 判断
+                () => {
+                    return {
+                        type: 'single',
+                        question: `关于零填充,下列说法正确的是:`,
+                        options: [
+                            '零填充使DFT结果更接近真实的DTFT',
+                            '零填充会改变信号的频率成分',
+                            '零填充会增大信号能量',
+                            '零填充必须在信号开头进行'
+                        ],
+                        correct: 0,
+                        explanation: '零填充通过增加频率采样点,使DFT结果更接近连续的DTFT。'
+                    };
+                },
+                
+                // 零填充题目5: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `零填充的主要作用包括:(多选)`,
+                        options: [
+                            '提高频率分辨率',
+                            '使频谱曲线更平滑',
+                            '更密集地采样DTFT',
+                            '增加信号的频率分量'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '零填充可以提高频率分辨率、使频谱平滑、更密集采样DTFT,但不增加新的频率分量。'
+                    };
+                }
+            ],
+            
+            convolution: [
+                // 卷积题目1: 单选 - 卷积长度
+                () => {
+                    const L1 = randInt(3, 6);
+                    const L2 = randInt(3, 6);
+                    const result = L1 + L2 - 1;
+                    return {
+                        type: 'single',
+                        question: `长度为${L1}和${L2}的两个序列进行线性卷积,结果长度为:`,
+                        options: [
+                            `${result}`,
+                            `${Math.max(L1, L2)}`,
+                            `${L1 + L2}`,
+                            `${L1 * L2}`
+                        ],
+                        correct: 0,
+                        explanation: `线性卷积结果长度为 $L_1 + L_2 - 1 = ${L1} + ${L2} - 1 = ${result}$。`
+                    };
+                },
+                
+                // 卷积题目2: 单选 - MATLAB函数
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,计算两个序列x和h的线性卷积的函数是:`,
+                        options: [
+                            'conv(x, h)',
+                            'fft(x) .* fft(h)',
+                            'x * h',
+                            'convolve(x, h)'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB中使用conv(x, h)计算线性卷积。'
+                    };
+                },
+                
+                // 卷积题目3: 单选 - 循环卷积
+                () => {
+                    const L1 = randInt(4, 7);
+                    const L2 = randInt(4, 7);
+                    const minLen = L1 + L2 - 1;
+                    return {
+                        type: 'single',
+                        question: `要使长度为${L1}和${L2}的两序列的循环卷积等于线性卷积,至少需要补零到长度:`,
+                        options: [
+                            `${minLen}`,
+                            `${Math.max(L1, L2)}`,
+                            `${L1 + L2}`,
+                            `${Math.min(L1, L2)}`
+                        ],
+                        correct: 0,
+                        explanation: `需要补零到至少 $L_1 + L_2 - 1 = ${L1} + ${L2} - 1 = ${minLen}$。`
+                    };
+                },
+                
+                // 卷积题目4: 多选 - 卷积定理
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `关于卷积定理,下列说法正确的是:(多选)`,
+                        options: [
+                            '时域卷积对应频域相乘',
+                            '可以用FFT快速计算卷积',
+                            '循环卷积等于线性卷积需要补零',
+                            '卷积定理只适用于连续信号'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '卷积定理指出时域卷积对应频域相乘,可以用FFT快速计算,但需要补零使循环卷积等于线性卷积。'
+                    };
+                },
+                
+                // 卷积题目5: 单选 - FFT卷积
+                () => {
+                    return {
+                        type: 'single',
+                        question: `直接使用FFT计算(未补零) $y = \\text{ifft}(\\text{fft}(x) .* \\text{fft}(h))$ 得到的是:`,
+                        options: [
+                            '循环卷积',
+                            '线性卷积',
+                            '相关函数',
+                            '频谱'
+                        ],
+                        correct: 0,
+                        explanation: '未补零的FFT计算得到的是循环卷积。'
+                    };
+                }
+            ],
+            
+            spectrum: [
+                // 频谱题目1: 单选 - 幅度谱
+                () => {
+                    return {
+                        type: 'single',
+                        question: `对于复数频谱 $X[k] = a + jb$ ,其幅度谱的计算公式是:`,
+                        options: [
+                            '$\\sqrt{a^2 + b^2}$',
+                            '$a + b$',
+                            '$\\arctan(b/a)$',
+                            '$a^2 + b^2$'
+                        ],
+                        correct: 0,
+                        explanation: '幅度谱为复数的模: $|X[k]| = \\sqrt{a^2 + b^2}$。'
+                    };
+                },
+                
+                // 频谱题目2: 单选 - 相位谱
+                () => {
+                    return {
+                        type: 'single',
+                        question: `对于复数频谱 $X[k] = a + jb$ ,其相位谱的计算公式是:`,
+                        options: [
+                            '$\\arctan(b/a)$',
+                            '$\\sqrt{a^2 + b^2}$',
+                            '$a/b$',
+                            '$b/a$'
+                        ],
+                        correct: 0,
+                        explanation: '相位谱为复数的幅角: $\\angle X[k] = \\arctan(b/a)$。'
+                    };
+                },
+                
+                // 频谱题目3: 单选 - MATLAB函数
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,计算复数序列X的幅度谱的函数是:`,
+                        options: [
+                            'abs(X)',
+                            'angle(X)',
+                            'real(X)',
+                            'imag(X)'
+                        ],
+                        correct: 0,
+                        explanation: 'abs(X)函数计算复数的模,即幅度谱。'
+                    };
+                },
+                
+                // 频谱题目4: 多选 - 实信号性质
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `对于实信号的频谱,具有哪些对称性质:(多选)`,
+                        options: [
+                            '幅度谱关于原点偶对称',
+                            '相位谱关于原点奇对称',
+                            '频谱具有共轭对称性',
+                            '幅度谱关于原点奇对称'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '实信号的频谱具有共轭对称性,因此幅度谱为偶函数,相位谱为奇函数。'
+                    };
+                },
+                
+                // 频谱题目5: 单选 - 单位脉冲频谱
+                () => {
+                    return {
+                        type: 'single',
+                        question: `单位脉冲信号 $\\delta[n]$ 的幅度谱特点是:`,
+                        options: [
+                            '在所有频率处幅度均为1',
+                            '只在零频处幅度为1',
+                            '随频率递减',
+                            '只在高频处有值'
+                        ],
+                        correct: 0,
+                        explanation: '单位脉冲的DTFT恒为1,因此其幅度谱在所有频率处均为1。'
+                    };
+                }
+            ],
+            
+            frequency: [
+                // 频率关系题目1: 单选 - ω与k关系
+                () => {
+                    const N = Math.pow(2, randInt(4, 7));
+                    return {
+                        type: 'single',
+                        question: `对于${N}点DFT,频率索引k与归一化角频率ω的关系是:`,
+                        options: [
+                            `$\\omega = \\frac{2\\pi k}{${N}}$`,
+                            `$\\omega = \\frac{\\pi k}{${N}}$`,
+                            `$\\omega = \\frac{k}{${N}}$`,
+                            `$\\omega = 2\\pi k$`
+                        ],
+                        correct: 0,
+                        explanation: `归一化角频率 $\\omega_k = \\frac{2\\pi k}{N} = \\frac{2\\pi k}{${N}}$。`
+                    };
+                },
+                
+                // 频率关系题目2: 单选 - 实际频率
+                () => {
+                    const Fs = randInt(80, 120);
+                    const N = Math.pow(2, randInt(5, 7));
+                    const k = randInt(1, 10);
+                    const fk = (k * Fs / N).toFixed(2);
+                    return {
+                        type: 'single',
+                        question: `采样频率 $F_s=${Fs}$ Hz,${N}点DFT,频率索引 $k=${k}$ 对应的实际频率为:`,
+                        options: [
+                            `${fk} Hz`,
+                            `${(k * 2 * Fs / N).toFixed(2)} Hz`,
+                            `${(Fs / k).toFixed(2)} Hz`,
+                            `${k} Hz`
+                        ],
+                        correct: 0,
+                        explanation: `实际频率 $f_k = \\frac{kF_s}{N} = \\frac{${k} \\times ${Fs}}{${N}} = ${fk}$ Hz。`
+                    };
+                },
+                
+                // 频率关系题目3: 单选 - 最高频率
+                () => {
+                    const Fs = randInt(80, 120);
+                    const Nyquist = Fs / 2;
+                    return {
+                        type: 'single',
+                        question: `采样频率为${Fs}Hz时,根据奈奎斯特定理,能够准确表示的最高频率为:`,
+                        options: [
+                            `${Nyquist} Hz`,
+                            `${Fs} Hz`,
+                            `${Fs * 2} Hz`,
+                            `${(Nyquist / 2).toFixed(0)} Hz`
+                        ],
+                        correct: 0,
+                        explanation: `奈奎斯特频率为采样频率的一半: $f_{max} = \\frac{F_s}{2} = \\frac{${Fs}}{2} = ${Nyquist}$ Hz。`
+                    };
+                },
+                
+                // 频率关系题目4: 单选 - DFT区间
+                () => {
+                    const N = Math.pow(2, randInt(4, 6));
+                    return {
+                        type: 'single',
+                        question: `${N}点DFT的频率索引k的取值范围是:`,
+                        options: [
+                            `$0 \\leq k \\leq ${N-1}$`,
+                            `$1 \\leq k \\leq ${N}$`,
+                            `$0 \\leq k \\leq ${N}$`,
+                            `$-${N/2} \\leq k \\leq ${N/2-1}$`
+                        ],
+                        correct: 0,
+                        explanation: `DFT的频率索引范围为 $0 \\leq k \\leq N-1$ ,即 $0 \\leq k \\leq ${N-1}$。`
+                    };
+                },
+                
+                // 频率关系题目5: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `关于数字频率ω和DFT索引k的关系,下列说法正确的是:(多选)`,
+                        options: [
+                            '增加DFT点数N,频率分辨率提高',
+                            'ω在[0, 2π]范围内',
+                            'k=0对应直流分量',
+                            'k与实际频率无关'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '增加N提高频率分辨率,ω在[0, 2π]范围,k=0对应直流,k与实际频率有关。'
+                    };
+                }
+            ]
+        };
+
+        // ==================== 测验逻辑 ====================
+        
+        function startQuiz() {
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            
+            if (!id || !name) {
+                alert('请填写学号和姓名!');
+                return;
+            }
+            
+            studentData.id = id;
+            studentData.name = name;
+            
+            // 初始化每个知识点的统计
+            topics.forEach(topic => {
+                studentData.topicStats[topic.id] = {
+                    attempts: 0,
+                    correct: 0,
+                    questions: []
+                };
+                studentData.usedQuestions[topic.id] = [];
+            });
+            
+            // 切换到测验界面
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.quiz-section').classList.add('active');
+            
+            document.getElementById('studentInfo').innerHTML = 
+                `<p style="text-align: center; color: #666;">学号: ${id} | 姓名: ${name}</p>`;
+            
+            // 加载第一题
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            
+            // 更新进度条
+            const progress = (studentData.currentTopicIndex / topics.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').textContent = 
+                `${studentData.currentTopicIndex}/${topics.length}`;
+            
+            // 显示当前知识点
+            document.getElementById('currentTopic').innerHTML = 
+                `<h2>📚 当前知识点: ${currentTopic.name}</h2>
+                 <p style="color: #666;">${currentTopic.description}</p>`;
+            
+            // 随机选择一个未用过的题目
+            const generators = questionGenerators[topicId];
+            let questionIndex;
+            
+            // 如果所有题目都用过了,重置
+            if (studentData.usedQuestions[topicId].length >= generators.length) {
+                studentData.usedQuestions[topicId] = [];
+            }
+            
+            // 选择未用过的题目
+            do {
+                questionIndex = randInt(0, generators.length - 1);
+            } while (studentData.usedQuestions[topicId].includes(questionIndex));
+            
+            studentData.usedQuestions[topicId].push(questionIndex);
+            
+            // 生成题目
+            const question = generators[questionIndex]();
+            
+            // 记录题目
+            stats.questions.push({
+                ...question,
+                answered: false,
+                isCorrect: false
+            });
+            
+            // 显示题目
+            document.getElementById('questionTitle').innerHTML = 
+                `题目 ${stats.attempts + 1}`;
+            
+            document.getElementById('questionContent').innerHTML = 
+                `<p style="margin: 15px 0; font-size: 1.1em;">${question.question}</p>`;
+            
+            // 显示选项
+            let optionsHTML = '';
+            
+            if (question.type === 'single') {
+                question.options.forEach((option, index) => {
+                    optionsHTML += `
+                        <div class="option" data-index="${index}" onclick="selectOption(${index})">
+                            ${String.fromCharCode(65 + index)}. ${option}
+                        </div>`;
+                });
+            } else {
+                question.options.forEach((option, index) => {
+                    optionsHTML += `
+                        <div class="checkbox-option" onclick="toggleCheckbox(${index})">
+                            <input type="checkbox" id="opt${index}">
+                            <label for="opt${index}" style="cursor: pointer; margin: 0;">
+                                ${String.fromCharCode(65 + index)}. ${option}
+                            </label>
+                        </div>`;
+                });
+            }
+            
+            document.getElementById('options').innerHTML = optionsHTML;
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // 重新渲染数学公式
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function selectOption(index) {
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelectorAll('.option')[index].classList.add('selected');
+        }
+
+        function toggleCheckbox(index) {
+            const checkbox = document.getElementById(`opt${index}`);
+            checkbox.checked = !checkbox.checked;
+        }
+
+        function submitAnswer() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            const question = stats.questions[stats.questions.length - 1];
+            
+            let selectedAnswers;
+            let isCorrect;
+            
+            if (question.type === 'single') {
+                const selected = document.querySelector('.option.selected');
+                if (!selected) {
+                    alert('请选择一个答案!');
+                    return;
+                }
+                selectedAnswers = parseInt(selected.getAttribute('data-index'));
+                isCorrect = selectedAnswers === question.correct;
+                
+                // 显示结果
+                document.querySelectorAll('.option').forEach((opt, idx) => {
+                    if (idx === question.correct) {
+                        opt.classList.add('correct');
+                    } else if (idx === selectedAnswers && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                    opt.style.pointerEvents = 'none';
+                });
+            } else {
+                selectedAnswers = [];
+                document.querySelectorAll('input[type="checkbox"]').forEach((cb, idx) => {
+                    if (cb.checked) {
+                        selectedAnswers.push(idx);
+                    }
+                });
+                
+                if (selectedAnswers.length === 0) {
+                    alert('请至少选择一个答案!');
+                    return;
+                }
+                
+                isCorrect = selectedAnswers.length === question.correct.length &&
+                           selectedAnswers.every(ans => question.correct.includes(ans));
+                
+                // 显示结果
+                document.querySelectorAll('.checkbox-option').forEach((opt, idx) => {
+                    if (question.correct.includes(idx)) {
+                        opt.classList.add('correct');
+                    } else if (selectedAnswers.includes(idx)) {
+                        opt.classList.add('incorrect');
+                    }
+                    opt.style.pointerEvents = 'none';
+                });
+            }
+            
+            // 更新统计
+            stats.attempts++;
+            question.answered = true;
+            question.isCorrect = isCorrect;
+            
+            if (isCorrect) {
+                stats.correct++;
+            }
+            
+            // 显示反馈
+            const feedbackDiv = document.getElementById('feedback');
+            if (isCorrect) {
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback correct">
+                        ✅ 回答正确!<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = 
+                    studentData.currentTopicIndex < topics.length - 1 ? '下一知识点' : '查看结果';
+            } else {
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback incorrect">
+                        ❌ 回答错误,请再试一次!<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = '继续答题';
+            }
+            
+            // 重新渲染数学公式
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function nextQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            const lastQuestion = stats.questions[stats.questions.length - 1];
+            
+            if (lastQuestion.isCorrect) {
+                // 答对了,进入下一知识点
+                studentData.currentTopicIndex++;
+                
+                if (studentData.currentTopicIndex >= topics.length) {
+                    // 所有知识点完成,显示结果
+                    showResults();
+                } else {
+                    // 加载下一知识点
+                    loadQuestion();
+                }
+            } else {
+                // 答错了,继续当前知识点
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-section').classList.remove('active');
+            document.querySelector('.result-section').classList.add('active');
+            
+            let reportHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #608de0;">🎉 ${studentData.name} 同学(学号:${studentData.id})</h2>
+                    <p style="color: #666; font-size: 1.1em;">您已完成本次DSP-Lab1-练习!</p>
+                </div>
+                
+                <table class="stats-table">
+                    <tr>
+                        <th>知识点</th>
+                        <th>答题次数</th>
+                        <th>首次正确率</th>
+                        <th>掌握程度</th>
+                    </tr>
+            `;
+            
+            let goodTopics = [];
+            let fairTopics = [];
+            let poorTopics = [];
+            
+            topics.forEach(topic => {
+                const stats = studentData.topicStats[topic.id];
+                const firstTryCorrect = stats.attempts === 1 ? 100 : 0;
+                const accuracy = ((1 / stats.attempts) * 100).toFixed(0);
+                
+                let mastery, masteryClass;
+                if (stats.attempts === 1) {
+                    mastery = '优秀 ⭐⭐⭐';
+                    masteryClass = 'mastery-good';
+                    goodTopics.push(topic.name);
+                } else if (stats.attempts <= 3) {
+                    mastery = '良好 ⭐⭐';
+                    masteryClass = 'mastery-fair';
+                    fairTopics.push(topic.name);
+                } else {
+                    mastery = '需加强 ⭐';
+                    masteryClass = 'mastery-poor';
+                    poorTopics.push(topic.name);
+                }
+                
+                reportHTML += `
+                    <tr>
+                        <td><strong>${topic.name}</strong></td>
+                        <td>${stats.attempts}次</td>
+                        <td>${accuracy}%</td>
+                        <td class="${masteryClass}">${mastery}</td>
+                    </tr>
+                `;
+            });
+            
+            reportHTML += '</table>';
+            
+            // 总结分析
+            reportHTML += '<div style="margin-top: 30px;">';
+            reportHTML += '<h3 style="color: #2d57a4;">📊 知识掌握分析</h3>';
+            
+            if (goodTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e8f5e9; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #5ca353;">
+                        <strong style="color: #5ca353;">✅ 掌握较好的知识点:</strong><br>
+                        ${goodTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (fairTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #fff8e1; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #D46A6A;">
+                        <strong style="color: #D46A6A;">⚠️ 需要巩固的知识点:</strong><br>
+                        ${fairTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (poorTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #ffebee; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #912d32;">
+                        <strong style="color: #912d32;">❌ 需要重点加强的知识点:</strong><br>
+                        ${poorTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            reportHTML += '</div>';
+            
+            document.getElementById('finalReport').innerHTML = reportHTML;
+        }
+
+        // ==================== 截图保存功能 ====================
+        function saveScreenshot() {
+            const button = document.getElementById('saveBtn');
+            button.disabled = true;
+            button.textContent = '正在生成截图...';
+            
+            // 使用html2canvas生成截图
+            html2canvas(document.body, {
+                backgroundColor: '#ffffff',
+                scale: 2,  // 提高清晰度
+                logging: false
+            }).then(canvas => {
+                // 转换为图片
+                canvas.toBlob(blob => {
+                    // 清理文件名中的特殊字符
+                    const cleanId = studentData.id.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const cleanName = studentData.name.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    
+                    // 构造文件名: 学号_姓名_Quiz1.png
+                    const filename = `${cleanId}_${cleanName}_Quiz1.png`;
+                    
+                    // 创建下载链接
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // 清理
+                    URL.revokeObjectURL(url);
+                    
+                    // 恢复按钮
+                    button.disabled = false;
+                    button.textContent = '截图已保存';
+                    setTimeout(() => {
+                        button.textContent = '再次截图';
+                    }, 2000);
+                }, 'image/png');
+            }).catch(error => {
+                console.error('截图失败:', error);
+                alert('截图失败,请尝试使用浏览器截图功能(Ctrl+Shift+S 或 Command+Shift+4)');
+                button.disabled = false;
+                button.textContent = '截图保存';
+            });
+        }
+    </script>
+</body>
+</html>

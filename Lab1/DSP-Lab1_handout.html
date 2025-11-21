@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 1 - 利用FFT计算频谱及结果分析</title>
+    
+    <!-- MathJax for mathematical formulas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            CommonHTML: { scale: 110 },
+            "HTML-CSS": { scale: 110 }
+        });
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 50%, #5ca353 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            border-bottom: 5px solid #7dadff;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-top: 10px;
+        }
+
+        header .institution {
+            font-size: 0.95em;
+            margin-top: 15px;
+            opacity: 0.9;
+            border-top: 2px solid rgba(255,255,255,0.3);
+            padding-top: 15px;
+        }
+
+        nav {
+            background: #f5f7fa;
+            padding: 20px 40px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 3px solid #7dadff;
+        }
+
+        nav a {
+            color: #2d57a4;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s;
+            font-size: 0.95em;
+            font-weight: 500;
+            background: white;
+            border: 2px solid #7dadff;
+        }
+
+        nav a:hover {
+            background: #7dadff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(125, 173, 255, 0.4);
+        }
+
+        .content {
+            padding: 50px;
+        }
+
+        section {
+            margin-bottom: 60px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #2d57a4;
+            font-size: 2em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #7dadff;
+            font-weight: bold;
+        }
+
+        h3 {
+            color: #608de0;
+            font-size: 1.6em;
+            margin: 30px 0 20px 0;
+            font-weight: bold;
+        }
+
+        h4 {
+            color: #2d57a4;
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+            line-height: 1.9;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 5px solid #608de0;
+            padding: 18px 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .formula-box p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .note-box {
+            background: linear-gradient(135deg, #fff8e1 0%, #fffbf0 100%);
+            border-left: 5px solid #D46A6A;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+            border-left: 5px solid #5ca353;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #ffebee 0%, #fff5f7 100%);
+            border-left: 5px solid #912d32;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* VS Code Dark+ 风格代码块 */
+        .code-block {
+            background: #2b2b2b;
+            color: #d4d4d4;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            overflow-x: auto;
+            font-family: 'Cambria', 'Consolas', 'Monaco', monospace;
+            line-height: 1.7;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid #608de0;
+        }
+
+        .code-block::before {
+            content: 'MATLAB';
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            color: #7dadff;
+            font-size: 0.85em;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+
+        .code-line {
+            display: block;
+            font-family: 'Cambria', monospace;
+            font-size: 14px;
+        }
+
+        .code-comment {
+            color: #6a9955;
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            font-weight: normal;
+            font-size: 14px;
+        }
+
+        .code-keyword {
+            color: #569cd6;
+            font-weight: normal;
+            font-size: 14px;
+        }
+
+        .code-function {
+            color: #dcdcaa;
+            font-size: 14px;
+        }
+
+        .code-string {
+            color: #ce9178;
+            font-size: 14px;
+        }
+
+        .code-number {
+            color: #b5cea8;
+            font-size: 14px;
+        }
+
+        .exercise-box {
+            background: linear-gradient(135deg, #f0f7ff 0%, #f5f9ff 100%);
+            border: 3px solid #7dadff;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 3px 15px rgba(125, 173, 255, 0.2);
+        }
+
+        .exercise-box h3 {
+            color: #2d57a4;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        .exercise-box h4 {
+            color: #608de0;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .question-item {
+            margin: 20px 0;
+            padding-left: 15px;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #608de0;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 0.9em;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 3px dashed #5ca353;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .canvas-container {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            border: 2px solid #7dadff;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #2d57a4;
+            font-size: 0.95em;
+        }
+
+        input[type="range"] {
+            width: 200px;
+            accent-color: #608de0;
+        }
+
+        input[type="number"] {
+            width: 90px;
+            padding: 8px;
+            border: 2px solid #7dadff;
+            border-radius: 5px;
+            font-family: 'Cambria', monospace;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 2px solid #7dadff;
+            border-radius: 5px;
+            background: white;
+            color: #2d57a4;
+            font-size: 0.95em;
+        }
+
+        button {
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(96, 141, 224, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(96, 141, 224, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e8f5ff;
+        }
+
+        .image-result {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 10px;
+            border: 2px solid #7dadff;
+        }
+
+        .image-result img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .image-result figcaption {
+            margin-top: 15px;
+            color: #666;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+
+        footer {
+            background: linear-gradient(135deg, #2d57a4 0%, #113a85 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            font-size: 0.95em;
+        }
+
+        footer p {
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .badge-theory {
+            background: #608de0;
+            color: white;
+        }
+
+        .badge-practice {
+            background: #5ca353;
+            color: white;
+        }
+
+        strong {
+            color: #2d57a4;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 30px 20px;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            h2 {
+                font-size: 1.6em;
+            }
+
+            .control-panel {
+                flex-direction: column;
+            }
+
+            input[type="range"] {
+                width: 100%;
+            }
+        }
+
+        .mjx-chtml {
+            font-size: 115% !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>实验一 - 利用FFT计算频谱及结果分析</h1>
+            <div class="subtitle">数字信号处理 | 频域分析实验</div>
+            <div class="institution">南京工业大学浦江学院 | 计算机与通信工程学院 | 通信工程专业 | DSP课程实验</div>
+        </header>
+
+        <nav>
+            <a href="#objective">实验目的</a>
+            <a href="#theory">理论基础</a>
+            <a href="#demo">交互演示</a>
+            <a href="#example">示例讲解</a>
+            <a href="#exercise1">练习一</a>
+            <a href="#exercise2">练习二</a>
+            <a href="#exercise3">练习三</a>
+            <a href="#exercise4">练习四</a>
+        </nav>
+
+        <div class="content">
+            <!-- 实验目的 -->
+            <section id="objective">
+                <h2><span class="badge badge-theory">理论</span>实验目的</h2>
+                <p>在本实验中，我们将使用MATLAB对离散时间信号进行频域分析。本实验的主要目的是：</p>
+                <ul>
+                    <li>理解并掌握<strong>离散时间傅里叶变换（DTFT）</strong>的基本概念和性质</li>
+                    <li>学习<strong>离散傅里叶变换（DFT）</strong>与DTFT之间的关系</li>
+                    <li>利用<strong>快速傅里叶变换（FFT）</strong>计算离散时间序列的频谱</li>
+                    <li>通过结果分析理解固定频率和时变频率（如语音信号）的数字信号频谱特点</li>
+                    <li>理解线性卷积和循环卷积之间的关系，掌握FFT快速计算卷积的方法</li>
+                    <li>培养频域分析能力，理解时域与频域的对应关系</li>
+                </ul>
+
+                <div class="tip-box">
+                    <strong>💡 学习提示</strong>
+                    <p>频域分析是数字信号处理的核心内容之一。通过将时域信号变换到频域，我们可以更直观地观察信号的频率成分，这对于信号分析、滤波设计、通信系统等应用至关重要。</p>
+                </div>
+            </section>
+
+            <!-- 理论基础 -->
+            <section id="theory">
+                <h2><span class="badge badge-theory">理论</span>理论基础</h2>
+
+                <h3>1. 离散时间傅里叶变换（DTFT）</h3>
+                <p>对于离散时间信号（DT）求其频域表达，使用DTFT，也就是离散时间傅里叶变换。此时的信号是一个离散的非周期的实数或复数序列。</p>
+
+                <h4>DTFT分析式（正变换）：</h4>
+                <div class="formula-box">
+                    <p style="text-align: center;">
+                        $$X(e^{j\omega}) = \sum_{n=-\infty}^{\infty} x[n]e^{-j\omega n}$$
+                    </p>
+                    <p style="text-align: center; margin-top: 10px; color: #666;">其中 $\omega$ 为归一化角频率（弧度）</p>
+                </div>
+
+                <h4>DTFT合成式（逆变换）：</h4>
+                <div class="formula-box">
+                    <p style="text-align: center;">
+                        $$x[n] = \frac{1}{2\pi} \int_{-\pi}^{\pi} X(e^{j\omega})e^{j\omega n}d\omega$$
+                    </p>
+                </div>
+
+                <div class="note-box">
+                    <strong>📌 DTFT的重要特性：</strong>
+                    <ol>
+                        <li><strong>连续性</strong>：$X(e^{j\omega})$ 是关于频率 $\omega$ 的连续函数</li>
+                        <li><strong>周期性</strong>：$X(e^{j\omega})$ 是以 $2\pi$ 为周期的周期函数，即 $X(e^{j(\omega+2\pi)}) = X(e^{j\omega})$</li>
+                        <li><strong>对称性</strong>：若 $x[n]$ 为实序列，则 $X(e^{j\omega})$ 满足共轭对称性</li>
+                    </ol>
+                </div>
+
+                <h4>计算机实现的限制：</h4>
+                <p>在计算机系统中，想要实现一个连续的数值变量是不可能的，所以对DTFT的任何数值实现有两个要求：</p>
+                <ol>
+                    <li><strong>$x[n]$ 必须具有有限长度</strong>（序列长度有限）</li>
+                    <li><strong>$X(e^{j\omega})$ 只能在连续频率变量 $\omega$ 的有限数量的样本处计算</strong>（频率采样点有限）</li>
+                </ol>
+                <p>在满足这两条要求的前提下，我们可以通过MATLAB来计算一个DT序列的频谱。实际上，如果 $x[n]$ 是有限的，$\omega$ 的数量也是有限的，我们就把DTFT离散化了，这就引出了DFT。</p>
+
+                <h3>2. 离散傅里叶变换（DFT）</h3>
+                <p>理论上DTFT分析方程的计算是从负无穷到正无穷进行求和，在计算机中是不可实现的，我们使用DFT，也就是离散傅里叶变换来进行谱分析。</p>
+
+                <h4>DFT与DTFT的关系：</h4>
+                <p>有限长序列的DFT结果包含了<strong>N个离散频率点处的DTFT结果</strong>，这些离散频率点等间隔地分布在区间 $[0, 2\pi)$ 内。如果离散频率点数量足够多，我们就可以通过DFT近似得到DTFT的结果。</p>
+
+                <h4>频率采样：</h4>
+                <p>为了计算效率，我们将连续频率变量 $\omega$ 所在的 $0$ 到 $2\pi$ 的周期范围内，等分 <strong>N</strong> 个点：</p>
+                <div class="formula-box">
+                    <p style="text-align: center;">
+                        $$\omega_k = \frac{2\pi k}{N}, \quad k = 0, 1, 2, \ldots, N-1$$
+                    </p>
+                </div>
+
+                <h4>DFT正变换：</h4>
+                <div class="formula-box">
+                    <p style="text-align: center;">
+                        $$X[k] = \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}, \quad k = 0, 1, \ldots, N-1$$
+                    </p>
+                    <p style="text-align: center; margin-top: 10px; color: #666;">其中 $k$ 为频率索引，对应频率 $\omega_k = 2\pi k/N$</p>
+                </div>
+
+                <h4>逆离散傅里叶变换（IDFT）：</h4>
+                <div class="formula-box">
+                    <p style="text-align: center;">
+                        $$x[n] = \frac{1}{N} \sum_{k=0}^{N-1} X[k]e^{j\frac{2\pi kn}{N}}, \quad n = 0, 1, \ldots, N-1$$
+                    </p>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 理解要点</strong>
+                    <p><strong>频率分辨率</strong>：DFT的频率分辨率为 $\Delta f = F_s/N$，其中 $F_s$ 为采样频率。增加 $N$ 可以提高频率分辨率，使频谱更加精细。</p>
+                    <p><strong>零填充（Zero Padding）</strong>：在信号末尾补零可以增加DFT的计算点数 $N$，从而提高频率分辨率，使DFT结果更接近真实的DTFT。但需要注意，零填充并不增加新的信息，只是对DTFT进行更密集的采样。</p>
+                </div>
+
+                <h3>3. 快速傅里叶变换（FFT）</h3>
+                <p>FFT（Fast Fourier Transform）是计算DFT的一种高效算法，它将DFT的计算复杂度从 $O(N^2)$ 降低到 $O(N \log N)$。</p>
+
+                <h4>MATLAB中的FFT函数：</h4>
+                <div class="code-block">
+                    <code>
+<span class="code-line"><span class="code-comment">% 如果 x 是包含 x[n] 的向量，0 ≤ n ≤ M-1</span></span>
+<span class="code-line">X = <span class="code-keyword">fft</span>(x, N);  <span class="code-comment">% 计算N点DFT</span></span>
+<span class="code-line"><span class="code-comment">% 计算x的DTFT的N个均匀间隔的样本，并存储在向量X中</span></span>
+                    </code>
+                </div>
+
+                <h4>重要说明：</h4>
+                <ul>
+                    <li><strong>零填充</strong>：如果 $N > M$（序列长度），fft 会自动在序列末尾补零</li>
+                    <li><strong>截断</strong>：如果 $N < M$，fft 会截取前 $N$ 个元素进行计算</li>
+                    <li><strong>频率范围</strong>：fft 函数计算区间 $[0, 2\pi)$ 中的DFT。要在区间 $[-\pi, \pi]$ 中计算，可以使用 <code>fftshift</code> 函数进行移位</li>
+                    <li><strong>逆变换</strong>：<code>ifft</code> 函数可用于高效地计算IDFT</li>
+                </ul>
+
+                <div class="note-box">
+                    <strong>📌 FFT算法优势</strong>
+                    <p>对于 $N=1024$ 点的DFT，直接计算需要约100万次复数乘法，而FFT只需要约1万次，计算效率提高约100倍！这使得实时信号处理成为可能。</p>
+                </div>
+
+                <h3>4. 卷积定理</h3>
+                <p>卷积定理是连接时域和频域的重要桥梁，在信号处理中有广泛应用。</p>
+
+                <h4>时域卷积 ⟷ 频域相乘：</h4>
+                <div class="formula-box">
+                    <p style="text-align: center;">
+                        $$y[n] = x[n] * h[n] \quad \Longleftrightarrow \quad Y[k] = X[k] \cdot H[k]$$
+                    </p>
+                    <p style="text-align: center; margin-top: 10px; color: #666;">其中 $*$ 表示卷积，$\cdot$ 表示点乘</p>
+                </div>
+
+                <h4>线性卷积 vs 循环卷积：</h4>
+                <table>
+                    <tr>
+                        <th>特性</th>
+                        <th>线性卷积</th>
+                        <th>循环卷积</th>
+                    </tr>
+                    <tr>
+                        <td>定义</td>
+                        <td>两个有限长序列的卷积</td>
+                        <td>DFT域的点乘对应的时域操作</td>
+                    </tr>
+                    <tr>
+                        <td>结果长度</td>
+                        <td>$L_1 + L_2 - 1$</td>
+                        <td>$\max(L_1, L_2)$</td>
+                    </tr>
+                    <tr>
+                        <td>MATLAB函数</td>
+                        <td>conv(x, h)</td>
+                        <td>ifft(fft(x) .* fft(h))</td>
+                    </tr>
+                    <tr>
+                        <td>关系</td>
+                        <td colspan="2">补零到 $L_1 + L_2 - 1$ 后，循环卷积等于线性卷积</td>
+                    </tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>⚠️ 注意</strong>
+                    <p>直接使用FFT计算的是循环卷积，而非线性卷积。要使循环卷积等于线性卷积，必须对两个序列都补零至少到长度 $L_1 + L_2 - 1$。</p>
+                </div>
+            </section>
+
+            <!-- 交互式演示 -->
+            <section id="demo">
+                <h2><span class="badge badge-practice">实践</span>交互式信号频谱分析</h2>
+                
+                <div class="interactive-demo">
+                    <h3>实时信号生成器与频谱分析器</h3>
+                    <p>调整参数观察时域信号与其频谱的关系</p>
+                    
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>频率 (Hz): <span id="freqValue">5</span></label>
+                            <input type="range" id="frequency" min="1" max="20" value="5" step="0.5">
+                        </div>
+                        <div class="control-group">
+                            <label>幅度: <span id="ampValue">1.0</span></label>
+                            <input type="range" id="amplitude" min="0.1" max="2" value="1" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label>DFT点数 N:</label>
+                            <input type="number" id="dftPoints" min="8" max="1024" value="64" step="8">
+                        </div>
+                        <div class="control-group">
+                            <label>信号类型:</label>
+                            <select id="signalType">
+                                <option value="sine">正弦波</option>
+                                <option value="cosine">余弦波</option>
+                                <option value="square">方波</option>
+                                <option value="sawtooth">锯齿波</option>
+                                <option value="exponential">指数衰减</option>
+                            </select>
+                        </div>
+                        <button id="updateBtn">更新显示</button>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="signalCanvas" width="800" height="300"></canvas>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="spectrumCanvas" width="800" height="300"></canvas>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 观察要点</strong>
+                    <ul>
+                        <li>正弦/余弦波的频谱是单一频率分量（冲激）</li>
+                        <li>方波包含基频和奇次谐波分量</li>
+                        <li>增加DFT点数 $N$ 可以提高频率分辨率，使频谱更平滑</li>
+                        <li>注意观察频谱的对称性（实信号的频谱共轭对称）</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 示例讲解 -->
+            <section id="example">
+                <h2><span class="badge badge-practice">实践</span>示例讲解</h2>
+
+                <h3>例题：单位脉冲信号的频谱分析</h3>
+                <p><strong>问题</strong>：有信号 $x[n] = \delta[n]$（单位脉冲信号），回答以下问题。</p>
+
+                <div class="exercise-box">
+                    <h4>问题 1：手动计算 $x[n]$ 所对应的DTFT</h4>
+                    <p><strong>解：</strong></p>
+                    <div class="formula-box">
+                        <p>根据DTFT定义：</p>
+                        <p style="text-align: center;">
+                            $$X(e^{j\omega}) = \sum_{n=-\infty}^{\infty} x[n]e^{-j\omega n}$$
+                        </p>
+                        <p style="margin-top: 12px;">对于单位脉冲 $\delta[n]$：</p>
+                        <p style="text-align: center;">
+                            $$X(e^{j\omega}) = \sum_{n=-\infty}^{\infty} \delta[n]e^{-j\omega n} = e^{-j\omega \cdot 0} = 1$$
+                        </p>
+                        <p style="margin-top: 12px;"><strong>结论</strong>：单位脉冲信号的DTFT恒等于1（幅度为1，相位为0），这意味着它包含所有频率成分，且各频率分量幅度相等。</p>
+                    </div>
+                </div>
+
+                <div class="exercise-box">
+                    <h4>问题 2：使用fft计算出8点DFT结果并画图显示</h4>
+                    <div class="code-block">
+                        <code>
+<span class="code-line">N = <span class="code-number">8</span>;                    <span class="code-comment">% 假设计算8点DFT</span></span>
+<span class="code-line">n = <span class="code-number">0</span>:(N-<span class="code-number">1</span>);              <span class="code-comment">% 时间索引：0到7</span></span>
+<span class="code-line">x = [<span class="code-number">1</span>, <span class="code-keyword">zeros</span>(<span class="code-number">1</span>, <span class="code-number">7</span>)];      <span class="code-comment">% 单位脉冲信号 δ[n]</span></span>
+<span class="code-line">k = <span class="code-number">0</span>:(N-<span class="code-number">1</span>);              <span class="code-comment">% 频率索引：0到7</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 计算8点DFT</span></span>
+<span class="code-line">Xdft_8 = <span class="code-keyword">fft</span>(x, N);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 计算幅度谱和相位谱</span></span>
+<span class="code-line">mag_Xdft_8 = <span class="code-keyword">abs</span>(Xdft_8);      <span class="code-comment">% 幅度谱</span></span>
+<span class="code-line">phase_Xdft_8 = <span class="code-keyword">angle</span>(Xdft_8);  <span class="code-comment">% 相位谱（弧度）</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 绘制结果</span></span>
+<span class="code-line"><span class="code-keyword">figure</span>;</span>
+<span class="code-line"><span class="code-keyword">subplot</span>(<span class="code-number">2</span>, <span class="code-number">1</span>, <span class="code-number">1</span>);</span>
+<span class="code-line"><span class="code-keyword">stem</span>(k, mag_Xdft_8), <span class="code-keyword">grid</span> on;</span>
+<span class="code-line"><span class="code-keyword">title</span>(<span class="code-string">'8点DFT幅度谱'</span>);</span>
+<span class="code-line"><span class="code-keyword">xlabel</span>(<span class="code-string">'频率索引 k'</span>), <span class="code-keyword">ylabel</span>(<span class="code-string">'|X[k]|'</span>);</span>
+<span class="code-line"><span class="code-keyword">xlim</span>([-<span class="code-number">0.2</span>, <span class="code-number">8.2</span>]);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">subplot</span>(<span class="code-number">2</span>, <span class="code-number">1</span>, <span class="code-number">2</span>);</span>
+<span class="code-line"><span class="code-keyword">stem</span>(k, phase_Xdft_8), <span class="code-keyword">grid</span> on;</span>
+<span class="code-line"><span class="code-keyword">title</span>(<span class="code-string">'8点DFT相位谱'</span>);</span>
+<span class="code-line"><span class="code-keyword">xlabel</span>(<span class="code-string">'频率索引 k'</span>), <span class="code-keyword">ylabel</span>(<span class="code-string">'∠X[k] (弧度)'</span>);</span>
+<span class="code-line"><span class="code-keyword">xlim</span>([-<span class="code-number">0.2</span>, <span class="code-number">8.2</span>]);</span>
+                        </code>
+                    </div>
+
+                    <div class="image-result">
+                        <canvas id="exampleCanvas1" width="700" height="500"></canvas>
+                        <figcaption><strong>图1：</strong>单位脉冲信号的8点DFT幅度谱和相位谱。幅度谱在所有频率点 $k=0,1,\ldots,7$ 处均为1；相位谱为0。</figcaption>
+                    </div>
+
+                    <p><strong>结果分析</strong>：</p>
+                    <ul>
+                        <li>幅度谱在所有频率点处均为1，验证了理论结果 $|X(e^{j\omega})| = 1$</li>
+                        <li>相位谱为0，因为 $X(e^{j\omega}) = 1$ 是实数</li>
+                        <li>这说明单位脉冲信号包含所有频率成分，且各频率分量幅度相等</li>
+                    </ul>
+                </div>
+
+                <div class="exercise-box">
+                    <h4>问题 3：通过零填充提高频率分辨率</h4>
+                    <p>选择 $N = 100, 500, 1000$ 进行尝试，观察DFT是否接近DTFT。</p>
+                    <div class="code-block">
+                        <code>
+<span class="code-line"><span class="code-comment">% 原始信号</span></span>
+<span class="code-line">x = [<span class="code-number">1</span>, <span class="code-keyword">zeros</span>(<span class="code-number">1</span>, <span class="code-number">7</span>)];</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 不同的DFT点数</span></span>
+<span class="code-line">N_values = [<span class="code-number">8</span>, <span class="code-number">100</span>, <span class="code-number">500</span>, <span class="code-number">1000</span>];</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">figure</span>;</span>
+<span class="code-line"><span class="code-keyword">for</span> i = <span class="code-number">1</span>:<span class="code-keyword">length</span>(N_values)</span>
+<span class="code-line">    N = N_values(i);</span>
+<span class="code-line">    k = <span class="code-number">0</span>:(N-<span class="code-number">1</span>);</span>
+<span class="code-line">    Xdft = <span class="code-keyword">fft</span>(x, N);</span>
+<span class="code-line">    mag_Xdft = <span class="code-keyword">abs</span>(Xdft);</span>
+<span class="code-line">    </span>
+<span class="code-line">    <span class="code-keyword">subplot</span>(<span class="code-number">2</span>, <span class="code-number">2</span>, i);</span>
+<span class="code-line">    <span class="code-keyword">if</span> N <= <span class="code-number">100</span></span>
+<span class="code-line">        <span class="code-keyword">stem</span>(k, mag_Xdft), <span class="code-keyword">grid</span> on;</span>
+<span class="code-line">    <span class="code-keyword">else</span></span>
+<span class="code-line">        <span class="code-keyword">plot</span>(k, mag_Xdft), <span class="code-keyword">grid</span> on;  <span class="code-comment">% N较大时用plot避免点重叠</span></span>
+<span class="code-line">    <span class="code-keyword">end</span></span>
+<span class="code-line">    <span class="code-keyword">title</span>(<span class="code-keyword">sprintf</span>(<span class="code-string">'%d点DFT幅度谱'</span>, N));</span>
+<span class="code-line">    <span class="code-keyword">xlabel</span>(<span class="code-string">'k'</span>), <span class="code-keyword">ylabel</span>(<span class="code-string">'|X[k]|'</span>);</span>
+<span class="code-line"><span class="code-keyword">end</span></span>
+                        </code>
+                    </div>
+
+                    <div class="image-result">
+                        <canvas id="exampleCanvas2" width="700" height="500"></canvas>
+                        <figcaption><strong>图2：</strong>不同DFT点数下单位脉冲信号的幅度谱。随着 $N$ 增大，频率分辨率提高，频谱更加平滑，逐渐逼近连续的DTFT。</figcaption>
+                    </div>
+
+                    <div class="note-box">
+                        <strong>📌 观察结果</strong>
+                        <ul>
+                            <li>$N=8$ 时：只有8个离散频率点，频谱较粗糙</li>
+                            <li>$N=100$ 时：频率点增加，频谱变得更平滑</li>
+                            <li>$N=500, 1000$ 时：频谱非常平滑，逼近连续的DTFT</li>
+                            <li>所有情况下幅度均为1，验证了理论结果</li>
+                        </ul>
+                        <p style="margin-top: 12px;"><strong>结论</strong>：增加DFT点数（通过零填充）可以提高频率分辨率，使DFT更好地逼近DTFT。但要注意，这并不增加新的信息，只是对DTFT进行更密集的采样。</p>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 深入理解</strong>
+                    <p><strong>数字频率 $\omega$ 与 DFT索引 $k$ 的关系：</strong></p>
+                    <p style="text-align: center;">
+                        $$\omega_k = \frac{2\pi k}{N} \quad \text{（归一化角频率，弧度）}$$
+                    </p>
+                    <p style="margin-top: 12px;">或者用Hz表示（假设采样频率为 $F_s$）：</p>
+                    <p style="text-align: center;">
+                        $$f_k = \frac{kF_s}{N} \quad \text{（实际频率，Hz）}$$
+                    </p>
+                    <p style="margin-top: 12px;">因此，DFT的第 $k$ 个点对应的归一化频率为 $2\pi k/N$ 弧度。</p>
+                </div>
+            </section>
+
+            <!-- 练习一 -->
+            <section id="exercise1">
+                <h2><span class="badge badge-practice">实践</span>练习一：指数序列的频谱分析</h2>
+
+                <div class="exercise-box">
+                    <h3>题目</h3>
+                    <p>设有离散时间序列 $x[n] = 0.7^n$，$0 \leq n \leq 7$</p>
+
+                    <div class="question-item">
+                        <p><span class="question-number">1</span> 求出 $x[n]$ 所对应DTFT的解析式。</p>
+                        <p style="margin-left: 45px;"><strong>提示</strong>：利用几何级数求和公式 $\sum_{n=0}^{N-1} r^n = \frac{1-r^N}{1-r}$</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">2</span> 根据例题计算出8点DFT（$0 \leq k \leq 7$）并画出幅度相位谱。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">3</span> 根据例题计算出16点DFT（$0 \leq k \leq 15$）并画出幅度相位谱。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">4</span> 根据例题计算出128点DFT（$0 \leq k \leq 127$）并画出幅度相位谱。</p>
+                        <p style="margin-left: 45px;"><strong>注意</strong>：数据较多时使用 plot 函数代替 stem 函数。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">5</span> 观察第4题和第1题的结果，数字频率 $\omega$ 和DFT中 $k$ 的关系是什么？</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习二 -->
+            <section id="exercise2">
+                <h2><span class="badge badge-practice">实践</span>练习二：卷积定理的验证</h2>
+
+                <div class="exercise-box">
+                    <h3>题目</h3>
+                    <p>设有两序列 $x[n] = [1, 1, 1, 1]$，$y[n] = [1, 1, 1, 1]$</p>
+
+                    <div class="question-item">
+                        <p><span class="question-number">1</span> 对 $x$ 和 $y$ 做线性卷积（使用 conv 函数），把卷积结果用 stem 函数画出来。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">2</span> 手动计算 $x$ 和 $y$ 之间的圆周卷积结果。</p>
+                        <p style="margin-left: 45px;"><strong>提示</strong>：圆周卷积定义为 $z[n] = \sum_{m=0}^{N-1} x[m]y[(n-m) \bmod N]$，$n = 0, 1, 2, 3$</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">3</span> 分别计算 $x$ 和 $y$ 的DFT，结果保存在 Xk 和 Yk 中。对结果做点乘，也就是计算 $Zk = Xk .* Yk$。对 Zk 求逆离散傅里叶变换（使用 ifft 函数）。如果你得到复数结果，使用 real 函数提取实数部分。确认你的结果与第2题获得的结果一致。使用 stem 函数绘制结果，观察结果中有多少个样本数和第1题中的结果一致？</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">4</span> 对 $x$ 和 $y$ 尾部填零。首先对 $x$ 和 $y$ 分别添加一个零，重复第2题和第3题。有多少个样本和第1题的结果是一致的？需要补充多少零才能使结果和第1题中的完全一致，画图验证。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">5</span> 有两个新的序列 $u[n] = [-3, 5, 8, 6, 2, 2]$，$v[n] = [1, 1, 4, 2]$，重复以上问题并回答：对 $u$ 和 $v$ 各补充多少零可使得 $u$ 和 $v$ 之间的线性卷积结果等于循环卷积结果？</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习三 -->
+            <section id="exercise3">
+                <h2><span class="badge badge-practice">实践</span>练习三：实际信号的频谱分析</h2>
+
+                <div class="exercise-box">
+                    <h3>题目</h3>
+                    <p>运行以下代码将 'tones.mat' 文件中的信号数据读取到MATLAB中，这个信号里面包含了多个不同频率的声音。</p>
+                    
+                    <div class="code-block">
+                        <code>
+<span class="code-line">s = <span class="code-keyword">load</span>(<span class="code-string">'tones.mat'</span>);</span>
+<span class="code-line">x = s.y1;</span>
+                        </code>
+                    </div>
+
+                    <p>变量 $x$ 现在就是声音信号。</p>
+
+                    <div class="question-item">
+                        <p><span class="question-number">1</span> 计算 $x$ 所对应的DFT，假设 $N=25$。用 stem 函数画出幅度谱，你观察到了多少个主要频率分量？</p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">2</span> 对 $x$ 补零（调整 $N$ 值）并重新计算DFT的结果，你是否观察到了更多的频率分量？它们具体的频率是多少？尝试画出 $x$ 的图像，思考理解为什么要将时间信号变换到频域进行分析。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习四 -->
+            <section id="exercise4">
+                <h2><span class="badge badge-practice">实践</span>练习四：编写自定义DFT函数</h2>
+
+                <div class="exercise-box">
+                    <h3>题目</h3>
+                    <p>写一个自定义函数 <code>X = MyDFT(x, N)</code> 用以计算序列 $x$ 所对应的DFT。</p>
+
+                    <h4>函数要求：</h4>
+                    <ul>
+                        <li>$N$ 的长度可能和序列真实长度 $M$ 不同</li>
+                        <li>如果 $N > M$，则函数应该在 $x$ 的末尾补充零</li>
+                        <li>如果 $N < M$，则应截取前 $N$ 段进行计算</li>
+                        <li>写完后可以和MATLAB自带 fft() 函数进行比较</li>
+                        <li>可以用 randn 函数创建随机测试向量</li>
+                    </ul>
+
+                    <h4>DFT定义：</h4>
+                    <div class="formula-box">
+                        <p style="text-align: center;">
+                            $$X[k] = \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}, \quad k = 0, 1, \ldots, N-1$$
+                        </p>
+                    </div>
+
+                    <div class="question-item">
+                        <p><span class="question-number">任务</span> 编写 MyDFT 函数，并用多个测试用例验证其正确性（与 fft 函数比较）。比较两者的计算时间，分析效率差异。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 总结 -->
+            <section id="summary">
+                <h2>实验总结</h2>
+                
+                <h3>核心知识点</h3>
+                <table>
+                    <tr>
+                        <th>概念</th>
+                        <th>关键要点</th>
+                        <th>应用</th>
+                    </tr>
+                    <tr>
+                        <td><strong>DTFT</strong></td>
+                        <td>连续频率，周期 $2\pi$，理论分析工具</td>
+                        <td>理解信号频率特性</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DFT</strong></td>
+                        <td>离散频率，DTFT的采样版本</td>
+                        <td>计算机数值计算</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FFT</strong></td>
+                        <td>快速计算DFT，$O(N \log N)$ 复杂度</td>
+                        <td>实时信号处理</td>
+                    </tr>
+                    <tr>
+                        <td><strong>零填充</strong></td>
+                        <td>提高频率分辨率，不增加新信息</td>
+                        <td>精细频谱分析</td>
+                    </tr>
+                    <tr>
+                        <td><strong>卷积定理</strong></td>
+                        <td>时域卷积 ⟷ 频域相乘</td>
+                        <td>快速卷积计算</td>
+                    </tr>
+                </table>
+
+                <h3>常见问题</h3>
+                <div class="note-box">
+                    <p><strong>Q1: 为什么需要FFT，DFT不够用吗？</strong></p>
+                    <p>A: DFT和FFT计算结果相同，但FFT效率高得多。对于 $N=1024$，FFT比DFT快约100倍。在实时处理中，FFT是必需的。</p>
+                </div>
+
+                <div class="note-box">
+                    <p><strong>Q2: 零填充会增加新的信息吗？</strong></p>
+                    <p>A: 不会。零填充只是对DTFT进行更密集的采样，使频谱看起来更平滑，但不会创造新信息。</p>
+                </div>
+
+                <div class="note-box">
+                    <p><strong>Q3: 如何选择合适的DFT点数 $N$？</strong></p>
+                    <p>A: 一般原则：$N$ 应 $\geq$ 信号长度 $M$；若要提高频率分辨率，可增大 $N$；FFT在 $N$ 为2的幂次时最快。</p>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 南京工业大学浦江学院 计算机与通信工程学院</p>
+            <p>通信工程专业 | 数字信号处理课程实验</p>
+            <p style="margin-top: 10px; opacity: 0.8;">建议使用最新版Chrome、Firefox或Edge浏览器</p>
+        </footer>
+    </div>
+
+    <script>
+        // 等待MathJax加载完成
+        MathJax.Hub.Queue(function() {
+            console.log("MathJax loaded successfully");
+        });
+
+        // ==================== 交互式演示 ====================
+        const signalCanvas = document.getElementById('signalCanvas');
+        const spectrumCanvas = document.getElementById('spectrumCanvas');
+        const signalCtx = signalCanvas.getContext('2d');
+        const spectrumCtx = spectrumCanvas.getContext('2d');
+
+        const freqSlider = document.getElementById('frequency');
+        const ampSlider = document.getElementById('amplitude');
+        const dftPointsInput = document.getElementById('dftPoints');
+        const signalTypeSelect = document.getElementById('signalType');
+        const updateBtn = document.getElementById('updateBtn');
+
+        freqSlider.oninput = function() {
+            document.getElementById('freqValue').textContent = this.value;
+        };
+        ampSlider.oninput = function() {
+            document.getElementById('ampValue').textContent = this.value;
+        };
+
+        function generateSignal(type, freq, amp, numSamples) {
+            const signal = [];
+            const samplingRate = 100;
+            
+            for (let n = 0; n < numSamples; n++) {
+                const t = n / samplingRate;
+                let value;
+                
+                switch(type) {
+                    case 'sine':
+                        value = amp * Math.sin(2 * Math.PI * freq * t);
+                        break;
+                    case 'cosine':
+                        value = amp * Math.cos(2 * Math.PI * freq * t);
+                        break;
+                    case 'square':
+                        value = amp * (Math.sin(2 * Math.PI * freq * t) >= 0 ? 1 : -1);
+                        break;
+                    case 'sawtooth':
+                        value = amp * (2 * (freq * t - Math.floor(freq * t + 0.5)));
+                        break;
+                    case 'exponential':
+                        value = amp * Math.exp(-t * 2) * Math.cos(2 * Math.PI * freq * t);
+                        break;
+                    default:
+                        value = 0;
+                }
+                signal.push(value);
+            }
+            return signal;
+        }
+
+        function computeDFT(signal, N) {
+            const magnitude = [];
+            const phase = [];
+            const M = signal.length;
+            
+            const x = signal.slice();
+            if (N > M) {
+                for (let i = M; i < N; i++) {
+                    x.push(0);
+                }
+            } else if (N < M) {
+                x.length = N;
+            }
+            
+            for (let k = 0; k < N; k++) {
+                let real = 0, imag = 0;
+                for (let n = 0; n < N; n++) {
+                    const angle = -2 * Math.PI * k * n / N;
+                    real += x[n] * Math.cos(angle);
+                    imag += x[n] * Math.sin(angle);
+                }
+                magnitude.push(Math.sqrt(real * real + imag * imag));
+                phase.push(Math.atan2(imag, real));
+            }
+            
+            return { magnitude, phase };
+        }
+
+        function drawSignal(signal) {
+            const canvas = signalCanvas;
+            const ctx = signalCtx;
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // 坐标轴
+            ctx.strokeStyle = '#2d57a4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height/2);
+            ctx.lineTo(width - padding, height/2);
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+            
+            // 标签
+            ctx.fillStyle = '#2d57a4';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('时域信号', padding, 25);
+            ctx.font = '12px Arial';
+            ctx.fillText('n', width - padding + 10, height/2 + 15);
+            ctx.fillText('x[n]', padding - 35, padding - 10);
+            
+            const maxVal = Math.max(...signal.map(Math.abs));
+            const scale = (height/2 - padding - 10) / (maxVal + 0.1);
+            
+            // 绘制信号
+            ctx.strokeStyle = '#608de0';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            
+            const step = (width - 2 * padding) / (signal.length - 1);
+            signal.forEach((val, i) => {
+                const x = padding + i * step;
+                const y = height/2 - val * scale;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            
+            // 采样点
+            ctx.fillStyle = '#D46A6A';
+            signal.forEach((val, i) => {
+                const x = padding + i * step;
+                const y = height/2 - val * scale;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        function drawSpectrum(dft, N) {
+            const canvas = spectrumCanvas;
+            const ctx = spectrumCtx;
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 50;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // 坐标轴
+            ctx.strokeStyle = '#2d57a4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+            
+            // 标签
+            ctx.fillStyle = '#2d57a4';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('频域（幅度谱）', padding, 25);
+            ctx.font = '12px Arial';
+            ctx.fillText('k', width - padding + 10, height - padding + 15);
+            ctx.fillText('|X[k]|', padding - 40, padding - 10);
+            
+            const halfN = Math.floor(N/2) + 1;
+            const magnitude = dft.magnitude.slice(0, halfN);
+            
+            const maxMag = Math.max(...magnitude);
+            const scale = (height - 2 * padding - 10) / (maxMag + 0.1);
+            
+            const barWidth = (width - 2 * padding) / halfN;
+            
+            // 渐变填充
+            const gradient = ctx.createLinearGradient(0, height - padding, 0, padding);
+            gradient.addColorStop(0, '#7dadff');
+            gradient.addColorStop(0.5, '#608de0');
+            gradient.addColorStop(1, '#5ca353');
+            ctx.fillStyle = gradient;
+            
+            magnitude.forEach((mag, k) => {
+                const x = padding + k * barWidth;
+                const h = mag * scale;
+                const y = height - padding - h;
+                ctx.fillRect(x, y, barWidth * 0.8, h);
+            });
+            
+            // 标注峰值
+            const peaks = [];
+            for (let k = 1; k < magnitude.length - 1; k++) {
+                if (magnitude[k] > magnitude[k-1] && 
+                    magnitude[k] > magnitude[k+1] && 
+                    magnitude[k] > maxMag * 0.2) {
+                    peaks.push({k, mag: magnitude[k]});
+                }
+            }
+            
+            ctx.fillStyle = '#912d32';
+            ctx.font = 'bold 11px Arial';
+            peaks.forEach(peak => {
+                const x = padding + peak.k * barWidth;
+                const h = peak.mag * scale;
+                const y = height - padding - h;
+                ctx.fillText(`k=${peak.k}`, x, y - 8);
+            });
+        }
+
+        function updateDisplay() {
+            const freq = parseFloat(freqSlider.value);
+            const amp = parseFloat(ampSlider.value);
+            const N = parseInt(dftPointsInput.value);
+            const signalType = signalTypeSelect.value;
+            const numSamples = 100;
+            
+            const signal = generateSignal(signalType, freq, amp, numSamples);
+            const dft = computeDFT(signal, N);
+            
+            drawSignal(signal);
+            drawSpectrum(dft, N);
+        }
+
+        updateBtn.addEventListener('click', updateDisplay);
+        updateDisplay();
+
+        // ==================== 示例图表生成 ====================
+        
+        // 图1：8点DFT结果（修复相位谱绘制）
+        function drawExample1() {
+            const canvas = document.getElementById('exampleCanvas1');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 清空画布
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            const padding = 60;
+            const plotHeight = (height - 3 * padding) / 2;
+            
+            // 绘制幅度谱
+            ctx.save();
+            ctx.translate(0, padding);
+            
+            // 坐标轴
+            ctx.strokeStyle = '#2d57a4';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(padding, plotHeight);
+            ctx.lineTo(width - padding, plotHeight);
+            ctx.moveTo(padding, 10);
+            ctx.lineTo(padding, plotHeight);
+            ctx.stroke();
+            
+            // 标题和标签
+            ctx.fillStyle = '#2d57a4';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('8点DFT幅度谱', width/2, -10);
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('|X[k]|', 10, 20);
+            ctx.textAlign = 'center';
+            ctx.fillText('频率索引 k', width/2, plotHeight + 30);
+            
+            // 绘制数据（幅度全为1）
+            const N = 8;
+            const barWidth = (width - 2 * padding) / (N + 1);
+            const gradient = ctx.createLinearGradient(0, 20, 0, plotHeight);
+            gradient.addColorStop(0, '#5ca353');
+            gradient.addColorStop(1, '#7dadff');
+            ctx.fillStyle = gradient;
+            
+            for (let k = 0; k < N; k++) {
+                const x = padding + (k + 1) * barWidth;
+                const h = plotHeight - 20;
+                ctx.fillRect(x - 8, 20, 16, h);
+                
+                // k值标签
+                ctx.fillStyle = '#666';
+                ctx.font = '11px Arial';
+                ctx.fillText(k.toString(), x, plotHeight + 15);
+                ctx.fillStyle = gradient;
+            }
+            
+            // 绘制y轴刻度
+            ctx.fillStyle = '#666';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('1.0', padding - 5, 20);
+            ctx.fillText('0.5', padding - 5, (plotHeight + 20) / 2);
+            ctx.fillText('0.0', padding - 5, plotHeight);
+            
+            ctx.restore();
+            
+            // 绘制相位谱（修复：只显示点，不显示竖线）
+            ctx.save();
+            ctx.translate(0, padding * 2 + plotHeight);
+            
+            // 坐标轴
+            ctx.strokeStyle = '#2d57a4';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(padding, plotHeight/2);
+            ctx.lineTo(width - padding, plotHeight/2);
+            ctx.moveTo(padding, 10);
+            ctx.lineTo(padding, plotHeight - 10);
+            ctx.stroke();
+            
+            // 标题和标签
+            ctx.fillStyle = '#2d57a4';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('8点DFT相位谱', width/2, -10);
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('∠X[k]', 5, 20);
+            ctx.textAlign = 'center';
+            ctx.fillText('频率索引 k', width/2, plotHeight + 20);
+            
+            // 绘制数据（相位全为0，只画点在中线）
+            ctx.fillStyle = '#D46A6A';
+            for (let k = 0; k < N; k++) {
+                const x = padding + (k + 1) * barWidth;
+                const y = plotHeight / 2;
+                // 只绘制点，不绘制线
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // k值标签
+                ctx.fillStyle = '#666';
+                ctx.font = '11px Arial';
+                ctx.fillText(k.toString(), x, plotHeight + 5);
+                ctx.fillStyle = '#D46A6A';
+            }
+            
+            // y轴刻度
+            ctx.fillStyle = '#666';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('π', padding - 5, 15);
+            ctx.fillText('0', padding - 5, plotHeight/2 + 5);
+            ctx.fillText('-π', padding - 5, plotHeight - 5);
+            
+            ctx.restore();
+        }
+
+        // 图2：不同N值的DFT比较
+        function drawExample2() {
+            const canvas = document.getElementById('exampleCanvas2');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 清空画布
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            const padding = 50;
+            const plotWidth = (width - 3 * padding) / 2;
+            const plotHeight = (height - 3 * padding) / 2;
+            
+            const N_values = [8, 100, 500, 1000];
+            const positions = [
+                [padding, padding],
+                [padding * 2 + plotWidth, padding],
+                [padding, padding * 2 + plotHeight],
+                [padding * 2 + plotWidth, padding * 2 + plotHeight]
+            ];
+            
+            N_values.forEach((N, idx) => {
+                const [offsetX, offsetY] = positions[idx];
+                
+                ctx.save();
+                ctx.translate(offsetX, offsetY);
+                
+                // 坐标轴
+                ctx.strokeStyle = '#2d57a4';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(0, plotHeight);
+                ctx.lineTo(plotWidth, plotHeight);
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, plotHeight);
+                ctx.stroke();
+                
+                // 标题
+                ctx.fillStyle = '#2d57a4';
+                ctx.font = 'bold 13px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${N}点DFT幅度谱`, plotWidth/2, -10);
+                
+                // 绘制数据（幅度全为1）
+                if (N <= 100) {
+                    // 使用柱状图
+                    const barWidth = plotWidth / (N + 1);
+                    const gradient = ctx.createLinearGradient(0, 0, 0, plotHeight);
+                    gradient.addColorStop(0, '#5ca353');
+                    gradient.addColorStop(0.5, '#608de0');
+                    gradient.addColorStop(1, '#7dadff');
+                    ctx.fillStyle = gradient;
+                    
+                    for (let k = 0; k < N; k++) {
+                        const x = k * barWidth;
+                        const h = plotHeight - 5;
+                        ctx.fillRect(x, 5, barWidth * 0.7, h);
+                    }
+                } else {
+                    // 使用连续曲线
+                    ctx.strokeStyle = '#608de0';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    for (let k = 0; k < N; k++) {
+                        const x = k * plotWidth / N;
+                        const y = 5;
+                        if (k === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                    ctx.stroke();
+                }
+                
+                // 坐标轴标签
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('k', plotWidth/2, plotHeight + 15);
+                ctx.textAlign = 'right';
+                ctx.fillText('|X[k]|', -5, 10);
+                
+                ctx.restore();
+            });
+        }
+
+        // 页面加载完成后生成示例图表
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                drawExample1();
+                drawExample2();
+            }, 500);
+        });
+
+        // 响应式调整
+        function resizeCanvas() {
+            const container = signalCanvas.parentElement;
+            const width = Math.min(container.clientWidth - 20, 800);
+            signalCanvas.width = width;
+            spectrumCanvas.width = width;
+            updateDisplay();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+    </script>
+</body>
+</html>

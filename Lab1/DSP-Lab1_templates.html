@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DSP实验空白模板</title>
+    <style>
+        body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .control-panel {
+            position: sticky; top: 0; z-index: 100;
+            background: white; padding: 15px; margin-bottom: 20px;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .control-btn {
+            background: #2d57a4; color: white; border: none; padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;
+        }
+        .control-btn:hover { background: #1e3a6e; }
+        .control-btn.secondary { background: #6c757d; }
+
+        .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        
+        .file-header { 
+            background: #2d57a4; color: white; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; user-select: none;
+        }
+        .file-header:hover { background: #3b6bbd; }
+        
+        .file-title { font-weight: bold; display: flex; align-items: center; }
+        .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
+        .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
+        
+        .file-content { display: block; }
+        .file-block.collapsed .file-content { display: none; }
+
+        .copy-btn { background: #5ca353; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .copy-btn:hover { background: #4a8842; }
+
+        pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        .todo { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 0.85em; }
+        .comment { color: #6c757d; font-style: italic; }
+        
+        .info-banner { background: #e7f3ff; border-left: 4px solid #2d57a4; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .warning-banner { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .success-banner { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2 style="margin:0; color:#2d57a4;">📝 DSP Lab 1 - 空白模板</h2>
+            <div>
+                <button class="control-btn" onclick="expandAll()">全部展开</button>
+                <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <strong>📌 使用说明：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>本模板只提供最基本框架，<strong>核心算法需要你自己设计实现</strong></li>
+                <li>点击蓝色标题栏折叠/展开，点击绿色按钮复制代码</li>
+                <li><span class="todo">TODO</span> 标记处需要你完成，实现方式不限</li>
+                <li>共4个文件（3个脚本 + 1个函数），完成后提交</li>
+            </ul>
+        </div>
+
+        <div class="warning-banner">
+            <strong>⚠️ 重要提醒：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li><strong>exercise3</strong> 需要 <code>tones.mat</code> 文件（由教师提供）</li>
+                <li>提交格式：<code>学号_姓名_Lab1</code> 文件夹，包含4个.m文件</li>
+            </ul>
+        </div>
+
+        <div class="success-banner">
+            <strong>✅ 提交清单：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li>exercise1_exponential_spectrum.m</li>
+                <li>exercise2_convolution_theorem.m</li>
+                <li>exercise3_tone_analysis.m</li>
+                <li>MyDFT.m（独立函数文件）</li>
+            </ul>
+        </div>
+
+        <!-- Exercise 1 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise1_exponential_spectrum.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code1">%% 练习一：指数序列的频谱分析
+% 文件名: exercise1_exponential_spectrum.m
+% 学号：______  姓名：______
+
+clear; clc; close all;
+
+<span class="comment">%% 参数定义</span>
+a = 0.9;
+N_signal = 8;
+
+<span class="todo">TODO</span> <span class="comment">% 生成指数序列 x[n] = a^n, n=0,1,...,N_signal-1</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 计算DTFT (在omega = linspace(0, 2*pi, 512)上采样)</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 计算8点、16点、128点DFT，存储结果</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 绘图：对比DTFT与不同点数DFT
+% 要求：2行3列子图
+%   - 原始序列
+%   - DTFT幅度谱和相位谱  
+%   - 三种DFT叠加在DTFT上对比</span>
+
+
+fprintf('练习一完成!\n');
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 2 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise2_convolution_theorem.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2">%% 练习二：卷积定理验证
+% 文件名: exercise2_convolution_theorem.m
+% 学号：______  姓名：______
+
+clear; clc; close all;
+
+<span class="todo">TODO</span> <span class="comment">% 定义两个序列 x 和 h (建议使用矩形脉冲)</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 计算线性卷积</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 计算不同点数(如4点、8点、9点)的循环卷积
+% 方法：补零 -> FFT -> 相乘 -> IFFT</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 使用FFT快速计算线性卷积（确定合适的N值）</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 绘图：对比线性卷积和不同点数的循环卷积
+% 要求：2行3列，展示输入序列、线性卷积、各种循环卷积</span>
+
+
+fprintf('练习二完成!\n');
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 3 -->
+        <div class="file-block collapsed">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise3_tone_analysis.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code3">%% 练习三：实际信号频谱分析
+% 文件名: exercise3_tone_analysis.m
+% 学号：______  姓名：______
+% 依赖：tones.mat
+
+clear; clc; close all;
+
+<span class="todo">TODO</span> <span class="comment">% 加载 tones.mat (包含变量 y 和 Fs)</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 对信号进行多种分辨率的FFT分析
+% 建议：原长度、2倍长度、4倍长度</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 检测频谱中的峰值，识别主要频率分量</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 绘图：时域信号、不同分辨率频谱、相位谱
+% 要求：3行2列，展示完整分析过程</span>
+
+
+fprintf('练习三完成!\n');
+</pre>
+            </div>
+        </div>
+
+        <!-- MyDFT Function -->
+        <div class="file-block collapsed">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 MyDFT.m <span style="font-weight:normal; margin-left:10px; color:#ffc107;">⚠️ 独立函数文件</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code4">function X = MyDFT(x, N)
+%% MyDFT - 自定义DFT函数
+% 输入：
+%   x - 输入序列
+%   N - DFT点数（可选，默认为序列长度）
+% 输出：
+%   X - N点DFT结果
+%
+% DFT定义：X[k] = sum(x[n] * exp(-j*2*pi*k*n/N)), k=0,1,...,N-1
+%
+% 使用示例：
+%   X = MyDFT([1,2,3,4], 4);     % 4点DFT
+%   X = MyDFT([1,2,3,4], 8);     % 8点DFT（零填充）
+%
+% 测试方法（在命令窗口）：
+%   >> x = [1,2,3,4];
+%   >> MyDFT(x, 4)               % 调用你的函数
+%   >> fft(x, 4)                 % 对比MATLAB结果
+
+<span class="todo">TODO</span> <span class="comment">% 参数处理：检查输入，设置默认N值</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 长度处理：根据N和x的长度关系进行补零或截断</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% DFT计算：实现DFT公式
+% 方法不限：可以用双重循环，也可以用矩阵运算</span>
+
+
+<span class="todo">TODO</span> <span class="comment">% 输出处理：保持与输入x相同的行列形式</span>
+
+
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- 测试说明 -->
+        <div style="background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 20px; margin-top: 30px;">
+            <h3 style="color: #2d57a4; margin-top: 0;">💡 MyDFT 本地测试建议</h3>
+            
+            <p>建议在编写完 <code>MyDFT.m</code> 后，在 MATLAB 命令窗口中进行简单验证，确保结果与 MATLAB 内置函数一致：</p>
+            <pre style="background: white; padding: 15px; border-radius: 4px; border: 1px solid #dee2e6;">
+<span class="comment">% 示例1：基本功能测试</span>
+>> x = [1, 2, 3, 4];
+>> MyDFT(x, 4)          <span class="comment">% 应与 fft(x, 4) 结果一致</span>
+
+<span class="comment">% 示例2：零填充测试 (N > L)</span>
+>> MyDFT(x, 8)          <span class="comment">% 应与 fft(x, 8) 结果一致</span>
+
+<span class="comment">% 示例3：截断测试 (N < L)</span>
+>> MyDFT(x, 2)          <span class="comment">% 应与 fft(x, 2) 结果一致</span></pre>
+
+            <p style="color: #6c757d; font-size: 0.9em; margin-top: 15px;">
+                注：<code>fft</code> 是 MATLAB 内置的快速傅里叶变换函数。
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleBlock(header) {
+            header.parentElement.classList.toggle('collapsed');
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.file-block').forEach(b => b.classList.remove('collapsed'));
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.file-block').forEach(b => b.classList.add('collapsed'));
+        }
+
+        function copyCode(event, id) {
+            event.stopPropagation();
+            const el = document.createElement('textarea');
+            const code = document.getElementById(id).innerText;
+            el.value = code.replace(/<span[^>]*>/g, '').replace(/<\/span>/g, '');
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const btn = event.target;
+            const origText = btn.textContent;
+            btn.textContent = '✓ 已复制';
+            btn.style.background = '#28a745';
+            setTimeout(() => {
+                btn.textContent = origText;
+                btn.style.background = '#5ca353';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
