@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DSP Lab 2 实验模板</title>
+    <style>
+        body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .control-panel {
+            position: sticky; top: 0; z-index: 100;
+            background: white; padding: 15px; margin-bottom: 20px;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .control-btn {
+            background: #2d57a4; color: white; border: none; padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;
+        }
+        .control-btn:hover { background: #1e3a6e; }
+        .control-btn.secondary { background: #6c757d; }
+
+        .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        
+        .file-header { 
+            background: #2d57a4; color: white; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; user-select: none;
+        }
+        .file-header:hover { background: #3b6bbd; }
+        
+        .file-title { font-weight: bold; display: flex; align-items: center; }
+        .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
+        .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
+        
+        .file-content { display: block; }
+        .file-block.collapsed .file-content { display: none; }
+
+        .copy-btn { background: #5ca353; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .copy-btn:hover { background: #4a8842; }
+
+        pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        
+        .comment { color: #228b22; font-style: italic; }
+        .todo-tag { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; font-size: 0.9em; margin-right: 5px; }
+
+        .info-banner { background: #e7f3ff; border-left: 4px solid #2d57a4; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .warning-banner { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2 style="margin:0; color:#2d57a4;">📝 DSP Lab 2 - 学生实验模板</h2>
+            <div>
+                <button class="control-btn" onclick="expandAll()">全部展开</button>
+                <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <strong>📌 编程规范说明：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>代码中已预定义了关键变量（如 <code>y1 = [];</code>），<strong>请勿修改变量名</strong>。</li>
+                <li>请在 <code>% TODO</code> 注释指引下编写代码，将计算结果赋值给对应的变量。</li>
+                <li>每个脚本末尾包含<strong>自检代码</strong>，运行脚本时若看到红字警告，说明变量未正确赋值。</li>
+            </ul>
+        </div>
+        
+        <div class="warning-banner">
+            <strong>⚠️ 提交文件列表：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li>exercise1_basic_response.m</li>
+                <li>exercise2_pz_analysis.m</li>
+                <li>exercise3_pole_zero_design.m</li>
+                <li>exercise4_custom_function.m</li>
+                <li>diffeqn.m (自定义函数)</li>
+                <li>dpzplot.m (工具函数，已提供)</li>
+            </ul>
+        </div>
+
+        <!-- Exercise 1 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise1_basic_response.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code1">%% 练习一：差分方程与响应
+% 文件名: exercise1_basic_response.m
+% 学号：______  姓名：______
+
+clear; clc; close all;
+
+%% 准备输入信号 u[n]
+n = 0:19;
+x = []; <span class="comment">% <span class="todo-tag">TODO</span> 生成单位阶跃输入信号</span>
+
+%% 系统 1
+b1 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统1的分子系数</span>
+a1 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统1的分母系数</span>
+y1 = []; <span class="comment">% <span class="todo-tag">TODO</span> 计算系统1的响应</span>
+
+%% 系统 2
+b2 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统2的分子系数</span>
+a2 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统2的分母系数</span>
+y2 = []; <span class="comment">% <span class="todo-tag">TODO</span> 计算系统2的响应</span>
+
+%% 系统 3
+b3 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统3的分子系数</span>
+a3 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统3的分母系数</span>
+y3 = []; <span class="comment">% <span class="todo-tag">TODO</span> 计算系统3的响应</span>
+
+%% 绘图
+% <span class="todo-tag">TODO</span> 绘图要求:
+% 使用 subplot 创建一个 3x1 的图形布局。
+% - 第一个子图: 绘制系统1的响应 y1。
+% - 第二个子图: 绘制系统2的响应 y2。
+% - 第三个子图: 绘制系统3的响应 y3。
+figure('Name', '练习一：系统响应对比');
+% 在此编写绘图代码...
+
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  =======================================
+vars_chk = {'x', 'y1', 'y2', 'y3'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空，无法通过批改：\n   -> %s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习一变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 2 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise2_pz_analysis.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2">%% 练习二：零极点图绘制与分析
+% 文件名: exercise2_pz_analysis.m
+% 依赖: dpzplot.m
+% 学号：______  姓名：______
+
+clear; clc; close all;
+
+figure('Name', '练习二：零极点图');
+
+%% 系统 1
+b1 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统1的分子系数</span>
+a1 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统1的分母系数</span>
+subplot(1,3,1);
+dpzplot(b1, a1);
+title('系统 1');
+
+%% 系统 2
+b2 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统2的分子系数</span>
+a2 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统2的分母系数</span>
+subplot(1,3,2);
+dpzplot(b2, a2);
+title('系统 2');
+
+%% 系统 3
+b3 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统3的分子系数</span>
+a3 = []; <span class="comment">% <span class="todo-tag">TODO</span> 定义系统3的分母系数</span>
+subplot(1,3,3);
+dpzplot(b3, a3);
+title('系统 3');
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  =======================================
+vars_chk = {'b1', 'a1', 'b2', 'a2', 'b3', 'a3'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空，无法通过批改：\n   -> %s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习二变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 3 -->
+        <div class="file-block collapsed">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise3_pole_zero_design.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code3">%% 练习三：零极点设计与稳定性
+% 文件名: exercise3_pole_zero_design.m
+% 依赖文件: dpzplot.m
+% 学号：______  姓名：______
+
+clear; clc; close all;
+
+%% 任务一：理想谐振器设计
+b_ideal = [];  <span class="comment">% <span class="todo-tag">TODO</span> 定义理想谐振器的分子系数</span>
+a_ideal = [];  <span class="comment">% <span class="todo-tag">TODO</span> 定义理想谐振器的分母系数</span>
+h_ideal = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算理想谐振器的冲激响应</span>
+
+%% 任务二：参数化分析
+K = 0.9;
+r = [];   <span class="comment">% <span class="todo-tag">TODO</span> 计算衰减因子 r</span>
+b_damped = [];  <span class="comment">% <span class="todo-tag">TODO</span> 定义阻尼谐振器的分子系数</span>
+a_damped = [];  <span class="comment">% <span class="todo-tag">TODO</span> 定义阻尼谐振器的分母系数</span>
+h_damped = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算阻尼谐振器的冲激响应</span>
+
+%% 绘图
+n = 0:49;
+% <span class="todo-tag">TODO</span> 绘图要求:
+% 使用 subplot 创建一个 2x2 的图形布局。
+% - 左上: 理想谐振器的零极点图。
+% - 右上: 阻尼谐振器的零极点图。
+% - 左下: 理想谐振器的冲激响应。
+% - 右下: 阻尼谐振器的冲激响应。
+figure('Name', '练习三：谐振器设计');
+% 在此编写绘图代码...
+
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  =======================================
+vars_chk = {'a_ideal', 'h_ideal', 'r', 'a_damped', 'h_damped'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空，无法通过批改：\n   -> %s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习三变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 4 -->
+        <div class="file-block collapsed">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise4_custom_function.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code4">%% 练习四：自定义函数与系统特性
+% 文件名: exercise4_custom_function.m
+% 依赖文件: diffeqn.m
+% 学号：______  姓名：______
+
+clear; clc; close all;
+n = 0:30;
+
+%% 任务二：零状态响应
+y_impulse = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算零状态下的冲激响应</span>
+y_step = [];     <span class="comment">% <span class="todo-tag">TODO</span> 计算零状态下的阶跃响应</span>
+
+%% 任务三：非零状态与线性度检验
+y1 = [];         <span class="comment">% <span class="todo-tag">TODO</span> 计算非零状态下 u[n] 的响应</span>
+y2 = [];         <span class="comment">% <span class="todo-tag">TODO</span> 计算非零状态下 2u[n] 的响应</span>
+linearity_test = [];  <span class="comment">% <span class="todo-tag">TODO</span> 执行线性度检验计算</span>
+
+%% 任务四：稳定性与初始条件
+y_stable1 = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算稳定系统在一种初始条件下的响应</span>
+y_stable2 = [];  <span class="comment">% <span class="todo-tag">TODO</span> 计算稳定系统在另一种初始条件下的响应</span>
+
+%% 绘图
+figure('Name', '练习四：自定义函数分析');
+subplot(2,2,1); stem(n, y_impulse); title('冲激响应 (a=1)'); grid on;
+subplot(2,2,2); stem(n, y_step); title('阶跃响应 (a=1)'); grid on;
+subplot(2,2,3); stem(n, linearity_test); title('线性度检验 (2y1 - y2)'); grid on;
+subplot(2,2,4); 
+stem(n, y_stable1, 'b'); hold on;
+stem(n, y_stable2, 'r--'); 
+legend('y[-1]=0', 'y[-1]=0.5'); title('初始条件影响 (a=0.5)'); grid on;
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  =======================================
+vars_chk = {'y_impulse', 'y_step', 'linearity_test', 'y_stable1', 'y_stable2'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空，无法通过批改：\n   -> %s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习四变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- diffeqn.m Function -->
+        <div class="file-block collapsed">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 diffeqn.m <span style="font-weight:normal; margin-left:10px; color:#ffc107;">⚠️ 独立函数文件</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code5')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code5">function y = diffeqn(a, x, yn1)
+%% diffeqn - 计算 y[n] = a*y[n-1] + x[n]
+% 输入:
+%   a   - 反馈系数
+%   x   - 输入序列 x[n]
+%   yn1 - 初始状态 y[-1]
+
+N = length(x);
+y = zeros(1, N);
+
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 for 循环实现递归方程求解</span>
+<span class="comment">% 提示：需要分别处理循环的第一次迭代 (i=1) 和后续迭代 (i>1) 的情况。</span>
+
+
+end
+</pre>
+            </div>
+        </div>
+        
+        <!-- dpzplot.m -->
+        <div class="file-block collapsed">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 dpzplot.m <span style="background:#e8f5e9; color:#2e7d32; padding:2px 6px; border-radius:3px; font-size:0.8em; margin-left:10px;">✓ 工具函数 (直接使用)</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code6')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code6">function dpzplot(b, a)
+% dpzplot(b, a) 绘制离散时间系统函数的零极点图
+la = length(a); lb = length(b);
+if (la > lb), b = [b zeros(1, la-lb)]; elseif (lb > la), a = [a zeros(1, lb-la)]; end
+ps = roots(a); zs = roots(b); 
+mx = max(abs([ps' zs' 0.95])) + 0.5;
+axis([-mx mx -mx mx]); axis('equal'); hold on
+w = [0 : 0.01 : 2*pi]; plot(cos(w), sin(w), '.');
+plot([-mx mx], [0 0]); plot([0 0], [-mx mx]);
+text(0.1, 1, 'Im', 'sc'); text(1, 0.1, 'Re', 'sc');
+plot(real(ps), imag(ps), 'rx', 'markersize', 10);
+plot(real(zs), imag(zs), 'ko', 'markersize', 10);
+numz = sum(abs(zs) == 0); nump = sum(abs(ps) == 0);
+if numz > 1, text(-0.1, -0.1, num2str(numz)); elseif nump > 1, text(-0.1, -0.1, num2str(nump)); end
+hold off
+end
+</pre>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        function toggleBlock(header) { header.parentElement.classList.toggle('collapsed'); }
+        function expandAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.remove('collapsed')); }
+        function collapseAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.add('collapsed')); }
+        function copyCode(event, id) {
+            event.stopPropagation();
+            const el = document.createElement('textarea');
+            el.value = document.getElementById(id).innerText;
+            document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            const btn = event.target; 
+            btn.textContent = '✓ 已复制'; 
+            btn.style.background = '#28a745';
+            setTimeout(() => { 
+                btn.textContent = '复制代码'; 
+                btn.style.background = '#5ca353'; 
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

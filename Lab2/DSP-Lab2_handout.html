@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 2 - LTI 系统的系统函数和频率响应 (2025年修订版)</title>
+    
+    <!-- MathJax for mathematical formulas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            CommonHTML: { scale: 110 },
+            "HTML-CSS": { scale: 110 }
+        });
+    </script>
+
+    <style>
+        /* 复用 Lab 1 的 CSS 样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 50%, #5ca353 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            border-bottom: 5px solid #7dadff;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-top: 10px;
+        }
+
+        header .institution {
+            font-size: 0.95em;
+            margin-top: 15px;
+            opacity: 0.9;
+            border-top: 2px solid rgba(255,255,255,0.3);
+            padding-top: 15px;
+        }
+
+        nav {
+            background: #f5f7fa;
+            padding: 20px 40px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 3px solid #7dadff;
+        }
+
+        nav a {
+            color: #2d57a4;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s;
+            font-size: 0.95em;
+            font-weight: 500;
+            background: white;
+            border: 2px solid #7dadff;
+        }
+
+        nav a:hover {
+            background: #7dadff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(125, 173, 255, 0.4);
+        }
+
+        .content {
+            padding: 50px;
+        }
+
+        section {
+            margin-bottom: 60px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #2d57a4;
+            font-size: 2em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #7dadff;
+            font-weight: bold;
+        }
+
+        h3 {
+            color: #608de0;
+            font-size: 1.6em;
+            margin: 30px 0 20px 0;
+            font-weight: bold;
+        }
+
+        h4 {
+            color: #2d57a4;
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+            line-height: 1.9;
+        }
+        
+        /* 统一的 code 标签样式 */
+        code {
+            background-color: #e8eef8;
+            color: #2d57a4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95em;
+        }
+        
+        .question-item h4 {
+            color: #608de0;
+            font-size: 1.2em;
+            margin-top: 20px;
+            border-left: 4px solid #7dadff;
+            padding-left: 10px;
+        }
+        
+        .analysis-box {
+            background: #fff8e1;
+            border-left: 5px solid #fbc02d;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .analysis-box h4 {
+            color: #c77700;
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 5px solid #608de0;
+            padding: 18px 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .formula-box p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+            border-left: 5px solid #5ca353;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #ffebee 0%, #fff5f7 100%);
+            border-left: 5px solid #912d32;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .code-block {
+            background: #2b2b2b;
+            color: #d4d4d4;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            overflow-x: auto;
+            font-family: 'Cambria', 'Consolas', 'Monaco', monospace;
+            line-height: 1.7;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid #608de0;
+        }
+        
+        .code-block code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .code-block::before {
+            content: 'MATLAB';
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            color: #7dadff;
+            font-size: 0.85em;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+
+        .code-line { display: block; }
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-function { color: #dcdcaa; }
+        .code-string { color: #ce9178; }
+        .code-number { color: #b5cea8; }
+
+        .exercise-box {
+            background: linear-gradient(135deg, #f0f7ff 0%, #f5f9ff 100%);
+            border: 3px solid #7dadff;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 3px 15px rgba(125, 173, 255, 0.2);
+        }
+
+        .exercise-box h3 { color: #2d57a4; margin-top: 0; margin-bottom: 25px; }
+        
+        .plot-container {
+            background: #fdfdfd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e0e6f0;
+            text-align: center;
+        }
+
+        .plot-container h4 { margin-top: 0; margin-bottom: 15px; text-align: center; color: #2d57a4; }
+        .plot-container svg { max-width: 100%; height: auto; }
+
+        .question-item { margin: 20px 0; padding-left: 15px; }
+        .question-number {
+            display: inline-block; background: #608de0; color: white;
+            padding: 4px 12px; border-radius: 15px; font-weight: bold;
+            margin-right: 8px; font-size: 0.9em; min-width: 30px; text-align: center;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border: 3px dashed #5ca353;
+            border-radius: 15px; padding: 30px; margin: 30px 0; text-align: center;
+        }
+
+        .canvas-container {
+            background: white; border-radius: 10px; padding: 15px; margin: 20px 0;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1); border: 2px solid #7dadff; display: inline-block;
+        }
+
+        canvas { max-width: 100%; height: auto; border: 1px solid #e0e0e0; border-radius: 8px; }
+
+        .control-panel { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: center; margin: 20px 0; }
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-weight: bold; color: #2d57a4; font-size: 0.95em; }
+        input[type="range"] { width: 200px; accent-color: #608de0; }
+
+        button {
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 100%); color: white; border: none;
+            padding: 12px 25px; border-radius: 25px; cursor: pointer; font-size: 1em;
+            font-weight: bold; transition: all 0.3s; box-shadow: 0 3px 10px rgba(96, 141, 224, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(96, 141, 224, 0.5);
+        }
+
+        footer {
+            background: linear-gradient(135deg, #2d57a4 0%, #113a85 100%); color: white;
+            text-align: center; padding: 30px; font-size: 0.95em;
+        }
+
+        .badge {
+            display: inline-block; padding: 6px 14px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold; margin-right: 10px;
+        }
+        .badge-theory { background: #608de0; color: white; }
+        .badge-practice { background: #5ca353; color: white; }
+        strong { color: #2d57a4; font-weight: 600; }
+        
+        @media (max-width: 768px) {
+            .content { padding: 30px 20px; }
+            input[type="range"] { width: 100%; }
+            .canvas-container { width: 100%; }
+        }
+
+        .mjx-chtml { font-size: 115% !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>实验二 - LTI 系统的系统函数和频率响应</h1>
+            <div class="subtitle">数字信号处理 | 差分方程与Z变换实验</div>
+            <div class="institution">南京工业大学浦江学院 | 计算机与通信工程学院 | 通信工程专业 | DSP课程实验</div>
+        </header>
+
+        <nav>
+            <a href="#objective">实验目的</a>
+            <a href="#theory">理论基础</a>
+            <a href="#demo">交互演示</a>
+            <a href="#example">示例讲解</a>
+            <a href="#exercise1">练习一</a>
+            <a href="#exercise2">练习二</a>
+            <a href="#exercise3">练习三</a>
+            <a href="#exercise4">练习四</a>
+        </nav>
+
+        <div class="content">
+            <!-- 实验目的 -->
+            <section id="objective">
+                <h2><span class="badge badge-theory">理论</span>实验目的</h2>
+                <p>在本实验中，我们将使用 MATLAB 分析 LTI（线性时不变）系统。本实验的主要目的是：</p>
+                <ul>
+                    <li>学习如何用<strong>差分方程</strong>描述一个离散时间系统</li>
+                    <li>掌握通过MATLAB画出系统函数对应的<strong>零极点图</strong></li>
+                    <li>通过零极点分布分析系统的<strong>稳定性</strong></li>
+                    <li>了解差分方程系数与 MATLAB 中 <code>filter</code> 函数参数的对应关系</li>
+                </ul>
+                <div class="tip-box">
+                    <strong>💡 学习提示</strong>
+                    <p>系统的零极点分布直接决定了系统的时域特性（如稳定性、因果性）和频域特性（如频率响应）。掌握这一点对于滤波器设计至关重要。</p>
+                </div>
+            </section>
+
+            <!-- 理论基础 -->
+            <section id="theory">
+                <h2><span class="badge badge-theory">理论</span>理论基础</h2>
+                <h3>1. 差分方程 (Difference Equation)</h3>
+                <p>LTI 系统可以用差分方程表示，如下所示：</p>
+                <div class="formula-box">
+                    <p style="text-align: center;">$$\sum_{k=0}^{K} a_k y[n-k] = \sum_{m=0}^{M} b_m x[n-m]$$</p>
+                    <p style="text-align: center; margin-top: 10px; color: #666;">其中 $x[n]$ 是系统输入，$y[n]$ 是系统输出。</p>
+                </div>
+                <h4>MATLAB 实现 (<code>filter</code> 函数)：</h4>
+                <p>在 MATLAB 中，如果 <code>x</code> 是输入向量，<code>filter(b, a, x)</code> 指令返回满足以下差分方程的结果：</p>
+                <div class="formula-box">
+                    <p style="text-align: center;">$$\sum_{k=0}^{K} a[k+1]y[n-k] = \sum_{m=0}^{M} b[m+1]x[n-m]$$</p>
+                </div>
+                <div class="warning-box">
+                    <strong>⚠️ 注意索引偏移</strong>
+                    <p>MATLAB 数组索引从 1 开始，而差分方程通常从 0 开始。因此：</p>
+                    <ul>
+                        <li><code>a[1]</code> 对应 $a_0$（通常为 $y[n]$ 的系数，常归一化为 1）</li>
+                        <li><code>a[2]</code> 对应 $a_1$（$y[n-1]$ 的系数）</li>
+                        <li>例如方程 $y[n] + 2y[n-1] = x[n]$，则 <code>a = [1, 2]</code></li>
+                    </ul>
+                </div>
+                <h3>2. 双边 Z 变换与系统函数</h3>
+                <p>离散时间信号 $x[n]$ 的双边 Z 变换定义为：</p>
+                <div class="formula-box">
+                    <p style="text-align: center;">$$X(z) = \sum_{n=-\infty}^{\infty} x[n]z^{-n}$$</p>
+                </div>
+                <p>对于满足线性常系数差分方程的 LTI 系统，其系统函数 $H(z)$ 为有理函数：</p>
+                <div class="formula-box">
+                    <p style="text-align: center;">$$H(z) = \frac{Y(z)}{X(z)} = \frac{N(z)}{D(z)}$$</p>
+                </div>
+                <p>$N(z)$ 的根称为<strong>零点 (Zeros)</strong>，$D(z)$ 的根称为<strong>极点 (Poles)</strong>。</p>
+                <h3>3. 零极点画图工具 (<code>dpzplot</code>)</h3>
+                <p>通常系统函数写成 $z^{-1}$ 的多项式形式。如果分子分母阶次不同，MATLAB <code>roots</code> 函数可能会忽略 $z=0$ 处的根。为了正确画出零极点图，我们需要处理系数向量长度。以下是一个自定义函数 <code>dpzplot</code>：</p>
+                <div class="code-block">
+                    <code>
+<span class="code-line"><span class="code-keyword">function</span> dpzplot(b,a)</span>
+<span class="code-line"><span class="code-comment">% dpzplot(b,a) 绘制离散时间系统函数的零极点图</span></span>
+<span class="code-line">la = <span class="code-keyword">length</span>(a);</span>
+<span class="code-line">lb = <span class="code-keyword">length</span>(b);</span>
+<span class="code-line"><span class="code-keyword">if</span> (la > lb)</span>
+<span class="code-line">    b = [b <span class="code-keyword">zeros</span>(<span class="code-number">1</span>, la-lb)]; <span class="code-comment">% 补零以对齐长度</span></span>
+<span class="code-line"><span class="code-keyword">elseif</span> (lb > la)</span>
+<span class="code-line">    a = [a <span class="code-keyword">zeros</span>(<span class="code-number">1</span>, lb-la)];</span>
+<span class="code-line"><span class="code-keyword">end</span></span>
+<span class="code-line">ps = <span class="code-keyword">roots</span>(a); <span class="code-comment">% 极点</span></span>
+<span class="code-line">zs = <span class="code-keyword">roots</span>(b); <span class="code-comment">% 零点</span></span>
+<span class="code-line">mx = <span class="code-keyword">max</span>(<span class="code-keyword">abs</span>([ps' zs' <span class="code-number">0.95</span>])) + <span class="code-number">0.5</span>;</span>
+<span class="code-line"><span class="code-keyword">clf</span>;</span>
+<span class="code-line"><span class="code-keyword">axis</span>([-mx mx -mx mx]); <span class="code-keyword">axis</span>(<span class="code-string">'equal'</span>); <span class="code-keyword">hold</span> on;</span>
+<span class="code-line">w = [<span class="code-number">0</span> : <span class="code-number">0.01</span> : <span class="code-number">2</span>*<span class="code-keyword">pi</span>];</span>
+<span class="code-line"><span class="code-keyword">plot</span>(<span class="code-keyword">cos</span>(w), <span class="code-keyword">sin</span>(w), <span class="code-string">'.'</span>); <span class="code-comment">% 画单位圆</span></span>
+<span class="code-line"><span class="code-keyword">plot</span>([-mx mx], [<span class="code-number">0</span> <span class="code-number">0</span>]); <span class="code-keyword">plot</span>([<span class="code-number">0</span> <span class="code-number">0</span>], [-mx mx]);</span>
+<span class="code-line"><span class="code-keyword">plot</span>(<span class="code-keyword">real</span>(ps), <span class="code-keyword">imag</span>(ps), <span class="code-string">'rx'</span>, <span class="code-string">'markersize'</span>, <span class="code-number">10</span>); <span class="code-comment">% 极点用叉号</span></span>
+<span class="code-line"><span class="code-keyword">plot</span>(<span class="code-keyword">real</span>(zs), <span class="code-keyword">imag</span>(zs), <span class="code-string">'ko'</span>, <span class="code-string">'markersize'</span>, <span class="code-number">10</span>); <span class="code-comment">% 零点用圆圈</span></span>
+<span class="code-line"><span class="code-keyword">hold</span> off;</span>
+                    </code>
+                </div>
+                <h3>4. 因果稳定性 (Causality & Stability)</h3>
+                <ul>
+                    <li><strong>因果性</strong>：如果系统的单位脉冲响应满足 $h[n]=0, n<0$，则系统是因果的。对于因果系统，ROC（收敛域）在某个圆的外部。</li>
+                    <li><strong>稳定性</strong>：如果系统单位脉冲响应绝对可和 $\sum |h[n]| < \infty$，则系统是稳定的。这意味着 ROC 必须包含单位圆。</li>
+                    <li><strong>结论</strong>：一个<strong>因果稳定</strong>的 LTI 系统，其所有极点必须位于<strong>单位圆内</strong>（$|p_k| < 1$）。</li>
+                </ul>
+            </section>
+
+            <!-- 交互式演示 -->
+            <section id="demo">
+                <h2><span class="badge badge-practice">实践</span>交互演示：极点位置与系统稳定性</h2>
+                <div class="interactive-demo">
+                    <h3>移动极点观察冲激响应</h3>
+                    <p>调节极点的模值（半径r）和角度（theta），观察单位圆内的极点位置以及对应的时域冲激响应 $h[n]$。</p>
+                    <p>假设单极点系统： $H(z) = \frac{1}{1 - p z^{-1}}$，则 $h[n] = p^n u[n]$</p>
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>极点半径 r: <span id="rValue">0.8</span></label>
+                            <input type="range" id="radius" min="0.1" max="1.5" value="0.8" step="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>极点角度 θ: <span id="thetaValue">45</span>°</label>
+                            <input type="range" id="theta" min="0" max="360" value="45" step="5">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+                        <div class="canvas-container">
+                            <h4 style="text-align: center; margin: 0 0 10px 0;">Z平面 (零极点图)</h4>
+                            <canvas id="zPlaneCanvas" width="300" height="300"></canvas>
+                        </div>
+                        <div class="canvas-container">
+                            <h4 style="text-align: center; margin: 0 0 10px 0;">时域冲激响应 h[n]</h4>
+                            <canvas id="timeDomainCanvas" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                    <div id="stabilityStatus" class="note-box" style="text-align: center; font-weight: bold;">系统状态：稳定</div>
+                </div>
+                <div class="tip-box">
+                    <strong>💡 观察要点</strong>
+                    <ul>
+                        <li>当 $r < 1$ (极点在圆内)：$h[n]$ 衰减趋于0，系统<strong>稳定</strong>。</li>
+                        <li>当 $r = 1$ (极点在圆上)：$h[n]$ 等幅振荡或恒定，系统<strong>临界稳定</strong>。</li>
+                        <li>当 $r > 1$ (极点在圆外)：$h[n]$ 发散趋于无穷，系统<strong>不稳定</strong>。</li>
+                        <li>角度 $\theta$ 决定了震荡的频率。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 示例讲解 -->
+            <section id="example">
+                <h2><span class="badge badge-practice">实践</span>示例讲解</h2>
+                <div class="exercise-box">
+                    <h3>例题 1：FIR 系统的响应</h3>
+                    <p><strong>题目</strong>：描述因果 LTI 系统 $y[n] = 0.5x[n] + x[n-1] + 2x[n-2]$。如果输入信号为 $x=[1, 2, 3, 4, 0, 0, ...]$，求系统响应。</p>
+                    <div class="code-block">
+                        <code>
+<span class="code-line">a = [<span class="code-number">1</span>]; b = [<span class="code-number">0.5</span>, <span class="code-number">1</span>, <span class="code-number">2</span>];</span>
+<span class="code-line">x = [<span class="code-number">1</span>, <span class="code-number">2</span>, <span class="code-number">3</span>, <span class="code-number">4</span>, <span class="code-keyword">zeros</span>(<span class="code-number">1</span>,<span class="code-number">10</span>)]; <span class="code-comment">% 扩展输入以便观察</span></span>
+<span class="code-line">y = <span class="code-keyword">filter</span>(b, a, x);</span>
+                        </code>
+                    </div>
+                    <div class="plot-container">
+                        <h4>图示：例题1系统响应 y[n] (有限长，前后各补2个0)</h4>
+                        <svg width="550" height="300" viewBox="0 0 550 300" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="12">
+                            <title>例题1系统响应</title>
+                            <rect width="550" height="300" fill="#fdfdfd"></rect>
+                            <g transform="translate(60, 250)">
+                                <line x1="0" y1="0" x2="480" y2="0" stroke="#333"></line>
+                                <line x1="0" y1="0" x2="0" y2="-220" stroke="#333"></line>
+                                <text x="490" y="5" fill="#333" text-anchor="middle">n</text>
+                                <text x="-25" y="-220" fill="#333" text-anchor="end">y[n]</text>
+                                <!-- n=-2 -->
+                                <g transform="translate(20,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">-2</text>
+                                    <circle cx="0" cy="0" r="2.5" fill="#aaa"></circle>
+                                </g>
+                                <!-- n=-1 -->
+                                <g transform="translate(50,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">-1</text>
+                                    <circle cx="0" cy="0" r="2.5" fill="#aaa"></circle>
+                                </g>
+                                <!-- n=0: y=0.5 -->
+                                <g transform="translate(80,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">0</text>
+                                    <line x1="0" y1="0" x2="0" y2="-5" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-5" r="3" fill="#5ca353"></circle>
+                                </g>
+                                <!-- n=1: y=2 -->
+                                <g transform="translate(110,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">1</text>
+                                    <line x1="0" y1="0" x2="0" y2="-20" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-20" r="3" fill="#5ca353"></circle>
+                                </g>
+                                <!-- n=2: y=5.5 -->
+                                <g transform="translate(140,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">2</text>
+                                    <line x1="0" y1="0" x2="0" y2="-55" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-55" r="3" fill="#5ca353"></circle>
+                                </g>
+                                <!-- n=3: y=9 -->
+                                <g transform="translate(170,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">3</text>
+                                    <line x1="0" y1="0" x2="0" y2="-90" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-90" r="3" fill="#5ca353"></circle>
+                                </g>
+                                <!-- n=4: y=10 -->
+                                <g transform="translate(200,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">4</text>
+                                    <line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-100" r="3" fill="#5ca353"></circle>
+                                </g>
+                                <!-- n=5: y=8 -->
+                                <g transform="translate(230,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">5</text>
+                                    <line x1="0" y1="0" x2="0" y2="-80" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-80" r="3" fill="#5ca353"></circle>
+                                </g>
+                                <!-- n=6: y=0 -->
+                                <g transform="translate(260,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">6</text>
+                                    <circle cx="0" cy="0" r="2.5" fill="#aaa"></circle>
+                                </g>
+                                <!-- n=7: y=0 -->
+                                <g transform="translate(290,0)">
+                                    <text y="15" text-anchor="middle" font-size="10">7</text>
+                                    <circle cx="0" cy="0" r="2.5" fill="#aaa"></circle>
+                                </g>
+                                <text x="-10" y="0" text-anchor="end">0</text>
+                                <text x="-10" y="-100" text-anchor="end">10</text>
+                                <text x="-10" y="-200" text-anchor="end">20</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>例题 2：IIR 系统的响应</h3>
+                    <p><strong>题目</strong>：描述系统 $y[n] - 0.8y[n-1] = 2x[n]$。输入信号同上，求系统响应。</p>
+                    <div class="code-block">
+                        <code>
+<span class="code-line">a = [<span class="code-number">1</span>, -<span class="code-number">0.8</span>]; b = [<span class="code-number">2</span>];</span>
+<span class="code-line">x = [<span class="code-number">1</span>, <span class="code-number">2</span>, <span class="code-number">3</span>, <span class="code-number">4</span>, <span class="code-keyword">zeros</span>(<span class="code-number">1</span>,<span class="code-number">20</span>)];</span>
+<span class="code-line">y = <span class="code-keyword">filter</span>(b, a, x);</span>
+                        </code>
+                    </div>
+                    <div class="plot-container">
+                        <h4>图示：例题2系统响应 y[n] (无限长，画24个点)</h4>
+                        <svg width="700" height="300" viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="11">
+                            <title>例题2系统响应</title>
+                            <rect width="700" height="300" fill="#fdfdfd"></rect>
+                            <g transform="translate(50, 250)">
+                                <line x1="0" y1="0" x2="640" y2="0" stroke="#333"></line>
+                                <line x1="0" y1="0" x2="0" y2="-220" stroke="#333"></line>
+                                <text x="650" y="5" fill="#333" text-anchor="middle">n</text>
+                                <text x="-20" y="-220" fill="#333" text-anchor="end">y[n]</text>
+                                <!-- y[0]=2 -->
+                                <g transform="translate(10,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">0</text>
+                                    <line x1="0" y1="0" x2="0" y2="-14.63" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-14.63" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[1]=5.6 -->
+                                <g transform="translate(35,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">1</text>
+                                    <line x1="0" y1="0" x2="0" y2="-40.95" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-40.95" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[2]=10.48 -->
+                                <g transform="translate(60,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">2</text>
+                                    <line x1="0" y1="0" x2="0" y2="-76.68" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-76.68" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[3]=16.384 -->
+                                <g transform="translate(85,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">3</text>
+                                    <line x1="0" y1="0" x2="0" y2="-119.87" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-119.87" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[4]=13.107 -->
+                                <g transform="translate(110,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">4</text>
+                                    <line x1="0" y1="0" x2="0" y2="-95.90" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-95.90" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[5]=10.486 -->
+                                <g transform="translate(135,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">5</text>
+                                    <line x1="0" y1="0" x2="0" y2="-76.72" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-76.72" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[6]=8.389 -->
+                                <g transform="translate(160,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">6</text>
+                                    <line x1="0" y1="0" x2="0" y2="-61.38" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-61.38" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[7]=6.711 -->
+                                <g transform="translate(185,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">7</text>
+                                    <line x1="0" y1="0" x2="0" y2="-49.10" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-49.10" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[8]=5.369 -->
+                                <g transform="translate(210,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">8</text>
+                                    <line x1="0" y1="0" x2="0" y2="-39.28" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-39.28" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[9]=4.295 -->
+                                <g transform="translate(235,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">9</text>
+                                    <line x1="0" y1="0" x2="0" y2="-31.42" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-31.42" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[10]=3.436 -->
+                                <g transform="translate(260,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">10</text>
+                                    <line x1="0" y1="0" x2="0" y2="-25.14" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-25.14" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[11]=2.749 -->
+                                <g transform="translate(285,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">11</text>
+                                    <line x1="0" y1="0" x2="0" y2="-20.11" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-20.11" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[12]=2.199 -->
+                                <g transform="translate(310,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">12</text>
+                                    <line x1="0" y1="0" x2="0" y2="-16.09" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-16.09" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[13]=1.759 -->
+                                <g transform="translate(335,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">13</text>
+                                    <line x1="0" y1="0" x2="0" y2="-12.87" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-12.87" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[14]=1.407 -->
+                                <g transform="translate(360,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">14</text>
+                                    <line x1="0" y1="0" x2="0" y2="-10.30" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-10.30" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[15]=1.126 -->
+                                <g transform="translate(385,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">15</text>
+                                    <line x1="0" y1="0" x2="0" y2="-8.24" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-8.24" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[16]=0.901 -->
+                                <g transform="translate(410,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">16</text>
+                                    <line x1="0" y1="0" x2="0" y2="-6.59" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-6.59" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[17]=0.721 -->
+                                <g transform="translate(435,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">17</text>
+                                    <line x1="0" y1="0" x2="0" y2="-5.27" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-5.27" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[18]=0.577 -->
+                                <g transform="translate(460,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">18</text>
+                                    <line x1="0" y1="0" x2="0" y2="-4.22" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-4.22" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[19]=0.461 -->
+                                <g transform="translate(485,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">19</text>
+                                    <line x1="0" y1="0" x2="0" y2="-3.37" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-3.37" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[20]=0.369 -->
+                                <g transform="translate(510,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">20</text>
+                                    <line x1="0" y1="0" x2="0" y2="-2.70" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-2.70" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[21]=0.295 -->
+                                <g transform="translate(535,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">21</text>
+                                    <line x1="0" y1="0" x2="0" y2="-2.16" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-2.16" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[22]=0.236 -->
+                                <g transform="translate(560,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">22</text>
+                                    <line x1="0" y1="0" x2="0" y2="-1.73" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-1.73" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <!-- y[23]=0.189 -->
+                                <g transform="translate(585,0)">
+                                    <text y="15" text-anchor="middle" font-size="9">23</text>
+                                    <line x1="0" y1="0" x2="0" y2="-1.38" stroke="#608de0" stroke-width="2"></line>
+                                    <circle cx="0" cy="-1.38" r="2.5" fill="#5ca353"></circle>
+                                </g>
+                                <text x="-10" y="0" text-anchor="end">0</text>
+                                <text x="-10" y="-100" text-anchor="end">10</text>
+                                <text x="-10" y="-200" text-anchor="end">20</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习一 -->
+            <section id="exercise1">
+                <h2><span class="badge badge-practice">实践</span>练习一：差分方程与响应</h2>
+                <div class="exercise-box">
+                    <h3>任务</h3>
+                    <p>对于以下三个差分方程，请在 MATLAB 中分别写出其系数向量 <code>a</code> 和 <code>b</code>，并使用 <code>filter</code> 函数求出当输入为单位阶跃信号 $x[n]=u[n]$（取前10个点）时系统的响应 $y[n]$，最后用 <code>stem</code> 画出响应图。</p>
+                    <ol style="margin-left: 20px; font-weight: bold;">
+                        <li>$y[n] = 0.5x[n] + x[n-1] + 2x[n-2]$</li>
+                        <li>$y[n] = 0.8y[n-1] + 2x[n]$</li>
+                        <li>$y[n] - 0.8y[n-1] = 2x[n-1]$</li>
+                    </ol>
+                    <div class="analysis-box">
+                        <h4>结果解读</h4>
+                        <p>将你生成的三个图像与下方给出的预期图像进行对比，它们是否一致？请思考并回答：</p>
+                        <ul>
+                            <li>为什么第一个系统的响应在 $n=2$ 之后就稳定在一个常数？（提示：思考输入 $u[n]$ 的特点和FIR滤波器的"记忆"长度）</li>
+                            <li>为什么第二个系统的响应会持续增长，并逐渐趋近于一个稳定值？这个稳定值大约是多少？</li>
+                        </ul>
+                    </div>
+                    <h4>预期图像</h4>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+                        <div class="plot-container" style="width: 32%;">
+                            <h4 style="font-size: 1.1em;">1) 响应图（FIR，20个点）</h4>
+                            <svg width="280" height="220" viewBox="0 0 280 220">
+                                <rect width="280" height="220" fill="#fdfdfd"></rect>
+                                <g transform="translate(45,180)">
+                                    <line x1="0" y1="0" x2="220" y2="0" stroke="#333"></line>
+                                    <line x1="0" y1="0" x2="0" y2="-150" stroke="#333"></line>
+                                    <text x="230" y="5" fill="#333" font-size="10">n</text>
+                                    <!-- n=-2,-1: 0 -->
+                                    <g transform="translate(5,0)"><circle cx="0" cy="0" r="2" fill="#aaa"></circle></g>
+                                    <g transform="translate(15,0)"><circle cx="0" cy="0" r="2" fill="#aaa"></circle></g>
+                                    <!-- n=0: 0.5 -->
+                                    <g transform="translate(25,0)">
+                                        <text y="12" font-size="9">0</text>
+                                        <line x1="0" y1="0" x2="0" y2="-14.3" stroke="#608de0" stroke-width="2"></line>
+                                        <circle cx="0" cy="-14.3" r="2.5" fill="#5ca353"></circle>
+                                    </g>
+                                    <!-- n=1: 1.5 -->
+                                    <g transform="translate(35,0)">
+                                        <line x1="0" y1="0" x2="0" y2="-42.9" stroke="#608de0" stroke-width="2"></line>
+                                        <circle cx="0" cy="-42.9" r="2.5" fill="#5ca353"></circle>
+                                    </g>
+                                    <!-- n=2~19: 3.5 -->
+                                    <g transform="translate(45,0)">
+                                        <text y="12" font-size="9">2</text>
+                                        <line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line>
+                                        <circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle>
+                                    </g>
+                                    <g transform="translate(55,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(65,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(75,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(85,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(95,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(105,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(115,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(125,0)"><text y="12" font-size="9">10</text><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(135,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(145,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(155,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(165,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(175,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(185,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(195,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(205,0)"><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(215,0)"><text y="12" font-size="9">19</text><line x1="0" y1="0" x2="0" y2="-100" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100" r="2.5" fill="#5ca353"></circle></g>
+                                    <text x="-8" y="-100" text-anchor="end" font-size="10">3.5</text>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="plot-container" style="width: 32%;">
+                            <h4 style="font-size: 1.1em;">2) 响应图（IIR，25个点）</h4>
+                            <svg width="280" height="220" viewBox="0 0 280 220">
+                                <rect width="280" height="220" fill="#fdfdfd"></rect>
+                                <g transform="translate(45,180)">
+                                    <line x1="0" y1="0" x2="220" y2="0" stroke="#333"></line>
+                                    <line x1="0" y1="0" x2="0" y2="-150" stroke="#333"></line>
+                                    <text x="230" y="5" fill="#333" font-size="10">n</text>
+                                    <!-- y[n] = 0.8y[n-1] + 2, y趋向10 -->
+                                    <g transform="translate(10,0)"><text y="12" font-size="9">0</text><line x1="0" y1="0" x2="0" y2="-30" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-30" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(19,0)"><line x1="0" y1="0" x2="0" y2="-54" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-54" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(28,0)"><line x1="0" y1="0" x2="0" y2="-73.2" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-73.2" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(37,0)"><line x1="0" y1="0" x2="0" y2="-88.56" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-88.56" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(46,0)"><line x1="0" y1="0" x2="0" y2="-100.85" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100.85" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(55,0)"><text y="12" font-size="9">5</text><line x1="0" y1="0" x2="0" y2="-110.68" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-110.68" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(64,0)"><line x1="0" y1="0" x2="0" y2="-118.54" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-118.54" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(73,0)"><line x1="0" y1="0" x2="0" y2="-124.84" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-124.84" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(82,0)"><line x1="0" y1="0" x2="0" y2="-129.87" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-129.87" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(91,0)"><line x1="0" y1="0" x2="0" y2="-133.90" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-133.90" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(100,0)"><text y="12" font-size="9">10</text><line x1="0" y1="0" x2="0" y2="-137.12" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-137.12" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(109,0)"><line x1="0" y1="0" x2="0" y2="-139.69" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-139.69" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(118,0)"><line x1="0" y1="0" x2="0" y2="-141.76" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-141.76" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(127,0)"><line x1="0" y1="0" x2="0" y2="-143.40" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-143.40" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(136,0)"><line x1="0" y1="0" x2="0" y2="-144.72" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-144.72" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(145,0)"><text y="12" font-size="9">15</text><line x1="0" y1="0" x2="0" y2="-145.78" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-145.78" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(154,0)"><line x1="0" y1="0" x2="0" y2="-146.62" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-146.62" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(163,0)"><line x1="0" y1="0" x2="0" y2="-147.30" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-147.30" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(172,0)"><line x1="0" y1="0" x2="0" y2="-147.84" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-147.84" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(181,0)"><line x1="0" y1="0" x2="0" y2="-148.27" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-148.27" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(190,0)"><text y="12" font-size="9">20</text><line x1="0" y1="0" x2="0" y2="-148.62" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-148.62" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(199,0)"><line x1="0" y1="0" x2="0" y2="-148.89" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-148.89" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(208,0)"><line x1="0" y1="0" x2="0" y2="-149.12" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-149.12" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(217,0)"><line x1="0" y1="0" x2="0" y2="-149.29" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-149.29" r="2.5" fill="#5ca353"></circle></g>
+                                    <text x="-8" y="-150" text-anchor="end" font-size="10">10</text>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="plot-container" style="width: 32%;">
+                            <h4 style="font-size: 1.1em;">3) 响应图（IIR，25个点）</h4>
+                            <svg width="280" height="220" viewBox="0 0 280 220">
+                                <rect width="280" height="220" fill="#fdfdfd"></rect>
+                                <g transform="translate(45,180)">
+                                    <line x1="0" y1="0" x2="220" y2="0" stroke="#333"></line>
+                                    <line x1="0" y1="0" x2="0" y2="-150" stroke="#333"></line>
+                                    <text x="230" y="5" fill="#333" font-size="10">n</text>
+                                    <!-- y[0]=0, 然后同上但延迟一步 -->
+                                    <g transform="translate(10,0)"><text y="12" font-size="9">0</text><circle cx="0" cy="0" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(19,0)"><line x1="0" y1="0" x2="0" y2="-30" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-30" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(28,0)"><line x1="0" y1="0" x2="0" y2="-54" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-54" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(37,0)"><line x1="0" y1="0" x2="0" y2="-73.2" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-73.2" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(46,0)"><line x1="0" y1="0" x2="0" y2="-88.56" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-88.56" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(55,0)"><text y="12" font-size="9">5</text><line x1="0" y1="0" x2="0" y2="-100.85" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-100.85" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(64,0)"><line x1="0" y1="0" x2="0" y2="-110.68" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-110.68" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(73,0)"><line x1="0" y1="0" x2="0" y2="-118.54" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-118.54" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(82,0)"><line x1="0" y1="0" x2="0" y2="-124.84" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-124.84" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(91,0)"><line x1="0" y1="0" x2="0" y2="-129.87" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-129.87" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(100,0)"><text y="12" font-size="9">10</text><line x1="0" y1="0" x2="0" y2="-133.90" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-133.90" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(109,0)"><line x1="0" y1="0" x2="0" y2="-137.12" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-137.12" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(118,0)"><line x1="0" y1="0" x2="0" y2="-139.69" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-139.69" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(127,0)"><line x1="0" y1="0" x2="0" y2="-141.76" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-141.76" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(136,0)"><line x1="0" y1="0" x2="0" y2="-143.40" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-143.40" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(145,0)"><text y="12" font-size="9">15</text><line x1="0" y1="0" x2="0" y2="-144.72" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-144.72" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(154,0)"><line x1="0" y1="0" x2="0" y2="-145.78" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-145.78" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(163,0)"><line x1="0" y1="0" x2="0" y2="-146.62" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-146.62" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(172,0)"><line x1="0" y1="0" x2="0" y2="-147.30" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-147.30" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(181,0)"><line x1="0" y1="0" x2="0" y2="-147.84" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-147.84" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(190,0)"><text y="12" font-size="9">20</text><line x1="0" y1="0" x2="0" y2="-148.27" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-148.27" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(199,0)"><line x1="0" y1="0" x2="0" y2="-148.62" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-148.62" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(208,0)"><line x1="0" y1="0" x2="0" y2="-148.89" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-148.89" r="2.5" fill="#5ca353"></circle></g>
+                                    <g transform="translate(217,0)"><line x1="0" y1="0" x2="0" y2="-149.12" stroke="#608de0" stroke-width="2"></line><circle cx="0" cy="-149.12" r="2.5" fill="#5ca353"></circle></g>
+                                    <text x="-8" y="-150" text-anchor="end" font-size="10">10</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习二 -->
+            <section id="exercise2">
+                <h2><span class="badge badge-practice">实践</span>练习二：零极点图绘制与分析</h2>
+                <div class="exercise-box">
+                    <h3>任务</h3>
+                    <p>对于以下三个系统，请在 MATLAB 中确定其系统函数 $H(z)$ 的分子分母系数 <code>b</code> 和 <code>a</code>，并使用提供的 <code>dpzplot</code> 函数绘制它们的零极点图。</p>
+                     <ol style="margin-left: 20px; font-weight: bold;">
+                        <li>$H(z) = \frac{z^3 - z}{z^3 + 3z + 2}$</li>
+                        <li>$y[n] + y[n-1] + 0.5y[n-2] = x[n]$</li>
+                        <li>$y[n] - 1.25y[n-1] + 0.75y[n-2] - 0.125y[n-3] = x[n] + 0.5x[n-1]$</li>
+                    </ol>
+                    <div class="analysis-box">
+                        <h4>结果解读</h4>
+                        <p>对比你绘制的零极点图与下方的预期图，它们是否一致？根据你绘制的图，逐一判断每个系统的稳定性（稳定、临界稳定、或不稳定），并解释你的判断依据（即**极点**与**单位圆**的位置关系）。</p>
+                    </div>
+                     <h4>预期图像</h4>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+                         <div class="plot-container" style="width: 32%;">
+                            <h4 style="font-size: 1.1em;">1) 零极点图</h4>
+                            <svg width="200" height="200" viewBox="-120 -120 240 240"><rect x="-120" y="-120" width="240" height="240" fill="#fdfdfd"></rect><line x1="-110" y1="0" x2="110" y2="0" stroke="#aaa"></line><line x1="0" y1="-110" x2="0" y2="110" stroke="#aaa"></line><circle cx="0" cy="0" r="60" fill="none" stroke="#608de0" stroke-width="1.5" stroke-dasharray="3,3"></circle><g transform="translate(-29.6,0)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><g transform="translate(14.8,80.3)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><g transform="translate(14.8,-80.3)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><circle cx="60" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle><circle cx="-60" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle><circle cx="0" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle></svg>
+                        </div>
+                        <div class="plot-container" style="width: 32%;">
+                            <h4 style="font-size: 1.1em;">2) 零极点图</h4>
+                            <svg width="200" height="200" viewBox="-120 -120 240 240"><rect x="-120" y="-120" width="240" height="240" fill="#fdfdfd"></rect><line x1="-110" y1="0" x2="110" y2="0" stroke="#aaa"></line><line x1="0" y1="-110" x2="0" y2="110" stroke="#aaa"></line><circle cx="0" cy="0" r="100" fill="none" stroke="#608de0" stroke-width="1.5" stroke-dasharray="3,3"></circle><g transform="translate(-50,50)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><g transform="translate(-50,-50)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><circle cx="0" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle><circle cx="0" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle></svg>
+                        </div>
+                         <div class="plot-container" style="width: 32%;">
+                            <h4 style="font-size: 1.1em;">3) 零极点图</h4>
+                            <svg width="200" height="200" viewBox="-120 -120 240 240"><rect x="-120" y="-120" width="240" height="240" fill="#fdfdfd"></rect><line x1="-110" y1="0" x2="110" y2="0" stroke="#aaa"></line><line x1="0" y1="-110" x2="0" y2="110" stroke="#aaa"></line><circle cx="0" cy="0" r="100" fill="none" stroke="#608de0" stroke-width="1.5" stroke-dasharray="3,3"></circle><g transform="translate(50,0)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><g transform="translate(37.5,64.95)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><g transform="translate(37.5,-64.95)" stroke="#D46A6A" stroke-width="2"><line x1="-5" y1="-5" x2="5" y2="5"></line><line x1="-5" y1="5" x2="5" y2="-5"></line></g><circle cx="-50" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle><circle cx="0" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle><circle cx="0" cy="0" r="5" stroke="#5ca353" stroke-width="2" fill="none"></circle></svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 练习三 -->
+            <section id="exercise3">
+                <h2><span class="badge badge-practice">实践</span>练习三：系统分析与逆向设计</h2>
+                <div class="exercise-box">
+                    <h3>背景</h3>
+                    <p>本题旨在检验你对零极点、系统稳定性以及差分方程之间关系的深刻理解。我们将从一个理想的系统特性出发，反向构建并分析它。</p>
+                    <div class="tip-box">
+                        <strong>知识提示：</strong>在信号处理中，我们有时希望创建一个能够产生特定频率振荡的系统，这被称为"谐振器"。最纯粹的振荡对应于Z平面单位圆上的一对共轭复数极点。
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务一：理想谐振器设计与验证</h4>
+                        <p>假设我们想设计一个数字谐振器，其谐振角频率为 $\omega_0 = \pi/4$。为了实现无衰减的持续振荡，我们将一对极点精确地放置在单位圆上，即 $p_{1,2} = e^{\pm j\pi/4}$。假设系统没有有限零点（分子为1）。</p>
+                         <ol>
+                             <li><strong>推导</strong>：请推导出该系统的差分方程。（提示：系统函数分母 $D(z) = (1 - p_1 z^{-1})(1 - p_2 z^{-1})$。利用欧拉公式 $e^{j\theta} + e^{-j\theta} = 2\cos(\theta)$ 来简化系数。）</li>
+                             <li><strong>仿真</strong>：使用 <code>dpzplot</code> 绘制其零极点图，并计算和绘制该系统前50个点的单位冲激响应 $h[n]$。</li>
+                         </ol>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务二：参数化分析与稳定性</h4>
+                        <p>实际应用中，临界稳定系统很危险。因此，我们通常会引入一个衰减因子 $r$（$0 < r < 1$），将极点变为 $p_{1,2} = r \cdot e^{\pm j\pi/4}$。现在，我们将任务一的差分方程参数化为：</p>
+                        <p style="text-align: center; font-weight: bold; color: #D46A6A;">$y[n] - \sqrt{2} \cdot r \cdot y[n-1] + r^2 \cdot y[n-2] = x[n]$</p>
+                        <ol>
+                            <li><strong>分析</strong>：请问参数 <code>K</code> 的取值范围是什么时，这个系统是因果稳定的？</li>
+                            <li><strong>关联</strong>：<code>K</code> 的值与极点模长 <code>r</code> 之间有什么数学关系？</li>
+                            <li><strong>仿真</strong>：设定 <code>K=0.9</code>，画出新系统的零极点图和单位冲激响应。</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="analysis-box">
+                        <h4>结果解读</h4>
+                        <p>你的仿真结果是否与下方的预期图像一致？请思考并回答：</p>
+                        <ul>
+                            <li>为什么任务一的冲激响应是等幅振荡，而任务二（当`K=0.9`时）的响应是衰减振荡？</li>
+                            <li>这个从"等幅"到"衰减"的变化，在Z平面的零极点图上是如何体现的？</li>
+                        </ul>
+                    </div>
+                    <h4>预期图像</h4>
+                     <div style="display: flex; flex-wrap: wrap; justify-content: space-around; align-items: center;">
+                        <div class="plot-container">
+                            <h4 style="font-size: 1.1em;">理想谐振器响应 (K=1)</h4>
+                            <svg width="400" height="250" viewBox="0 0 400 250"><title>理想谐振器响应</title><rect width="400" height="250" fill="#fdfdfd"></rect><g transform="translate(50, 125)"><line x1="0" y1="0" x2="340" y2="0" stroke="#333"></line><line x1="0" y1="100" x2="0" y2="-100" stroke="#333"></line><text x="350" y="5" fill="#333" font-size="10">n</text><path d="M 10,0 C 30 -120, 50 120, 70 0 C 90 -120, 110 120, 130 0 C 150 -120, 170 120, 190 0 C 210 -120, 230 120, 250 0 C 270 -120, 290 120, 310 0" stroke="#608de0" stroke-width="1.5" fill="none"></path><text x="-8" y="-90" text-anchor="end" font-size="10">1.0</text></g></svg>
+                        </div>
+                        <div class="plot-container">
+                            <h4 style="font-size: 1.1em;">阻尼振荡器响应 (K=0.9)</h4>
+                            <svg width="400" height="250" viewBox="0 0 400 250"><title>阻尼振荡器响应</title><rect width="400" height="250" fill="#fdfdfd"></rect><g transform="translate(50, 125)"><line x1="0" y1="0" x2="340" y2="0" stroke="#333"></line><line x1="0" y1="100" x2="0" y2="-100" stroke="#333"></line><text x="350" y="5" fill="#333" font-size="10">n</text><path d="M 10,0 C 30 -113, 50 113, 70 0 C 88 -91, 106 91, 124 0 C 140 -73, 156 73, 172 0" stroke="#5ca353" stroke-width="1.5" fill="none"></path><path d="M 0,-95 L 330,-15" stroke="#aaa" stroke-dasharray="4,4" fill="none"></path><path d="M 0,95 L 330,15" stroke="#aaa" stroke-dasharray="4,4" fill="none"></path><text x="-8" y="-90" text-anchor="end" font-size="10">1.0</text></g></svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习四 -->
+            <section id="exercise4">
+                <h2><span class="badge badge-practice">实践</span>练习四：自定义函数与系统特性</h2>
+                <div class="exercise-box">
+                    <h3>背景</h3>
+                    <p>本题要求你手动实现一个简单的递归方程求解器，并通过它来深入理解初始条件、线性度以及稳定性的概念。考虑差分方程：$y[n] = ay[n-1] + x[n]$</p>
+
+                    <div class="question-item">
+                        <h4>任务一：函数实现</h4>
+                        <p>编写一个自定义MATLAB函数 <code>y = diffeqn(a, x, yn1)</code> 来计算上述因果系统。其中 <code>a</code> 是系数，$x$ 是输入序列，$yn1$ 是初始状态 $y[-1]$ 的值。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务二：零状态响应分析 (a=1)</h4>
+                        <p>设定 $a=1, y[-1]=0$。使用你的函数分别计算当输入为 $x_{1n}=\delta[n]$ 和 $x_{2n}=u[n]$ 时的响应（$0 \le n \le 30$），并画出它们的 <code>stem</code> 图。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务三：非零状态与线性度检验 (a=1)</h4>
+                        <p>设定 $a=1, y[-1]=-1$。计算当输入为 $x_{1n}=u[n]$ 和 $x_{2n}=2u[n]$ 时的响应 $y_1[n]$ 和 $y_2[n]$。然后，计算并画出 $(2y_1[n] - y_2[n])$ 的图像。</p>
+                    </div>
+                    
+                    <div class="question-item">
+                        <h4>任务四：稳定性与初始条件 (a=0.5)</h4>
+                        <p>设定 $a=0.5, x=u[n]$。分别计算在 $y[-1]=0$ 和 $y[-1]=0.5$ 两种初始条件下系统的响应，并画图对比。</p>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h4>结果解读</h4>
+                        <p>将你生成的图像与下方的预期图像对比，它们是否一致？请重点回答：</p>
+                        <ul>
+                            <li>为什么在任务三中，$2y_1[n] - y_2[n]$ 的结果不是恒等于0？这是否违背了线性系统的定义？</li>
+                            <li>在任务四中，初始条件的不同对最终的系统稳态输出有影响吗？为什么？这说明了稳定系统的什么重要特性？</li>
+                        </ul>
+                    </div>
+                    <h4>预期图像</h4>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+                        <div class="plot-container" style="width: 48%;">
+                           <h4 style="font-size: 1.1em;">任务二：阶跃响应 (a=1, 31个点完整画出)</h4>
+                           <svg width="450" height="280" viewBox="0 0 450 280">
+                               <title>阶跃响应</title>
+                               <rect width="450" height="280" fill="#fdfdfd"></rect>
+                               <text x="225" y="20" text-anchor="middle" font-size="12" font-weight="bold">阶跃响应 (斜坡信号)</text>
+                               <g transform="translate(50, 240)">
+                                   <line x1="0" y1="0" x2="380" y2="0" stroke="#333"></line>
+                                   <line x1="0" y1="0" x2="0" y2="-200" stroke="#333"></line>
+                                   <text x="390" y="5" fill="#333" font-size="10">n</text>
+                                   <!-- n=0~30，每个都画 -->
+                                   <g transform="translate(5,0)"><text y="15" font-size="8">0</text><line x1="0" y1="0" x2="0" y2="-6.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-6.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(17,0)"><line x1="0" y1="0" x2="0" y2="-13" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-13" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(29,0)"><line x1="0" y1="0" x2="0" y2="-19.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-19.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(41,0)"><line x1="0" y1="0" x2="0" y2="-26" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-26" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(53,0)"><line x1="0" y1="0" x2="0" y2="-32.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-32.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(65,0)"><line x1="0" y1="0" x2="0" y2="-39" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-39" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(77,0)"><line x1="0" y1="0" x2="0" y2="-45.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-45.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(89,0)"><line x1="0" y1="0" x2="0" y2="-52" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-52" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(101,0)"><line x1="0" y1="0" x2="0" y2="-58.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-58.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(113,0)"><line x1="0" y1="0" x2="0" y2="-65" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-65" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(125,0)"><text y="15" font-size="8">10</text><line x1="0" y1="0" x2="0" y2="-71.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-71.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(137,0)"><line x1="0" y1="0" x2="0" y2="-78" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-78" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(149,0)"><line x1="0" y1="0" x2="0" y2="-84.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-84.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(161,0)"><line x1="0" y1="0" x2="0" y2="-91" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-91" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(173,0)"><line x1="0" y1="0" x2="0" y2="-97.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-97.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(185,0)"><line x1="0" y1="0" x2="0" y2="-104" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-104" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(197,0)"><line x1="0" y1="0" x2="0" y2="-110.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-110.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(209,0)"><line x1="0" y1="0" x2="0" y2="-117" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-117" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(221,0)"><line x1="0" y1="0" x2="0" y2="-123.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-123.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(233,0)"><line x1="0" y1="0" x2="0" y2="-130" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-130" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(245,0)"><text y="15" font-size="8">20</text><line x1="0" y1="0" x2="0" y2="-136.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-136.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(257,0)"><line x1="0" y1="0" x2="0" y2="-143" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-143" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(269,0)"><line x1="0" y1="0" x2="0" y2="-149.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-149.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(281,0)"><line x1="0" y1="0" x2="0" y2="-156" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-156" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(293,0)"><line x1="0" y1="0" x2="0" y2="-162.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-162.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(305,0)"><line x1="0" y1="0" x2="0" y2="-169" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-169" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(317,0)"><line x1="0" y1="0" x2="0" y2="-175.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-175.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(329,0)"><line x1="0" y1="0" x2="0" y2="-182" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-182" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(341,0)"><line x1="0" y1="0" x2="0" y2="-188.5" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-188.5" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(353,0)"><line x1="0" y1="0" x2="0" y2="-195" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-195" r="2" fill="#5ca353"></circle></g>
+                                   <g transform="translate(365,0)"><text y="15" font-size="8">30</text><line x1="0" y1="0" x2="0" y2="-195" stroke="#608de0" stroke-width="1.5"></line><circle cx="0" cy="-195" r="2" fill="#5ca353"></circle></g>
+                                   <text x="-8" y="-195" text-anchor="end" font-size="10">30</text>
+                               </g>
+                           </svg>
+                        </div>
+                        <div class="plot-container" style="width: 48%;">
+                            <h4 style="font-size: 1.1em;">任务三：线性检验结果（31个点）</h4>
+                            <svg width="450" height="280" viewBox="0 0 450 280">
+                                <title>线性检验</title>
+                                <rect width="450" height="280" fill="#fdfdfd"></rect>
+                                <text x="225" y="20" text-anchor="middle" font-size="12" font-weight="bold">2*y1[n] - y2[n] = -1 (常数)</text>
+                                <g transform="translate(50,150)">
+                                    <line x1="0" y1="0" x2="380" y2="0" stroke="#333"></line>
+                                    <line x1="0" y1="60" x2="0" y2="-60" stroke="#333"></line>
+                                    <text x="390" y="5" fill="#333" font-size="10">n</text>
+                                    <!-- 所有31个点都在-1 -->
+                                    <g transform="translate(5,0)"><text y="15" font-size="8">0</text><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(17,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(29,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(41,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(53,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(65,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(77,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(89,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(101,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(113,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(125,0)"><text y="15" font-size="8">10</text><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(137,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(149,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(161,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(173,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(185,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(197,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(209,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(221,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(233,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(245,0)"><text y="15" font-size="8">20</text><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(257,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(269,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(281,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(293,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(305,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(317,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(329,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(341,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(353,0)"><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <g transform="translate(365,0)"><text y="15" font-size="8">30</text><line x1="0" y1="0" x2="0" y2="-50" stroke="#D46A6A" stroke-width="1.5"></line><circle cx="0" cy="-50" r="2" fill="#912d32"></circle></g>
+                                    <text x="-8" y="-50" text-anchor="end" font-size="10">-1</text>
+                                </g>
+                            </svg>
+                        </div>
+                         <div class="plot-container" style="width: 48%;">
+                             <h4 style="font-size: 1.1em;">任务四：稳定性分析 (a=0.5)</h4>
+                             <svg width="300" height="250" viewBox="0 0 300 250"><title>稳定性分析</title><rect width="300" height="250" fill="#fdfdfd"></rect><text x="150" y="20" text-anchor="middle" font-size="12" font-weight="bold">不同初始条件下的响应</text><g transform="translate(40,210)"><line x1="0" y1="0" x2="240" y2="0" stroke="#333"></line><line x1="0" y1="0" x2="0" y2="-170" stroke="#333"></line><text x="250" y="5" fill="#333" font-size="10">n</text><path d="M 10,0 L 10,-80 L 22,-120 L 34,-140 L 46,-150 L 220,-160" fill="none" stroke="#608de0" stroke-width="1.5" opacity="0.5"></path><circle cx="10" cy="-80" r="2.5" fill="#608de0"></circle><path d="M 10,-100 L 22,-130 L 34,-145 L 46,-152.5 L 220,-160" fill="none" stroke="#D46A6A" stroke-width="1.5" opacity="0.5"></path><circle cx="10" cy="-100" r="2.5" fill="#D46A6A"></circle><text x="-8" y="-80" text-anchor="end" font-size="10">1.0</text><text x="-8" y="-160" text-anchor="end" font-size="10">2.0</text></g></svg>
+                         </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 南京工业大学浦江学院 计算机与通信工程学院</p>
+            <p>通信工程专业 | 数字信号处理课程实验</p>
+        </footer>
+    </div>
+
+    <script>
+        // 交互演示脚本
+        const zCanvas = document.getElementById('zPlaneCanvas');
+        const tCanvas = document.getElementById('timeDomainCanvas');
+        const zCtx = zCanvas.getContext('2d');
+        const tCtx = tCanvas.getContext('2d');
+
+        const radiusSlider = document.getElementById('radius');
+        const thetaSlider = document.getElementById('theta');
+        const rValueDisplay = document.getElementById('rValue');
+        const thetaValueDisplay = document.getElementById('thetaValue');
+        const statusDiv = document.getElementById('stabilityStatus');
+
+        function drawZPlane(r, thetaDeg) {
+            const width = zCanvas.width;
+            const height = zCanvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const scale = 100;
+
+            zCtx.clearRect(0, 0, width, height);
+            zCtx.beginPath(); zCtx.strokeStyle = '#ccc';
+            zCtx.moveTo(0, centerY); zCtx.lineTo(width, centerY);
+            zCtx.moveTo(centerX, 0); zCtx.lineTo(centerX, height);
+            zCtx.stroke();
+            zCtx.beginPath(); zCtx.strokeStyle = '#2d57a4'; zCtx.lineWidth = 2;
+            zCtx.arc(centerX, centerY, scale, 0, 2 * Math.PI);
+            zCtx.stroke();
+
+            const thetaRad = -thetaDeg * Math.PI / 180;
+            const px = centerX + r * Math.cos(thetaRad) * scale;
+            const py = centerY + r * Math.sin(thetaRad) * scale;
+
+            zCtx.beginPath(); zCtx.strokeStyle = '#D46A6A'; zCtx.lineWidth = 3;
+            const crossSize = 6;
+            zCtx.moveTo(px - crossSize, py - crossSize); zCtx.lineTo(px + crossSize, py + crossSize);
+            zCtx.moveTo(px + crossSize, py - crossSize); zCtx.lineTo(px - crossSize, py + crossSize);
+            zCtx.stroke();
+
+            zCtx.fillStyle = '#2d57a4';
+            zCtx.fillText('Im', centerX + 10, 15); zCtx.fillText('Re', width - 25, centerY - 10);
+            zCtx.fillText('1', centerX + scale + 5, centerY + 15);
+        }
+
+        function drawTimeDomain(r, thetaDeg) {
+            const width = tCanvas.width;
+            const height = tCanvas.height;
+            const padding = 30;
+            const centerY = height / 2;
+            
+            tCtx.clearRect(0, 0, width, height);
+            tCtx.beginPath(); tCtx.strokeStyle = '#2d57a4'; tCtx.lineWidth = 1;
+            tCtx.moveTo(padding, height - padding); tCtx.lineTo(width - padding, height - padding);
+            tCtx.moveTo(padding, padding); tCtx.lineTo(padding, height - padding);
+            tCtx.stroke();
+
+            const thetaRad = thetaDeg * Math.PI / 180;
+            const N = 40;
+            const xStep = (width - 2 * padding) / N;
+            
+            let maxVal = 1;
+            for(let n=0; n<N; n++) { maxVal = Math.max(maxVal, Math.pow(r, n)); }
+            if(r > 1.1) maxVal = Math.pow(r, N);
+            
+            const yScale = (height / 2 - padding) / (maxVal * 1.2);
+            tCtx.beginPath(); tCtx.strokeStyle = '#2d57a4';
+            tCtx.moveTo(padding, centerY); tCtx.lineTo(width-padding, centerY);
+            tCtx.stroke();
+
+            for(let n=0; n<N; n++) {
+                const val = Math.pow(r, n) * Math.cos(thetaRad * n);
+                const x = padding + n * xStep;
+                const y = centerY - val * yScale;
+                tCtx.beginPath(); tCtx.strokeStyle = '#608de0';
+                tCtx.moveTo(x, centerY); tCtx.lineTo(x, y);
+                tCtx.stroke();
+                tCtx.beginPath(); tCtx.fillStyle = '#5ca353';
+                tCtx.arc(x, y, 3, 0, 2 * Math.PI);
+                tCtx.fill();
+            }
+            tCtx.fillStyle = '#2d57a4';
+            tCtx.fillText('n', width - 20, centerY + 15);
+            tCtx.fillText('h[n]', padding - 25, padding);
+        }
+
+        function updateDemo() {
+            const r = parseFloat(radiusSlider.value);
+            const theta = parseFloat(thetaSlider.value);
+            rValueDisplay.textContent = r;
+            thetaValueDisplay.textContent = theta;
+            drawZPlane(r, theta);
+            drawTimeDomain(r, theta);
+            if (r < 0.99) {
+                statusDiv.style.background = "#e8f5e9";
+                statusDiv.style.borderLeft = "5px solid #5ca353";
+                statusDiv.innerHTML = "极点在圆内 (r < 1)<br>h[n] 衰减 -> 系统<strong>稳定</strong>";
+            } else if (r > 1.01) {
+                statusDiv.style.background = "#ffebee";
+                statusDiv.style.borderLeft = "5px solid #912d32";
+                statusDiv.innerHTML = "极点在圆外 (r > 1)<br>h[n] 发散 -> 系统<strong>不稳定</strong>";
+            } else {
+                statusDiv.style.background = "#fff8e1";
+                statusDiv.style.borderLeft = "5px solid #fbc02d";
+                statusDiv.innerHTML = "极点在圆上 (r ≈ 1)<br>h[n] 等幅振荡 -> 系统<strong>临界稳定</strong>";
+            }
+        }
+
+        radiusSlider.addEventListener('input', updateDemo);
+        thetaSlider.addEventListener('input', updateDemo);
+        updateDemo();
+    </script>
+</body>
+</html>

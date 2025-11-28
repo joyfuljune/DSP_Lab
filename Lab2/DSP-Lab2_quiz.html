@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP-Lab2 智能练习系统</title>
+    
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            CommonHTML: { scale: 110 },
+            "HTML-CSS": { scale: 110 }
+        });
+    </script>
+    
+    <style>
+        .mathjax-status {
+            position: fixed; top: 10px; right: 15px; padding: 8px 15px; border-radius: 5px;
+            background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+            font-size: 14px; z-index: 10000; font-family: 'Microsoft YaHei', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mathjax-status.loading { background-color: #fff3cd; color: #856404; border-color: #ffeeba; }
+        .mathjax-status.success {
+            background-color: #d4edda; color: #155724; border-color: #c3e6cb;
+            transition: opacity 0.5s ease-out 1.5s; opacity: 0;
+        }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 50%, #5ca353 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container {
+            max-width: 900px; margin: 0 auto; background: white; border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25); padding: 40px;
+        }
+        h1 { color: #2d57a4; text-align: center; margin-bottom: 30px; font-size: 2em; }
+        h2 { color: #608de0; margin: 25px 0 15px 0; }
+        
+        .login-section, .quiz-section, .result-section { display: none; }
+        .login-section.active, .quiz-section.active, .result-section.active { display: block; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; color: #2d57a4; font-weight: bold; margin-bottom: 8px; }
+        input[type="text"] { 
+            width: 100%; padding: 12px; border: 2px solid #7dadff; border-radius: 8px; 
+            font-size: 16px; transition: border-color 0.3s;
+        }
+        input[type="text"]:focus { border-color: #2d57a4; outline: none; }
+        
+        button {
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 100%); color: white; border: none;
+            padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px;
+            font-weight: bold; transition: all 0.3s; box-shadow: 0 3px 10px rgba(96, 141, 224, 0.3);
+        }
+        button:hover {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(96, 141, 224, 0.5);
+        }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        
+        .question-box { 
+            background: #f8f9fa; border-left: 5px solid #608de0; padding: 25px; 
+            margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .question-title { color: #2d57a4; font-weight: bold; font-size: 1.2em; margin-bottom: 15px; }
+        .question-number { 
+            display: inline-block; background: #608de0; color: white; padding: 4px 12px; 
+            border-radius: 15px; font-size: 0.9em; margin-right: 10px;
+        }
+        
+        .options { margin: 15px 0; }
+        .option, .checkbox-option {
+            display: block; background: white; padding: 12px; margin: 8px 0; 
+            border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; 
+            transition: all 0.3s; position: relative;
+        }
+        .option:hover, .checkbox-option:hover { background: #e8f5ff; border-color: #608de0; }
+        .option.selected { background: #608de0; color: white; border-color: #2d57a4; }
+        .option.correct, .checkbox-option.correct { 
+            background: #5ca353; color: white; border-color: #4a8842; 
+            animation: correctPulse 0.5s ease-in-out;
+        }
+        .option.incorrect, .checkbox-option.incorrect { 
+            background: #D46A6A; color: white; border-color: #912d32;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .feedback { margin: 15px 0; padding: 15px; border-radius: 8px; font-weight: bold; }
+        .feedback.correct { background: #e8f5e9; color: #5ca353; border-left: 5px solid #5ca353; }
+        .feedback.incorrect { background: #ffebee; color: #912d32; border-left: 5px solid #912d32; }
+        
+        .progress-bar { 
+            width: 100%; height: 30px; background: #e0e0e0; border-radius: 15px; 
+            overflow: hidden; margin: 20px 0; position: relative;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, #5ca353 0%, #608de0 100%);
+            transition: width 0.5s; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold;
+        }
+        
+        .topic-indicator {
+            background: linear-gradient(135deg, #fff8e1 0%, #fffbf0 100%);
+            border-left: 5px solid #fbc02d; padding: 15px; margin: 20px 0; 
+            border-radius: 8px; text-align: center;
+        }
+        .topic-name { color: #2d57a4; font-size: 1.3em; font-weight: bold; }
+        .topic-progress { color: #666; font-size: 0.9em; margin-top: 8px; }
+        
+        .stats-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .stats-table th, .stats-table td { padding: 12px; text-align: left; border: 1px solid #e0e0e0; }
+        .stats-table th { background: linear-gradient(135deg, #608de0 0%, #7dadff 100%); color: white; }
+        .stats-table tr:nth-child(even) { background: #f8f9fa; }
+        
+        .mastery-excellent { color: #5ca353; font-weight: bold; }
+        .mastery-good { color: #608de0; font-weight: bold; }
+        .mastery-fair { color: #D46A6A; font-weight: bold; }
+        .mastery-poor { color: #912d32; font-weight: bold; }
+        
+        .info-box { 
+            background: linear-gradient(135deg, #e8f5ff 0%, #f0f9ff 100%);
+            border-left: 5px solid #608de0; padding: 15px; margin: 15px 0; border-radius: 8px; 
+        }
+        .warning-box {
+            background: linear-gradient(135deg, #fff8e1 0%, #fffbf0 100%);
+            border-left: 5px solid #D46A6A; padding: 15px; margin: 15px 0; border-radius: 8px;
+        }
+        
+        input[type="checkbox"] { margin-right: 8px; width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-option { display: flex; align-items: center; }
+        
+        .student-info-display {
+            background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 20px;
+            text-align: center; color: #2d57a4; font-weight: bold;
+        }
+        
+        .explanation-detail {
+            margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.5);
+            border-radius: 5px; font-size: 0.95em; font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <div id="mathjaxStatus" class="mathjax-status loading">正在加载数学公式...</div>
+    
+    <div class="container">
+        <!-- 登录界面 -->
+        <div class="login-section active">
+            <h1>🎓 DSP-Lab2 智能练习系统</h1>
+            <div class="info-box">
+                <strong>📌 系统特色</strong>
+                <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+                    <li><strong>知识点全覆盖</strong>：涵盖差分方程、Z变换、零极点、稳定性等6大核心知识点</li>
+                    <li><strong>题目随机化</strong>：每次练习数值、选项顺序都不同，避免死记硬背</li>
+                    <li><strong>智能循环</strong>：答错自动出新题巩固，答对才进入下一知识点</li>
+                    <li><strong>详细反馈</strong>：每题都有详细解析，帮助理解核心概念</li>
+                </ul>
+            </div>
+            <div class="form-group">
+                <label>学号:</label>
+                <input type="text" id="studentId" placeholder="请输入学号">
+            </div>
+            <div class="form-group">
+                <label>姓名:</label>
+                <input type="text" id="studentName" placeholder="请输入姓名">
+            </div>
+            <button onclick="startQuiz()">开始练习</button>
+        </div>
+
+        <!-- 测验界面 -->
+        <div class="quiz-section">
+            <h1>DSP-Lab2 智能练习</h1>
+            <div id="studentInfo" class="student-info-display"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+            
+            <div id="currentTopic" class="topic-indicator"></div>
+            
+            <div class="question-box">
+                <div class="question-title" id="questionTitle"></div>
+                <div id="questionContent"></div>
+                <div id="options" class="options"></div>
+                <div id="feedback"></div>
+                <button id="submitBtn" onclick="submitAnswer()">提交答案</button>
+                <button id="nextBtn" onclick="nextQuestion()" style="display:none;">下一题</button>
+            </div>
+        </div>
+
+        <!-- 结果界面 -->
+        <div class="result-section">
+            <h1>📊 练习结果报告</h1>
+            <div id="finalReport"></div>
+            <button onclick="saveScreenshot()" id="saveBtn">💾 保存报告</button>
+            <button onclick="location.reload()" style="margin-left: 10px;">🔄 重新练习</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 知识点题库定义 ====================
+        const knowledgeBase = {
+            // 知识点1: 差分方程与MATLAB实现
+            differenceEquation: {
+                id: 'differenceEquation',
+                name: '差分方程与MATLAB实现',
+                description: '理解差分方程的形式及其与filter函数参数的对应关系',
+                questionGenerators: [
+                    // 题型1: 差分方程转系数向量
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const scenarios = [
+                                { eq: 'y[n] - 0.5y[n-1] = x[n]', a: '[1, -0.5]', b: '[1]' },
+                                { eq: 'y[n] + 0.8y[n-1] = 2x[n]', a: '[1, 0.8]', b: '[2]' },
+                                { eq: 'y[n] = 0.5x[n] + x[n-1]', a: '[1]', b: '[0.5, 1]' },
+                                { eq: 'y[n] - 0.3y[n-1] + 0.2y[n-2] = x[n]', a: '[1, -0.3, 0.2]', b: '[1]' },
+                                { eq: 'y[n] = x[n] - 0.5x[n-1] + 0.25x[n-2]', a: '[1]', b: '[1, -0.5, 0.25]' }
+                            ];
+                            const s = scenarios[Math.floor(Math.random() * scenarios.length)];
+                            const wrongOptions = [
+                                { a: '[1, 0.5]', b: '[1]' },
+                                { a: '[1]', b: '[1, -0.5]' },
+                                { a: '[-0.5, 1]', b: '[1]' }
+                            ];
+                            return {
+                                question: `差分方程 $${s.eq}$ 对应的MATLAB <code>filter(b,a,x)</code> 参数应为：`,
+                                options: shuffleOptions([
+                                    { text: `a = ${s.a}, b = ${s.b}`, correct: true },
+                                    ...wrongOptions.slice(0, 3)
+                                ]),
+                                explanation: `根据MATLAB的filter函数定义，a向量对应y[n]侧的系数（y[n]系数归一化为1），b向量对应x[n]侧的系数。注意符号：方程中的减号在a向量中变为负号。`
+                            };
+                        }
+                    },
+                    // 题型2: 判断系数正误
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const coef = (Math.random() * 1.5 + 0.2).toFixed(1);
+                            const eq = `y[n] - ${coef}y[n-1] = x[n]`;
+                            return {
+                                question: `对于差分方程 $${eq}$，以下哪个说法是<strong>错误</strong>的？`,
+                                options: shuffleOptions([
+                                    { text: `a向量的第一个元素必须是${coef}`, correct: true },
+                                    { text: 'a向量的第一个元素应该是1', correct: false },
+                                    { text: `a向量应为[1, -${coef}]`, correct: false },
+                                    { text: 'b向量应为[1]', correct: false }
+                                ]),
+                                explanation: `MATLAB的filter函数约定a向量的第一个元素对应y[n]的系数，通常归一化为1。方程 $${eq}$ 中，a = [1, -${coef}]，而不是[${coef}, ...]。`
+                            };
+                        }
+                    },
+                    // 题型3: FIR vs IIR判断
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const isFIR = Math.random() > 0.5;
+                            const eq = isFIR 
+                                ? `y[n] = ${(Math.random() * 2).toFixed(1)}x[n] + x[n-1]`
+                                : `y[n] = ${(Math.random() * 0.9).toFixed(1)}y[n-1] + x[n]`;
+                            return {
+                                question: `差分方程 $${eq}$ 描述的是什么类型的系统？`,
+                                options: shuffleOptions([
+                                    { text: isFIR ? 'FIR系统（有限脉冲响应）' : 'IIR系统（无限脉冲响应）', correct: true },
+                                    { text: isFIR ? 'IIR系统（无限脉冲响应）' : 'FIR系统（有限脉冲响应）', correct: false },
+                                    { text: '既是FIR又是IIR', correct: false },
+                                    { text: '无法判断', correct: false }
+                                ]),
+                                explanation: isFIR 
+                                    ? 'FIR系统的差分方程中只有x[n]及其延迟项，没有y[n]的延迟项。其冲激响应在有限时间后变为0。'
+                                    : 'IIR系统的差分方程中包含y[n]的延迟项（如y[n-1]），形成反馈，导致冲激响应理论上无限长。'
+                            };
+                        }
+                    },
+                    // 题型4: 索引偏移理解
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: 'MATLAB数组索引从1开始，而差分方程通常从0开始。对于方程 $y[n] + 2y[n-1] = x[n]$，a向量中 <code>a[2]</code> 对应的是：',
+                                options: shuffleOptions([
+                                    { text: '$y[n-1]$ 的系数（即2）', correct: true },
+                                    { text: '$y[n]$ 的系数（即1）', correct: false },
+                                    { text: '$y[n-2]$ 的系数', correct: false },
+                                    { text: '没有对应关系', correct: false }
+                                ]),
+                                explanation: 'MATLAB中 a[1]对应$a_0$（即$y[n]$的系数），a[2]对应$a_1$（即$y[n-1]$的系数）。因此a[2] = 2。'
+                            };
+                        }
+                    },
+                    // 题型5: 阶跃响应预测
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const isFIR = Math.random() > 0.5;
+                            const eq = isFIR ? 'y[n] = x[n] + x[n-1]' : 'y[n] = 0.5y[n-1] + x[n]';
+                            return {
+                                question: `对于系统 $${eq}$，当输入为单位阶跃信号$u[n]$时，输出响应的特点是：`,
+                                options: shuffleOptions([
+                                    { text: isFIR ? '在n≥1后稳定在常数2' : '逐渐增长并趋近于稳态值2', correct: true },
+                                    { text: isFIR ? '持续增长' : '在有限时间后变为0', correct: false },
+                                    { text: '振荡', correct: false },
+                                    { text: '发散到无穷', correct: false }
+                                ]),
+                                explanation: isFIR
+                                    ? 'FIR系统的阶跃响应：y[0]=1, y[1]=2, y[n]=2 (n≥1)，因为只有当前和前一个输入非零。'
+                                    : 'IIR系统 $y[n]=0.5y[n-1]+u[n]$ 的稳态值可由 $Y_{ss}=0.5Y_{ss}+1$ 求得，$Y_{ss}=2$。'
+                            };
+                        }
+                    }
+                ]
+            },
+
+            // 知识点2: Z变换与系统函数
+            zTransform: {
+                id: 'zTransform',
+                name: 'Z变换与系统函数',
+                description: '掌握Z变换的定义、系统函数的形式及其物理意义',
+                questionGenerators: [
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '离散时间信号 $x[n]$ 的双边Z变换定义为：',
+                                options: shuffleOptions([
+                                    { text: '$X(z) = \\sum_{n=-\\infty}^{\\infty} x[n]z^{-n}$', correct: true },
+                                    { text: '$X(z) = \\sum_{n=0}^{\\infty} x[n]z^{-n}$', correct: false },
+                                    { text: '$X(z) = \\sum_{n=-\\infty}^{\\infty} x[n]z^{n}$', correct: false },
+                                    { text: '$X(z) = \\int_{-\\infty}^{\\infty} x(t)z^{-t}dt$', correct: false }
+                                ]),
+                                explanation: '双边Z变换的求和范围是从$-\\infty$到$+\\infty$，指数是$z^{-n}$。单边Z变换则从n=0开始。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const a = (Math.random() * 0.8 + 0.1).toFixed(1);
+                            return {
+                                question: `对于因果系统，差分方程 $y[n] - ${a}y[n-1] = x[n]$ 的系统函数 $H(z)$ 为：`,
+                                options: shuffleOptions([
+                                    { text: `$H(z) = \\frac{1}{1 - ${a}z^{-1}}$`, correct: true },
+                                    { text: `$H(z) = \\frac{z}{z - ${a}}$`, correct: false },
+                                    { text: `$H(z) = \\frac{1 - ${a}z^{-1}}{1}$`, correct: false },
+                                    { text: `$H(z) = 1 - ${a}z^{-1}$`, correct: false }
+                                ]),
+                                explanation: `对差分方程两边做Z变换：$Y(z)(1-${a}z^{-1})=X(z)$，因此 $H(z)=Y(z)/X(z)=1/(1-${a}z^{-1})$。`
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '系统函数 $H(z)$ 表示的是：',
+                                options: shuffleOptions([
+                                    { text: '输出信号的Z变换与输入信号的Z变换之比', correct: true },
+                                    { text: '输入信号的Z变换与输出信号的Z变换之比', correct: false },
+                                    { text: '系统冲激响应的时域表达式', correct: false },
+                                    { text: '系统频率响应的幅度', correct: false }
+                                ]),
+                                explanation: '系统函数定义为 $H(z) = Y(z)/X(z)$，即输出与输入的Z变换之比。它完整描述了LTI系统的特性。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const order = Math.floor(Math.random() * 2) + 2;
+                            return {
+                                question: `一个${order}阶的差分方程对应的系统函数 $H(z)$ 是一个什么类型的函数？`,
+                                options: shuffleOptions([
+                                    { text: '有理函数（分子分母都是多项式）', correct: true },
+                                    { text: '超越函数', correct: false },
+                                    { text: '指数函数', correct: false },
+                                    { text: '对数函数', correct: false }
+                                ]),
+                                explanation: '线性常系数差分方程对应的系统函数都是有理函数形式：$H(z)=N(z)/D(z)$，其中N(z)和D(z)都是z的多项式。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '对于系统 $y[n] = x[n] - x[n-2]$，其系统函数为：',
+                                options: shuffleOptions([
+                                    { text: '$H(z) = 1 - z^{-2}$', correct: true },
+                                    { text: '$H(z) = 1 + z^{-2}$', correct: false },
+                                    { text: '$H(z) = z^{-2}$', correct: false },
+                                    { text: '$H(z) = \\frac{1}{1-z^{-2}}$', correct: false }
+                                ]),
+                                explanation: '直接对方程做Z变换：$Y(z) = X(z) - X(z)z^{-2}$，因此 $H(z) = 1 - z^{-2}$。'
+                            };
+                        }
+                    }
+                ]
+            },
+
+            // 知识点3: 零点与极点
+            poleZero: {
+                id: 'poleZero',
+                name: '零点与极点',
+                description: '理解零点、极点的定义及其在系统分析中的作用',
+                questionGenerators: [
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '对于系统函数 $H(z) = \\frac{N(z)}{D(z)}$，以下说法正确的是：',
+                                options: shuffleOptions([
+                                    { text: '$N(z)$的根称为零点，$D(z)$的根称为极点', correct: true },
+                                    { text: '$D(z)$的根称为零点，$N(z)$的根称为极点', correct: false },
+                                    { text: '零点和极点都是$N(z)$的根', correct: false },
+                                    { text: '零点和极点都是$D(z)$的根', correct: false }
+                                ]),
+                                explanation: '零点（Zeros）是使$H(z)=0$的z值，即分子$N(z)=0$的根；极点（Poles）是使$H(z)→\\infty$的z值，即分母$D(z)=0$的根。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const a = (Math.random() * 0.8 + 0.1).toFixed(1);
+                            return {
+                                question: `系统函数 $H(z) = \\frac{1}{1 - ${a}z^{-1}}$ 的极点位于：`,
+                                options: shuffleOptions([
+                                    { text: `$z = ${a}$`, correct: true },
+                                    { text: `$z = -${a}$`, correct: false },
+                                    { text: `$z = ${a}^{-1}$`, correct: false },
+                                    { text: '$z = 0$', correct: false }
+                                ]),
+                                explanation: `令分母为0：$1-${a}z^{-1}=0$，得 $z^{-1}=${a}$，因此 $z=${a}$。注意要先将$z^{-1}$形式转换为z的正次幂。`
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '系统函数 $H(z) = \\frac{z^2 - 1}{z^2 - 0.5z}$ 有几个零点和几个极点？（包括z=0处）',
+                                options: shuffleOptions([
+                                    { text: '2个零点，2个极点', correct: true },
+                                    { text: '2个零点，1个极点', correct: false },
+                                    { text: '1个零点，2个极点', correct: false },
+                                    { text: '0个零点，2个极点', correct: false }
+                                ]),
+                                explanation: '分子$z^2-1=(z-1)(z+1)$有2个零点：z=1和z=-1。分母$z^2-0.5z=z(z-0.5)$有2个极点：z=0和z=0.5。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '在使用MATLAB的<code>roots</code>函数求零极点时，如果分子分母阶次不同，可能会：',
+                                options: shuffleOptions([
+                                    { text: '忽略z=0处的零点或极点', correct: true },
+                                    { text: '产生虚假的零点', correct: false },
+                                    { text: '无法运行', correct: false },
+                                    { text: '自动补齐阶次', correct: false }
+                                ]),
+                                explanation: '这就是为什么需要<code>dpzplot</code>函数：它会先用<code>zeros</code>补齐系数向量长度，确保不遗漏z=0处的根。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '在零极点图（Z平面）上，极点通常用什么符号表示？',
+                                options: shuffleOptions([
+                                    { text: '×（叉号）', correct: true },
+                                    { text: '○（圆圈）', correct: false },
+                                    { text: '□（方框）', correct: false },
+                                    { text: '△（三角形）', correct: false }
+                                ]),
+                                explanation: '约定俗成：极点用×（叉号）表示，零点用○（圆圈）表示。这在所有信号处理教材和工具中都是统一的。'
+                            };
+                        }
+                    }
+                ]
+            },
+
+            // 知识点4: 系统稳定性
+            stability: {
+                id: 'stability',
+                name: '系统稳定性判断',
+                description: '通过极点位置判断系统的稳定性、因果性',
+                questionGenerators: [
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '一个<strong>因果稳定</strong>的LTI系统，其所有极点必须：',
+                                options: shuffleOptions([
+                                    { text: '位于单位圆内（$|p_k| < 1$）', correct: true },
+                                    { text: '位于单位圆上（$|p_k| = 1$）', correct: false },
+                                    { text: '位于单位圆外（$|p_k| > 1$）', correct: false },
+                                    { text: '位于实轴上', correct: false }
+                                ]),
+                                explanation: '因果稳定系统的充要条件：ROC包含单位圆。这要求所有极点都在单位圆内。极点在圆上为临界稳定，在圆外则不稳定。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const r = (Math.random() * 0.5 + 1.2).toFixed(1); // >1
+                            return {
+                                question: `系统有一个极点位于 $z = ${r}$ 处（实数），该系统是：`,
+                                options: shuffleOptions([
+                                    { text: '不稳定的', correct: true },
+                                    { text: '稳定的', correct: false },
+                                    { text: '临界稳定的', correct: false },
+                                    { text: '无法判断', correct: false }
+                                ]),
+                                explanation: `极点模值 $|${r}| = ${r} > 1$，位于单位圆外，因此系统不稳定。冲激响应会发散。`
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '对于极点恰好位于单位圆上的系统（如 $z=1$ 或 $z=e^{j\\pi/4}$），系统的冲激响应会：',
+                                options: shuffleOptions([
+                                    { text: '等幅振荡或恒定，不收敛也不发散', correct: true },
+                                    { text: '指数衰减到0', correct: false },
+                                    { text: '指数发散到无穷', correct: false },
+                                    { text: '在有限时间后变为0', correct: false }
+                                ]),
+                                explanation: '极点在单位圆上对应临界稳定：$h[n] = r^n$当r=1时为常数；极点为$e^{j\\omega_0}$时为等幅正弦振荡。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const r = (Math.random() * 0.8 + 0.1).toFixed(1); // <1
+                            const theta = Math.floor(Math.random() * 180);
+                            return {
+                                question: `极点 $p = ${r}e^{j${theta}°}$ 对应的冲激响应特点是：`,
+                                options: shuffleOptions([
+                                    { text: '衰减振荡（振幅逐渐减小的正弦波）', correct: true },
+                                    { text: '等幅振荡', correct: false },
+                                    { text: '发散振荡', correct: false },
+                                    { text: '单调衰减（无振荡）', correct: false }
+                                ]),
+                                explanation: `模值$r=${r}<1$使响应衰减；角度$${theta}°$使响应振荡。组合起来就是衰减振荡，常见于阻尼谐振器。`
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '系统稳定性的判断依据是：',
+                                options: shuffleOptions([
+                                    { text: '冲激响应绝对可和：$\\sum_{n=-\\infty}^{\\infty}|h[n]| < \\infty$', correct: true },
+                                    { text: '阶跃响应有界', correct: false },
+                                    { text: '频率响应有界', correct: false },
+                                    { text: '零点都在单位圆内', correct: false }
+                                ]),
+                                explanation: '稳定性的数学定义：冲激响应绝对可和。对于因果系统，这等价于ROC包含单位圆，即所有极点在圆内。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: 'FIR系统（有限脉冲响应系统）的稳定性如何？',
+                                options: shuffleOptions([
+                                    { text: '总是稳定的', correct: true },
+                                    { text: '取决于系数', correct: false },
+                                    { text: '可能不稳定', correct: false },
+                                    { text: '总是不稳定的', correct: false }
+                                ]),
+                                explanation: 'FIR系统的冲激响应在有限时间后为0，因此必然绝对可和，总是稳定的。只有IIR系统才需要检查极点位置。'
+                            };
+                        }
+                    }
+                ]
+            },
+
+            // 知识点5: ROC与系统特性
+            roc: {
+                id: 'roc',
+                name: 'ROC（收敛域）与系统特性',
+                description: '理解收敛域的概念及其与因果性、稳定性的关系',
+                questionGenerators: [
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: 'ROC（Region of Convergence）是指：',
+                                options: shuffleOptions([
+                                    { text: 'Z变换收敛的z值集合', correct: true },
+                                    { text: '系统函数的零点集合', correct: false },
+                                    { text: '系统函数的极点集合', correct: false },
+                                    { text: '频率响应的范围', correct: false }
+                                ]),
+                                explanation: 'ROC是使Z变换级数收敛的所有z值的集合。不同的ROC对应不同的时域信号（即使系统函数代数形式相同）。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '对于<strong>因果</strong>系统，ROC必须是：',
+                                options: shuffleOptions([
+                                    { text: '某个圆的外部（包括无穷远点）', correct: true },
+                                    { text: '某个圆的内部', correct: false },
+                                    { text: '单位圆', correct: false },
+                                    { text: '整个z平面', correct: false }
+                                ]),
+                                explanation: '因果信号（$h[n]=0, n<0$）的ROC是某个圆的外部，圆的半径由最外侧极点的模值决定。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '系统<strong>稳定</strong>的充要条件是ROC：',
+                                options: shuffleOptions([
+                                    { text: '包含单位圆', correct: true },
+                                    { text: '不包含单位圆', correct: false },
+                                    { text: '就是单位圆', correct: false },
+                                    { text: '包含原点', correct: false }
+                                ]),
+                                explanation: '稳定性要求频率响应$H(e^{j\\omega})$存在，即$z=e^{j\\omega}$（单位圆）必须在ROC内。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const r = (Math.random() * 0.8 + 0.2).toFixed(1);
+                            return {
+                                question: `系统函数 $H(z)=\\frac{1}{1-${r}z^{-1}}$ 的因果系统对应的ROC是：`,
+                                options: shuffleOptions([
+                                    { text: `$|z| > ${r}$`, correct: true },
+                                    { text: `$|z| < ${r}$`, correct: false },
+                                    { text: `$|z| = ${r}$`, correct: false },
+                                    { text: '整个z平面', correct: false }
+                                ]),
+                                explanation: `极点在$z=${r}$。因果系统ROC是最外侧极点之外，即$|z|>${r}$。此ROC包含单位圆（因为${r}<1），所以系统稳定。`
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '两个不同的时域序列可能有相同的系统函数代数形式，它们的区别在于：',
+                                options: shuffleOptions([
+                                    { text: 'ROC不同', correct: true },
+                                    { text: '零点位置不同', correct: false },
+                                    { text: '极点位置不同', correct: false },
+                                    { text: '增益不同', correct: false }
+                                ]),
+                                explanation: '例如$H(z)=1/(1-0.5z^{-1})$，ROC为$|z|>0.5$时对应因果序列；ROC为$|z|<0.5$时对应反因果序列。'
+                            };
+                        }
+                    }
+                ]
+            },
+
+            // 知识点6: 系统响应特性
+            systemResponse: {
+                id: 'systemResponse',
+                name: '系统响应特性',
+                description: '理解冲激响应、阶跃响应与系统参数的关系',
+                questionGenerators: [
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const r = (Math.random() * 0.8 + 0.1).toFixed(1);
+                            return {
+                                question: `单极点系统 $H(z) = \\frac{1}{1-${r}z^{-1}}$ 的冲激响应为：`,
+                                options: shuffleOptions([
+                                    { text: `$h[n] = ${r}^n u[n]$`, correct: true },
+                                    { text: `$h[n] = ${r}^{-n} u[n]$`, correct: false },
+                                    { text: `$h[n] = (${r})^n u[-n]$`, correct: false },
+                                    { text: `$h[n] = \\delta[n]$`, correct: false }
+                                ]),
+                                explanation: `对 $H(z)=1/(1-${r}z^{-1})$ 做反Z变换，得到 $h[n]=${r}^n u[n]$。这是一个指数衰减序列（因为${r}<1）。`
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '对于稳定的IIR系统，当输入为单位阶跃$u[n]$时，输出的稳态值可以通过什么方法快速计算？',
+                                options: shuffleOptions([
+                                    { text: '令 $Y_{ss} = aY_{ss} + 1$ 求解（a为反馈系数）', correct: true },
+                                    { text: '计算前100个点的平均值', correct: false },
+                                    { text: '直接等于系统增益', correct: false },
+                                    { text: '无法预测', correct: false }
+                                ]),
+                                explanation: '稳态时$y[n]=y[n-1]=Y_{ss}$，代入差分方程可求出稳态值。例如$y[n]=0.8y[n-1]+u[n]$，则$Y_{ss}=0.8Y_{ss}+1$，得$Y_{ss}=5$。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: 'FIR系统对单位阶跃输入的响应特点是：',
+                                options: shuffleOptions([
+                                    { text: '在有限时间后达到稳态（变为常数）', correct: true },
+                                    { text: '持续增长', correct: false },
+                                    { text: '振荡', correct: false },
+                                    { text: '逐渐衰减到0', correct: false }
+                                ]),
+                                explanation: 'FIR系统如$y[n]=0.5x[n]+x[n-1]$对阶跃输入：y[0]=0.5, y[1]=1.5, y[n≥1]=1.5。记忆长度有限导致快速稳定。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const theta = Math.floor(Math.random() * 180);
+                            return {
+                                question: `极点 $p=e^{j${theta}°}$（在单位圆上）对应的冲激响应是：`,
+                                options: shuffleOptions([
+                                    { text: `频率为${theta}°的等幅正弦振荡`, correct: true },
+                                    { text: '衰减振荡', correct: false },
+                                    { text: '发散振荡', correct: false },
+                                    { text: '恒定常数', correct: false }
+                                ]),
+                                explanation: `极点在单位圆上且为复数时，$h[n]=\\cos(${theta}°n)$，产生持续的等幅振荡。这就是数字谐振器的原理。`
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            return {
+                                question: '系统 $y[n] = ay[n-1] + x[n]$ 在初始条件 $y[-1] \\neq 0$ 时：',
+                                options: shuffleOptions([
+                                    { text: '不满足线性系统的零状态特性（因为有初始状态的影响）', correct: true },
+                                    { text: '仍然是线性系统', correct: false },
+                                    { text: '变成非线性系统', correct: false },
+                                    { text: '无法运行', correct: false }
+                                ]),
+                                explanation: '非零初始条件破坏了零输入零输出的特性。线性系统要求零状态（所有初始条件为0）。这就是练习四任务三的核心概念。'
+                            };
+                        }
+                    },
+                    {
+                        type: 'single',
+                        generate: () => {
+                            const a = (Math.random() * 0.9 + 0.1).toFixed(1);
+                            return {
+                                question: `对于稳定系统 $y[n]=${a}y[n-1]+x[n]$，不同的初始条件$y[-1]$对最终稳态输出的影响是：`,
+                                options: shuffleOptions([
+                                    { text: '初始条件的影响会逐渐消失，最终趋于相同稳态', correct: true },
+                                    { text: '初始条件的影响永远存在', correct: false },
+                                    { text: '初始条件越大，稳态值越大', correct: false },
+                                    { text: '无法预测', correct: false }
+                                ]),
+                                explanation: `因为$${a}<1$，初始状态响应$${a}^n y[-1]$会衰减到0。稳定系统会"忘记"初始条件，这是稳定性的重要体现。`
+                            };
+                        }
+                    }
+                ]
+            }
+        };
+
+        // ==================== 工具函数 ====================
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function shuffleOptions(options) {
+            const correctOption = options.find(opt => opt.correct);
+            const shuffled = shuffleArray(options);
+            // 返回打乱后的选项，并记录正确答案的新索引
+            const correctIndex = shuffled.findIndex(opt => opt.correct);
+            return {
+                options: shuffled,
+                correctIndex: correctIndex
+            };
+        }
+
+        // ==================== 学生数据管理 ====================
+        let studentData = {
+            id: '',
+            name: '',
+            currentTopicIndex: 0,
+            topicStats: {},
+            startTime: null
+        };
+
+        const topics = Object.values(knowledgeBase);
+
+        function initializeStats() {
+            topics.forEach(topic => {
+                studentData.topicStats[topic.id] = {
+                    attempts: 0,
+                    correct: 0,
+                    questions: []
+                };
+            });
+        }
+
+        // ==================== 主流程函数 ====================
+        function startQuiz() {
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            
+            if (!id || !name) {
+                alert('请填写学号和姓名！');
+                return;
+            }
+
+            studentData.id = id;
+            studentData.name = name;
+            studentData.startTime = new Date();
+            initializeStats();
+
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.quiz-section').classList.add('active');
+            
+            document.getElementById('studentInfo').innerHTML = 
+                `<strong>学号：</strong>${id} &nbsp;&nbsp; <strong>姓名：</strong>${name}`;
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (studentData.currentTopicIndex >= topics.length) {
+                showResults();
+                return;
+            }
+
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const stats = studentData.topicStats[currentTopic.id];
+            
+            // 随机选择一个题目生成器
+            const generator = currentTopic.questionGenerators[
+                Math.floor(Math.random() * currentTopic.questionGenerators.length)
+            ];
+            
+            // 生成题目
+            const questionData = generator.generate();
+            
+            // 保存题目数据
+            const question = {
+                type: generator.type,
+                question: questionData.question,
+                options: questionData.options.options,
+                correct: questionData.options.correctIndex,
+                explanation: questionData.explanation,
+                answered: false,
+                isCorrect: false
+            };
+            
+            stats.questions.push(question);
+
+            // 更新进度
+            const progress = ((studentData.currentTopicIndex / topics.length) * 100).toFixed(0);
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').textContent = progress + '%';
+
+            // 显示当前知识点
+            document.getElementById('currentTopic').innerHTML = `
+                <div class="topic-name">📚 ${currentTopic.name}</div>
+                <div class="topic-progress">知识点 ${studentData.currentTopicIndex + 1}/${topics.length} | ${currentTopic.description}</div>
+            `;
+
+            // 显示题目
+            const questionNum = stats.questions.length;
+            document.getElementById('questionTitle').innerHTML = 
+                `<span class="question-number">第 ${questionNum} 题</span>${questionData.question}`;
+            
+            document.getElementById('questionContent').innerHTML = '';
+
+            // 生成选项
+            let optionsHTML = '';
+            if (generator.type === 'single') {
+                question.options.forEach((opt, index) => {
+                    optionsHTML += `
+                        <div class="option" data-index="${index}" onclick="selectOption(${index})">
+                            ${String.fromCharCode(65 + index)}. ${opt.text}
+                        </div>
+                    `;
+                });
+            } else {
+                question.options.forEach((opt, index) => {
+                    optionsHTML += `
+                        <div class="checkbox-option" onclick="toggleCheckbox(${index})">
+                            <input type="checkbox" id="opt${index}">
+                            <label for="opt${index}">${String.fromCharCode(65 + index)}. ${opt.text}</label>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('options').innerHTML = optionsHTML;
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+
+            // 重新渲染数学公式
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function selectOption(index) {
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.option')[index].classList.add('selected');
+        }
+
+        function toggleCheckbox(index) {
+            const checkbox = document.getElementById(`opt${index}`);
+            checkbox.checked = !checkbox.checked;
+        }
+
+        function submitAnswer() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const stats = studentData.topicStats[currentTopic.id];
+            const question = stats.questions[stats.questions.length - 1];
+            
+            let selectedAnswers, isCorrect;
+
+            if (question.type === 'single') {
+                const selected = document.querySelector('.option.selected');
+                if (!selected) {
+                    alert('请选择一个答案！');
+                    return;
+                }
+                
+                selectedAnswers = parseInt(selected.getAttribute('data-index'));
+                isCorrect = selectedAnswers === question.correct;
+
+                // 显示正确/错误
+                document.querySelectorAll('.option').forEach((opt, idx) => {
+                    if (idx === question.correct) {
+                        opt.classList.add('correct');
+                    } else if (idx === selectedAnswers && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                    opt.style.pointerEvents = 'none';
+                });
+            } else {
+                selectedAnswers = [];
+                document.querySelectorAll('input[type="checkbox"]').forEach((cb, idx) => {
+                    if (cb.checked) selectedAnswers.push(idx);
+                });
+                
+                if (selectedAnswers.length === 0) {
+                    alert('请至少选择一个答案！');
+                    return;
+                }
+
+                isCorrect = selectedAnswers.length === question.correct.length && 
+                           selectedAnswers.every(ans => question.correct.includes(ans));
+
+                document.querySelectorAll('.checkbox-option').forEach((opt, idx) => {
+                    if (question.correct.includes(idx)) {
+                        opt.classList.add('correct');
+                    } else if (selectedAnswers.includes(idx)) {
+                        opt.classList.add('incorrect');
+                    }
+                    opt.style.pointerEvents = 'none';
+                });
+            }
+
+            // 更新统计
+            stats.attempts++;
+            question.answered = true;
+            question.isCorrect = isCorrect;
+            if (isCorrect) stats.correct++;
+
+            // 显示反馈
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.innerHTML = `
+                <div class="feedback ${isCorrect ? 'correct' : 'incorrect'}">
+                    ${isCorrect ? '✅ 回答正确！' : '❌ 回答错误，请继续练习！'}
+                    <div class="explanation-detail">${question.explanation}</div>
+                </div>
+            `;
+
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            
+            if (isCorrect) {
+                document.getElementById('nextBtn').textContent = 
+                    studentData.currentTopicIndex < topics.length - 1 ? '进入下一知识点 →' : '查看结果 →';
+            } else {
+                document.getElementById('nextBtn').textContent = '继续练习此知识点 →';
+            }
+
+            // 重新渲染数学公式
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function nextQuestion() {
+            const lastQuestion = studentData.topicStats[topics[studentData.currentTopicIndex].id]
+                .questions.slice(-1)[0];
+            
+            if (lastQuestion.isCorrect) {
+                // 答对了，进入下一个知识点
+                studentData.currentTopicIndex++;
+                if (studentData.currentTopicIndex >= topics.length) {
+                    showResults();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                // 答错了，继续当前知识点
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-section').classList.remove('active');
+            document.querySelector('.result-section').classList.add('active');
+
+            const endTime = new Date();
+            const duration = Math.round((endTime - studentData.startTime) / 1000 / 60); // 分钟
+
+            let reportHTML = `
+                <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #e8f5ff 0%, #f0f9ff 100%); border-radius: 10px;">
+                    <h2 style="color: #608de0;">🎉 ${studentData.name} 同学</h2>
+                    <p style="color: #666; font-size: 1.1em; margin: 10px 0;">学号：${studentData.id}</p>
+                    <p style="color: #666;">用时：${duration} 分钟</p>
+                </div>
+
+                <table class="stats-table">
+                    <tr>
+                        <th>知识点</th>
+                        <th>答题次数</th>
+                        <th>掌握程度</th>
+                    </tr>
+            `;
+
+            let excellentTopics = [], goodTopics = [], fairTopics = [], poorTopics = [];
+
+            topics.forEach(topic => {
+                const stats = studentData.topicStats[topic.id];
+                let mastery, masteryClass;
+
+                if (stats.attempts === 1) {
+                    mastery = '优秀 ⭐⭐⭐⭐';
+                    masteryClass = 'mastery-excellent';
+                    excellentTopics.push(topic.name);
+                } else if (stats.attempts === 2) {
+                    mastery = '良好 ⭐⭐⭐';
+                    masteryClass = 'mastery-good';
+                    goodTopics.push(topic.name);
+                } else if (stats.attempts <= 4) {
+                    mastery = '一般 ⭐⭐';
+                    masteryClass = 'mastery-fair';
+                    fairTopics.push(topic.name);
+                } else {
+                    mastery = '需加强 ⭐';
+                    masteryClass = 'mastery-poor';
+                    poorTopics.push(topic.name);
+                }
+
+                reportHTML += `
+                    <tr>
+                        <td><strong>${topic.name}</strong></td>
+                        <td>${stats.attempts} 次</td>
+                        <td class="${masteryClass}">${mastery}</td>
+                    </tr>
+                `;
+            });
+
+            reportHTML += '</table>';
+
+            // 知识掌握分析
+            reportHTML += '<div style="margin-top: 30px;"><h3 style="color: #2d57a4;">📊 知识掌握分析</h3>';
+
+            if (excellentTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e8f5e9; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #5ca353;">
+                        <strong style="color: #5ca353;">✅ 掌握优秀（一次通过）：</strong><br>
+                        ${excellentTopics.join('、')}
+                    </div>
+                `;
+            }
+
+            if (goodTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e8f5ff; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #608de0;">
+                        <strong style="color: #608de0;">👍 掌握良好（两次通过）：</strong><br>
+                        ${goodTopics.join('、')}
+                    </div>
+                `;
+            }
+
+            if (fairTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #fff8e1; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #D46A6A;">
+                        <strong style="color: #D46A6A;">⚠️ 需要巩固（3-4次通过）：</strong><br>
+                        ${fairTopics.join('、')}
+                    </div>
+                `;
+            }
+
+            if (poorTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #ffebee; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #912d32;">
+                        <strong style="color: #912d32;">❌ 重点加强（5次以上）：</strong><br>
+                        ${poorTopics.join('、')}
+                        <p style="margin-top: 10px; font-size: 0.9em;">建议：重新学习相关理论，多做练习。</p>
+                    </div>
+                `;
+            }
+
+            reportHTML += '</div>';
+
+            document.getElementById('finalReport').innerHTML = reportHTML;
+        }
+
+        function saveScreenshot() {
+            const button = document.getElementById('saveBtn');
+            button.disabled = true;
+            button.textContent = '⏳ 正在生成...';
+
+            html2canvas(document.body, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false
+            }).then(canvas => {
+                canvas.toBlob(blob => {
+                    const cleanId = studentData.id.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const cleanName = studentData.name.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const timestamp = new Date().toISOString().slice(0, 10);
+                    const filename = `DSP_Lab2_${cleanId}_${cleanName}_${timestamp}.png`;
+
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    button.disabled = false;
+                    button.textContent = '✅ 保存成功';
+                    setTimeout(() => {
+                        button.textContent = '💾 再次保存';
+                    }, 2000);
+                }, 'image/png');
+            }).catch(error => {
+                console.error('截图失败:', error);
+                alert('截图失败，请尝试使用浏览器的截图功能');
+                button.disabled = false;
+                button.textContent = '💾 保存报告';
+            });
+        }
+    </script>
+
+    <!-- MathJax 加载脚本 -->
+    <script>
+        (function() {
+            const statusDiv = document.getElementById('mathjaxStatus');
+            const primaryCDN = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+            const backupCDN = 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+
+            function loadScript(src, onload, onerror) {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.onload = onload;
+                script.onerror = onerror;
+                document.head.appendChild(script);
+            }
+
+            function onMathJaxLoad() {
+                statusDiv.textContent = '✓ 数学公式加载成功';
+                statusDiv.className = 'mathjax-status success';
+            }
+
+            loadScript(primaryCDN, onMathJaxLoad, function() {
+                statusDiv.textContent = '主CDN加载失败，尝试备用...';
+                loadScript(backupCDN, onMathJaxLoad, function() {
+                    statusDiv.textContent = '❌ 公式加载失败，请检查网络';
+                    statusDiv.className = 'mathjax-status';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
