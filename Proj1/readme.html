@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP 项目1 说明</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f6f8fa;
+            color: #24292e;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #d1d5da;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 45px;
+        }
+
+        /* 返回按钮 */
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background-color: #0366d6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #005cc5;
+        }
+
+        /* 标题样式 */
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* 段落 */
+        p {
+            margin-bottom: 16px;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 代码块样式 */
+        pre {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        code {
+            background-color: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            border: 1px solid #e1e4e8;
+        }
+
+        th, td {
+            padding: 10px 15px;
+            text-align: left;
+            border: 1px solid #e1e4e8;
+        }
+
+        th {
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        /* 引用块 */
+        blockquote {
+            padding: 10px 20px;
+            margin: 0 0 16px 0;
+            border-left: 4px solid #0366d6;
+            background-color: #f6f8fa;
+            color: #586069;
+        }
+
+        /* 分隔线 */
+        hr {
+            height: 2px;
+            background-color: #e1e4e8;
+            border: none;
+            margin: 30px 0;
+        }
+
+        /* 检查清单样式 */
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            font-size: 18px;
+            color: #0366d6;
+        }
+
+        /* 信息框样式 */
+        .info-box {
+            background-color: #f1f8ff;
+            border: 1px solid #c8e1ff;
+            border-left: 4px solid #0366d6;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .warning-box {
+            background-color: #fff5b1;
+            border: 1px solid #ffe58f;
+            border-left: 4px solid #faad14;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        /* 文件树样式 */
+        .file-tree {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 14px;
+        }
+
+        /* 流程图样式 */
+        .flow-chart {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-family: "SFMono-Regular", Consolas, monospace;
+        }
+
+        /* 页脚 */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e4e8;
+            text-align: center;
+            color: #6a737d;
+            font-size: 14px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+
+            pre {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+        }
+
+        /* 强调文本 */
+        strong {
+            font-weight: 600;
+            color: #24292e;
+        }
+
+        /* 链接样式 */
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 980px; margin: 0 auto 20px;">
+        <a href="../index.html" class="back-button">← 返回实验主页</a>
+    </div>
+
+    <div class="container">
+        <h1>📚 DSP 项目1 说明</h1>
+
+        <h2>📂 项目文件清单</h2>
+        <p>项目1提供实验文件如下：</p>
+        
+        <div class="file-tree">
+<pre>📁 项目文件夹
+├── 📁 audio/
+│   └── 🎵 greatest_work.flac
+├── 📄 README.MD
+├── 📝 ex0_all.m
+├── 📝 ex1_read_audio_cut.m
+├── 📝 ex2_dct_x_cut.m
+├── 📝 ex3_energy_cut.m
+├── 📝 ex4_quantization.m
+├── 📝 ex5_idct_quant.m
+├── 📝 ex6_recombine_I_X.m
+├── 📝 ex7_analyze.m
+├── 🔒 test_project1.p
+└── 📋 基于DCT原理的音频压缩.html</pre>
+        </div>
+
+        <h3>文件说明</h3>
+        <ul>
+            <li><strong>Ex0</strong>：主函数，<strong>无需修改</strong>，在完成 ex1-ex7 所有内容后执行</li>
+            <li><strong>Ex1-ex7</strong>：文件中以 <code>?</code> 标记的地方需用合适的代码进行替换</li>
+            <li><strong>test_project1.p</strong>：加密文件，无法打开，不可修改，运行该文件可检查 ex1 到 ex7 中的代码是否正确</li>
+        </ul>
+
+        <hr>
+
+        <h2>🔄 项目流程</h2>
+
+        <h3>1️⃣ 阅读实验手册</h3>
+        <ul>
+            <li>阅读实验手册《<strong>基于DCT原理的音频压缩</strong>》</li>
+            <li>可互相讨论，理解实验目的</li>
+        </ul>
+
+        <h3>2️⃣ 设置MATLAB环境</h3>
+        <ul>
+            <li>修改 MATLAB <strong>当前文件夹路径</strong>为所有实验文件所在路径</li>
+            <li>例如：桌面、文档等</li>
+        </ul>
+
+        <h3>3️⃣ 完成代码编写</h3>
+        <ul>
+            <li>在当前路径下，根据代码文件中的提示，<strong>完成 ex1-ex7</strong></li>
+            <li>查找代码中的 <code>?</code> 标记，填写合适的代码</li>
+        </ul>
+
+        <h3>4️⃣ 使用测试文件检查</h3>
+
+        <h4>a) 运行测试程序</h4>
+        <ul>
+            <li>在 MATLAB 中文件夹栏<strong>右键单击</strong> <code>test_project1.p</code> 文件</li>
+            <li>选择"<strong>运行</strong>"</li>
+        </ul>
+
+        <h4>b) 检查各个模块</h4>
+        <ul>
+            <li>如果需要检查 ex1 的代码填写是否正确，<strong>输入 1</strong> 后按回车键</li>
+            <li>以此类推，输入 2-7 检查对应模块</li>
+        </ul>
+
+        <h4>c) 查看结果</h4>
+        <ul>
+            <li>执行 <code>test_project1.p</code> 程序应显示<strong>正确</strong>或<strong>错误</strong></li>
+            <li>如果出现无法执行并显示问题所在行，请根据提示进行修改</li>
+        </ul>
+
+        <h3>5️⃣ 完成所有代码后提交实验</h3>
+
+        <h4>a) 生成加密成绩</h4>
+        <ul>
+            <li>运行 <code>test_project1.p</code> 文件</li>
+            <li>键入 <strong>0</strong> 后按回车键</li>
+            <li>分别输入<strong>学号</strong>和<strong>姓名</strong>后按回车键</li>
+            <li>程序将自动批改本次实验的所有代码并生成 <strong>128 位加密成绩</strong></li>
+        </ul>
+
+        <h4>b) 压缩文件</h4>
+        <ul>
+            <li>打开学习通</li>
+            <li>将<strong>提交清单</strong>中列出的所有文件压缩为 <strong>zip 文件</strong></li>
+            <li>重命名为：<strong>【学号_姓名】</strong>
+                <ul>
+                    <li>例如：<code>20230001_张三.zip</code></li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4>c) 提交到学习通</h4>
+        <ul>
+            <li>提交该 zip 文件作为<strong>附件</strong></li>
+            <li>在学习通"<strong>答案</strong>"中填写步骤 5.a）中的<strong>加密成绩</strong></li>
+        </ul>
+
+        <hr>
+
+        <h2>⚠️ 项目备注</h2>
+
+        <div class="warning-box">
+            <h3>📌 重要提醒</h3>
+            
+            <ol>
+                <li><strong>截止时间</strong>
+                    <ul>
+                        <li>学习通成绩提交截止<strong>本次实验课结束</strong></li>
+                        <li>所有内容当堂完成，<strong>不可延期</strong></li>
+                    </ul>
+                </li>
+                <li><strong>分组要求</strong>
+                    <ul>
+                        <li>分组完成，每组<strong>不超过 6 人</strong></li>
+                    </ul>
+                </li>
+                <li><strong>独立提交</strong>
+                    <ul>
+                        <li>在学习通提交成绩需要<strong>独立完成</strong></li>
+                        <li>成绩按<strong>人次</strong>给分</li>
+                    </ul>
+                </li>
+                <li><strong>模块独立批改</strong>
+                    <ul>
+                        <li><code>test_project1.p</code> 对于每个 ex 的批改是<strong>独立的</strong></li>
+                        <li>如果有无法完成的部分<strong>可以跳过</strong></li>
+                    </ul>
+                </li>
+                <li><strong>音频文件说明</strong>
+                    <ul>
+                        <li>项目中 <code>audio</code> 文件夹下提供了 <code>greatest_work.flac</code> 作为示例文件</li>
+                        <li>如果完成全部代码，可修改 <code>ex0_all.m</code> 的内容</li>
+                        <li>替换路径，自行尝试其他音频文件</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h2>📚 实验模块说明</h2>
+
+        <h3>📌 ex0_all.m - 主函数</h3>
+        <blockquote>
+            <strong>功能</strong>：调用所有子函数完成完整的音频压缩流程（无需修改）
+        </blockquote>
+
+        <p><strong>参数设置</strong></p>
+        <ul>
+            <li><code>window = 512</code> - 窗函数大小</li>
+            <li><code>perc = 0.99</code> - 能量阈值（保留99%能量）</li>
+        </ul>
+
+        <p><strong>处理流程</strong></p>
+        <div class="flow-chart">
+<pre>音频读取 → DCT变换 → 能量阈值 → 量化 → IDCT → 合并 → 分析
+   ex1   →    ex2   →    ex3   →  ex4 → ex5 → ex6 → ex7</pre>
+        </div>
+
+        <hr>
+
+        <h3>1️⃣ ex1_read_audio_cut - 读取音频并分段</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [x_cut, N, nb] = ex1_read_audio_cut(window, path)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>读取音频文件，并根据指定的窗函数大小对音频数据进行分段处理。每段长度为window个采样点。该步骤有助于后续处理，比如进行DCT变换和量化等操作。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>window</code></td>
+                    <td>整数</td>
+                    <td>窗口大小（如512）</td>
+                </tr>
+                <tr>
+                    <td><code>path</code></td>
+                    <td>字符串</td>
+                    <td>音频文件路径</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>x_cut</code></td>
+                    <td>矩阵</td>
+                    <td>分段后的音频（每列一段）</td>
+                </tr>
+                <tr>
+                    <td><code>N</code></td>
+                    <td>整数</td>
+                    <td>音频总长度（采样点数）</td>
+                </tr>
+                <tr>
+                    <td><code>nb</code></td>
+                    <td>整数</td>
+                    <td>分段数量</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h3>2️⃣ ex2_dct_x_cut - DCT变换</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [X_CUT, row, col] = ex2_dct_x_cut(x_cut)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对输入的分段后的时域音频信号x_cut的每一列进行离散余弦变换（DCT），将时域信号转换为频域信号。这一操作在信号处理和压缩算法（如音频压缩编码）中非常有用。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>x_cut</code></td>
+                    <td>矩阵</td>
+                    <td>分段后的时域信号</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>X_CUT</code></td>
+                    <td>矩阵</td>
+                    <td>DCT变换后的频域信号</td>
+                </tr>
+                <tr>
+                    <td><code>row</code></td>
+                    <td>整数</td>
+                    <td>矩阵行数</td>
+                </tr>
+                <tr>
+                    <td><code>col</code></td>
+                    <td>整数</td>
+                    <td>矩阵列数</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h3>3️⃣ ex3_energy_cut - 能量阈值处理</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [X_CUT_99, ind, i] = ex3_energy_cut(X_CUT, perc)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>根据能量阈值保留重要的DCT系数，丢弃能量较小的系数。这是音频压缩的核心步骤之一。通过保留指定百分比（如99%）能量的系数，其余系数置零，实现数据压缩。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>X_CUT</code></td>
+                    <td>矩阵</td>
+                    <td>DCT系数矩阵</td>
+                </tr>
+                <tr>
+                    <td><code>perc</code></td>
+                    <td>小数</td>
+                    <td>能量保留百分比（0.99）</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>X_CUT_99</code></td>
+                    <td>矩阵</td>
+                    <td>阈值化后的系数</td>
+                </tr>
+                <tr>
+                    <td><code>ind</code></td>
+                    <td>单元数组</td>
+                    <td>每列保留系数的索引</td>
+                </tr>
+                <tr>
+                    <td><code>i</code></td>
+                    <td>向量</td>
+                    <td>每列保留的系数数量</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h3>4️⃣ ex4_quantization - 量化与解量化</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [q, tmp, quant] = ex4_quantization(X_CUT_99)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对DCT系数进行量化和解量化。量化是将连续值映射到离散级别的过程，是有损压缩的关键步骤。本函数实现均匀量化，将系数值量化到有限的离散级别，然后再解量化恢复。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>X_CUT_99</code></td>
+                    <td>矩阵</td>
+                    <td>阈值化后的系数</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>q</code></td>
+                    <td>标量</td>
+                    <td>量化步长</td>
+                </tr>
+                <tr>
+                    <td><code>tmp</code></td>
+                    <td>矩阵</td>
+                    <td>量化后的整数值</td>
+                </tr>
+                <tr>
+                    <td><code>quant</code></td>
+                    <td>矩阵</td>
+                    <td>解量化后的值</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h3>5️⃣ ex5_idct_quant - IDCT逆变换</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function I_X_quant = ex5_idct_quant(quant)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对量化后的DCT系数进行逆变换。将频域的DCT系数通过IDCT（逆离散余弦变换）变换回时域信号，为后续音频重建做准备。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>quant</code></td>
+                    <td>矩阵</td>
+                    <td>量化后的DCT系数</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>I_X_quant</code></td>
+                    <td>矩阵</td>
+                    <td>逆变换后的时域信号</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h3>6️⃣ ex6_recombine_I_X - 合并重建</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [dis, reconstruct] = ex6_recombine_I_X(I_X_quant)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>将IDCT后的片段合并重建完整音频。将分段处理后的音频片段重新组合成完整的音频信号，并保存为音频文件。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>I_X_quant</code></td>
+                    <td>矩阵</td>
+                    <td>IDCT后的信号片段</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>dis</code></td>
+                    <td>整数</td>
+                    <td>重建信号总长度</td>
+                </tr>
+                <tr>
+                    <td><code>reconstruct</code></td>
+                    <td>向量</td>
+                    <td>完整重建信号</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h3>7️⃣ ex7_analyze - 性能分析</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function ratio = ex7_analyze(reconstruct, show_plot)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>分析压缩效果并可视化对比。计算压缩比和均方误差（MSE），评估压缩质量。可选显示原始信号与重建信号的对比图，包括时域波形对比和重建误差分析。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>reconstruct</code></td>
+                    <td>向量</td>
+                    <td>重建后的音频</td>
+                </tr>
+                <tr>
+                    <td><code>show_plot</code></td>
+                    <td>布尔</td>
+                    <td>是否显示图形</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>ratio</code></td>
+                    <td>标量</td>
+                    <td>压缩比</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p><strong>评估指标</strong></p>
+        <ul>
+            <li><strong>MSE（均方误差）</strong>：越小越好，表示重建信号与原始信号的差异</li>
+            <li><strong>压缩比</strong>：原始位数/压缩后位数，表示压缩程度</li>
+        </ul>
+
+        <hr>
+
+        <h2>✅ 检查清单</h2>
+
+        <p>在提交前，请确认：</p>
+
+        <ul class="checklist">
+            <li>所有 ex1-ex7 文件中的 <code>?</code> 都已替换为正确代码</li>
+            <li>运行 <code>test_project1.p</code> 输入1-7全部通过</li>
+            <li>运行 <code>ex0_all.m</code> 能够正常执行</li>
+            <li>压缩文件命名为【学号_姓名.zip】</li>
+            <li>zip文件中包含所有必需文件</li>
+            <li>已获得128位加密成绩</li>
+            <li>已在学习通提交zip文件和加密成绩</li>
+        </ul>
+
+        <hr>
+
+        <h2>📞 常见问题</h2>
+
+        <div class="info-box">
+            <p><strong>Q1: 代码中的 <code>?</code> 应该填什么？</strong></p>
+            <p><strong>A:</strong> 根据注释提示，填写对应的MATLAB表达式。例如：</p>
+            <ul>
+                <li><code>N = ?</code> → <code>N = length(x);</code></li>
+                <li><code>X_CUT = ?</code> → <code>X_CUT = zeros(row, col);</code></li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q2: test_project1.p 显示错误怎么办？</strong></p>
+            <p><strong>A:</strong></p>
+            <ul>
+                <li>如果提示<strong>红色警告或报错</strong>，请联系教师</li>
+                <li>如果提示代码不正确，请检查：
+                    <ul>
+                        <li>变量名拼写是否正确</li>
+                        <li>公式和函数调用是否完整</li>
+                        <li>矩阵维度是否匹配</li>
+                        <li>索引范围是否正确</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q3: 可以修改变量名吗？</strong></p>
+            <p><strong>A:</strong> <strong>不可以</strong>！<code>test_project1.p</code> 会检查预定义的变量名，修改后会导致检查失败。</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q4: 如何调试代码？</strong></p>
+            <p><strong>A:</strong> 使用以下调试方法：</p>
+
+            <p><strong>1. 分步验证</strong></p>
+            <pre><code>% 在函数中添加输出语句
+disp(['N = ', num2str(N)]);
+fprintf('段数: %d\n', nb);
+
+% 单独测试函数
+window = 512;
+path = './audio/greatest_work.flac';
+[x_cut, N, nb] = ex1_read_audio_cut(window, path);
+disp(size(x_cut));  % 查看维度</code></pre>
+
+            <p><strong>2. 检查变量</strong></p>
+            <pre><code>% 查看变量类型和大小
+whos x_cut
+
+% 查看矩阵维度
+size(x_cut)
+[row, col] = size(X_CUT)
+
+% 查看部分内容
+x_cut(1:5, 1)  % 第1列的前5个元素</code></pre>
+
+            <p><strong>3. 索引调试</strong></p>
+            <pre><code>% 验证索引计算
+n = 1;
+start_idx = (n-1)*window + 1  % 应该是1
+end_idx = n*window            % 应该是512
+
+% 检查是否越界
+if end_idx > length(x)
+    error('索引超出范围！');
+end</code></pre>
+
+            <p><strong>4. 可视化调试</strong></p>
+            <pre><code>% 绘制信号波形
+plot(x_cut(:,1));
+title('第1段音频');
+
+% 查看矩阵热图
+imagesc(X_CUT);
+colorbar;
+title('DCT系数矩阵');
+
+% 对比原始和重建信号
+figure;
+subplot(2,1,1); plot(x_original(1:1000));
+subplot(2,1,2); plot(reconstruct(1:1000));</code></pre>
+
+            <p><strong>5. 断点调试</strong></p>
+            <ul>
+                <li>在代码行左侧单击设置断点（红点）</li>
+                <li>按F5运行，程序会在断点处暂停</li>
+                <li>使用F10单步执行，F11进入函数内部</li>
+                <li>在工作区查看所有变量的值</li>
+            </ul>
+
+            <p><strong>6. 常见错误排查</strong></p>
+            <pre><code>% 维度不匹配
+% 错误：x_cut(:, n) = x(1:window)  
+% 正确：x_cut(:, n) = x((n-1)*window+1 : n*window)
+
+% 变量名拼写错误
+% 错误：X_cut (大小写)
+% 正确：X_CUT
+
+% 索引越界
+% 确保：end_idx <= length(x)</code></pre>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q5: 音频文件路径找不到怎么办？</strong></p>
+            <p><strong>A:</strong> 确保：</p>
+            <ul>
+                <li>MATLAB当前文件夹设置正确</li>
+                <li><code>audio</code> 文件夹与 <code>.m</code> 文件在同一目录</li>
+                <li>路径使用相对路径 <code>./audio/...</code></li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>🎯 学习目标</h2>
+
+        <p>通过本实验，你将掌握：</p>
+
+        <ol>
+            <li><strong>信号分段处理</strong>的方法和意义</li>
+            <li><strong>DCT变换</strong>在频域分析中的应用</li>
+            <li><strong>能量阈值</strong>压缩的原理</li>
+            <li><strong>量化</strong>过程及其对信号的影响</li>
+            <li><strong>音频压缩系统</strong>的完整实现流程</li>
+            <li><strong>压缩比与音质</strong>的权衡关系</li>
+        </ol>
+
+        <hr>
+
+        <div style="text-align: center; font-size: 24px; margin: 30px 0;">
+            <strong>祝实验顺利！</strong> 🎉
+        </div>
+
+        <footer>
+            <p><strong>南京工业大学浦江学院 | 计算机与通信工程专业 | 通信工程 | DSP课程实践</strong></p>
+        </footer>
+    </div>
+</body>
+</html>
