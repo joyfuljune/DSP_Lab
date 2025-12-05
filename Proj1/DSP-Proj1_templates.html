@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DSP 项目1 - 基于DCT的音频压缩代码模板</title>
+    <style>
+        body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .control-panel {
+            position: sticky; top: 0; z-index: 100;
+            background: white; padding: 15px; margin-bottom: 20px;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .control-btn {
+            background: #667eea; color: white; border: none; padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;
+        }
+        .control-btn:hover { background: #5a67d8; }
+        .control-btn.secondary { background: #6c757d; }
+
+        .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        
+        .file-header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; user-select: none;
+        }
+        .file-header:hover { opacity: 0.9; }
+        
+        .file-title { font-weight: bold; display: flex; align-items: center; }
+        .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
+        .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
+        
+        .file-content { display: block; }
+        .file-block.collapsed .file-content { display: none; }
+
+        .copy-btn { background: #48bb78; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .copy-btn:hover { background: #38a169; }
+
+        pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        
+        /* 代码高亮样式 */
+        .keyword { color: #0000ff; font-weight: bold; }
+        .comment { color: #228b22; font-style: italic; }
+        .string { color: #a020f0; }
+        .number { color: #ff0000; }
+        .todo { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; }
+        
+        /* Banner样式 */
+        .info-banner { background: linear-gradient(135deg, #e7f3ff 0%, #f0f7ff 100%); border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .warning-banner { background: linear-gradient(135deg, #fff3cd 0%, #fffdf7 100%); border-left: 4px solid #ed8936; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .success-banner { background: linear-gradient(135deg, #f0fff4 0%, #f7fafc 100%); border-left: 4px solid #48bb78; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 3px; color: #667eea; font-size: 0.95em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2 style="margin:0; color:#667eea;">📝 DSP 项目1 - 基于DCT的音频压缩实验代码模板</h2>
+            <div>
+                <button class="control-btn" onclick="expandAll()">全部展开</button>
+                <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <strong>📌 项目说明：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>本项目实现基于DCT（离散余弦变换）的音频压缩系统</li>
+                <li>代码中 <code>?</code> 标记处需要填写合适的代码</li>
+                <li>完成ex1-ex7后，使用 <code>test_project1.p</code> 进行自动检查</li>
+                <li>全部完成后运行 <code>ex0_all.m</code> 查看完整效果，收听 /audio 目录下生成的压缩音频</li>
+            </ul>
+        </div>
+
+        <div class="warning-banner">
+            <strong>⚠️ 提交清单：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li>ex1_read_audio_cut.m（读取音频并分段）</li>
+                <li>ex2_dct_x_cut.m（DCT变换）</li>
+                <li>ex3_energy_cut.m（能量阈值处理）</li>
+                <li>ex4_quantization.m（量化与解量化）</li>
+                <li>ex5_idct_quant.m（IDCT逆变换）</li>
+                <li>ex6_recombine_I_X.m（合并重建）</li>
+                <li>ex7_analyze.m（性能分析）</li>
+            </ul>
+        </div>
+
+        <div class="success-banner">
+            <strong>✅ 实验流程：</strong>
+            <ol style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>阅读实验手册《基于DCT原理的音频压缩实验》（DSP-Proj1_handout）</li>
+                <li>按顺序完成ex1-ex7，填写标记为 <code>?</code> 的代码</li>
+                <li>运行 <code>test_project1.p</code> 检查代码（输入1-7检查对应模块）</li>
+                <li>完成后输入0，提交学号姓名，生成加密成绩</li>
+                <li>将所有完成后的M文件压缩到【学号_姓名.zip】提交到学习通</li>
+            </ol>
+        </div>
+
+        <!-- ex0 主函数 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex0_all.m（主函数，无需修改）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code0')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code0">clc;
+clear;
+close all;
+
+% ex0文件作为总文件，可在ex全部完成后运行测试，可对参数部分进行修改体验区别
+global path path_out fs;  % 定义全局变量方便调用 (增加fs)
+
+% 定义音频文件路径
+path = './audio/greatest_work.flac';    % 设定path为原始音频路径，格式flac
+path_out = './audio/greatest_work_compressed.flac';   % 设定path_out为重建音频路径，格式flac
+
+% 窗函数大小设置
+window = 512;  % 设定窗函数大小为512
+
+% 调用 ex1_read_audio_cut 函数读取音频并进行分段
+[x_cut, N, nb] = ex1_read_audio_cut(window, path);        
+
+% 调用 ex2_dct_x_cut 对分段音频作DCT变换
+[X_CUT, row, col] = ex2_dct_x_cut(x_cut);                       
+
+% 设置阈值百分比
+perc = 0.99;
+
+% 调用 ex3_energy_cut 对DCT结果进行阈值处理
+[X_CUT_99, ind, i] = ex3_energy_cut(X_CUT, perc);             
+
+% 调用 ex4_quantization 对阈值化结果作量化和解量化
+[q, tmp, quant] = ex4_quantization(X_CUT_99);                 
+
+% 调用 ex5_idct_quant 对解量化结果作IDCT变换
+I_X_quant = ex5_idct_quant(quant);                  
+
+% 调用 ex6_recombine_I_X 对IDCT结果作合并重建
+[dis, reconstruct] = ex6_recombine_I_X(I_X_quant);         
+
+% 调用 ex7_analyze 对比原始信号和重建信号，默认显示图形
+ratio = ex7_analyze(reconstruct, true);             
+
+disp('音频文件已保存');</pre>
+            </div>
+        </div>
+
+        <!-- ex1 读取音频并分段 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex1_read_audio_cut.m（读取音频并分段）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code1">function [x_cut, N, nb] = ex1_read_audio_cut(window, path)
+%EX1_READ_AUDIO_CUT 读取音频文件并对其进行分段
+
+global fs; % 声明全局变量fs
+[x, fs_local] = audioread(path);  % 使用 audioread 函数读取音频文件，得到音频数据 x 和采样频率 fs
+fs = fs_local; % 将读取到的采样率存入全局变量
+
+% N 表示音频数据的总长度，即采样点的数量。
+N = <span class="todo">?</span>;  % 使用 length 函数
+
+% nb 表示可以分成多少段音频，即音频数据长度 N 除以 window 的值。
+nb = <span class="todo">?</span>;  % 使用 floor 函数
+
+% x_cut 是一个二维矩阵，每列表示一段音频，每段的长度为 window 个采样点。
+x_cut = <span class="todo">?</span>;  % 使用 zeros 函数初始化
+
+% 循环遍历每一段音频数据，并将其填充到 x_cut 的每一列中。
+for n = 1:nb
+    % 在此处将每一段音频数据填充到 x_cut 的第 n 列。
+    x_cut(:, n) = <span class="todo">?</span>;  % 使用 n*window 及其变形定义起点和终点
+end
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex2 DCT变换 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex2_dct_x_cut.m（DCT变换）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2">function [X_CUT, row, col] = ex2_dct_x_cut(x_cut)
+%EX2_DCT_X_CUT 将分割后的音频信号分别作DCT计算
+
+[row, col] = <span class="todo">?</span>;  % 获取x_cut的行数和列数
+X_CUT = <span class="todo">?</span>;       % zeros初始化dct计算结果，应和时域信号大小一致
+
+for c = 1:col                   % 循环，对x_cut的每一列作dct计算
+    X_CUT(:,c) = <span class="todo">?</span>;  % 使用dct函数
+end
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex3 能量阈值处理 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex3_energy_cut.m（能量阈值处理）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code3">function [X_CUT_99, ind, i] = ex3_energy_cut(X_CUT, perc)
+%EX3_ENERGY_CUT 将DCT计算结果进行阈值化处理
+
+[row, col] = size(X_CUT);         % 取得DCT系数矩阵的行数和列数
+X_CUT_99 = X_CUT;                 % 初始化阈值化后的结果矩阵
+ind = cell(col, 1);               % 初始化索引单元数组
+i = zeros(col, 1);                % 初始化保留系数数量向量
+
+for c = 1:col                     % 对每一列进行操作
+    % 对每一列系数的绝对值进行降序排列，并获取对应的索引
+    [sorted_coeffs, sorted_idx] = <span class="todo">?</span>;
+    
+    % 计算每列的总能量
+    total_energy = sum(sorted_coeffs.^2);
+    cumulative_energy = <span class="todo">?</span>;     % 初始化累积能量
+    count = 1;                    % 初始化阈值位置
+
+    % 当累积能量不足总能量的 perc 部分时，增加 count 的值
+    while <span class="todo">?</span>
+        cumulative_energy = cumulative_energy + sorted_coeffs(count)^2;
+        count = <span class="todo">?</span>;
+    end
+    
+    % 保留前 count-1 个最重要的系数
+    i(c) = count - 1;
+    ind{c} = sorted_idx(1:i(c));
+    
+    % 获取小于这些能量的位置并置零
+    zero_indices = sorted_idx(<span class="todo">?</span>); % 从第 count 个到最后的索引
+    X_CUT_99(<span class="todo">?</span>) = 0;  % 将这些位置的值置为零
+end
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex4 量化与解量化 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex4_quantization.m（量化与解量化）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code4">function [q, tmp, quant] = ex4_quantization(X_CUT_99)
+%EX4_QUANTIZATION 对DCT系数进行量化和解量化
+
+% 设置量化位数
+b = 6;  % 6位量化，可表示2^6=64个级别
+
+% 找出最大值作为量化区间
+L = <span class="todo">?</span>;  % 使用max和abs函数
+
+% 计算量化步长
+q = <span class="todo">?</span>;  % 量化步长公式
+
+% 量化：将连续值映射到离散级别
+tmp = <span class="todo">?</span>;  % 使用round函数四舍五入
+
+% 解量化：将离散值映射回连续值
+quant = <span class="todo">?</span>;  % 乘以量化步长
+
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex5 IDCT逆变换 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex5_idct_quant.m（IDCT逆变换）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code5')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code5">function I_X_quant = ex5_idct_quant(quant)
+%EX5_IDCT_QUANT 对量化后的DCT系数进行逆变换
+
+[row, col] = size(quant);
+I_X_quant = zeros(row, col);
+
+for c = 1:col
+    I_X_quant(:, c) = <span class="todo">?</span>;  % 使用idct函数对quant的第c列进行逆变换
+end
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex6 合并重建 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex6_recombine_I_X.m（合并重建）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code6')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code6">function [dis, reconstruct] = ex6_recombine_I_X(I_X_quant)
+%EX6_RECOMBINE_I_X 将IDCT后的片段合并重建完整音频
+
+global path_out fs; % 声明全局变量fs
+
+[row, col] = size(I_X_quant);
+
+% 计算重建信号的总长度
+dis = <span class="todo">?</span>;  % 行数乘以列数
+
+% 初始化重建信号
+reconstruct = <span class="todo">?</span>;  % 创建一维零向量
+
+% 将每个片段拼接起来
+for n = 1:col
+    start_idx = <span class="todo">?</span>;  % 起始索引
+    end_idx = <span class="todo">?</span>;    % 结束索引
+    reconstruct(start_idx:end_idx) = <span class="todo">?</span>;  % 将第n列赋值到对应位置
+end
+
+% 保存重建的音频
+audiowrite(path_out, reconstruct, fs);  % 使用从原始音频读取的正确采样率fs
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex7 性能分析 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex7_analyze.m（性能分析）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code7')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code7">function ratio = ex7_analyze(reconstruct, show_plot)
+%EX7_ANALYZE 分析压缩效果并可视化对比
+
+global path;
+
+% 读取原始音频
+[x_original, fs] = audioread(path);
+
+% 确保长度一致（取较短的长度）
+min_length = <span class="todo">?</span>;  % 使用min函数
+x_original = x_original(1:min_length);
+reconstruct = reconstruct(1:min_length);
+
+% 计算均方误差MSE
+mse = <span class="todo">?</span>;  % 使用mean函数
+
+% 计算压缩比（简化计算，实际应考虑存储的系数数量）
+% 假设原始为16位，压缩后为6位量化
+ratio = 16 / 6;
+
+% 显示结果
+fprintf('压缩比: %.2f:1\n', ratio);
+fprintf('均方误差MSE: %.6f\n', mse);
+
+% 如果需要显示图形
+if show_plot
+    figure('Name', '原始信号 vs 重建信号', 'NumberTitle', 'off');
+    
+    % 绘制时域对比
+    subplot(2,1,1);
+    plot_range = 1:min(5000, min_length);  % 只显示前5000个点
+    plot(plot_range, x_original(plot_range), 'b', 'LineWidth', 1);
+    hold on;
+    plot(plot_range, reconstruct(plot_range), 'r--', 'LineWidth', 1);
+    legend('原始信号', '重建信号');
+    title('时域波形对比');
+    xlabel('采样点');
+    ylabel('幅度');
+    grid on;
+    
+    % 绘制误差
+    subplot(2,1,2);
+    error_signal = x_original - reconstruct;
+    plot(plot_range, error_signal(plot_range), 'g', 'LineWidth', 1);
+    title('重建误差');
+    xlabel('采样点');
+    ylabel('误差幅度');
+    grid on;
+end
+end</pre>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleBlock(header) {
+            const block = header.parentElement;
+            block.classList.toggle('collapsed');
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.file-block').forEach(block => {
+                block.classList.remove('collapsed');
+            });
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.file-block').forEach(block => {
+                block.classList.add('collapsed');
+            });
+        }
+
+        function copyCode(event, codeId) {
+            event.stopPropagation();
+            const code = document.getElementById(codeId).innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ 已复制';
+                btn.style.background = '#38a169';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#48bb78';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

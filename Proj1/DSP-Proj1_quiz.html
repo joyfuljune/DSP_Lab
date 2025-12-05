@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP-Proj1 练习测验</title>
+    
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            }
+        });
+    </script>
+
+    <style>
+        .mathjax-status {
+            position: fixed;
+            top: 10px;
+            right: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            font-size: 14px;
+            z-index: 10000;
+            font-family: 'Microsoft YaHei', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mathjax-status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+        .mathjax-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+            transition: opacity 0.5s ease-out 1.5s;
+            opacity: 0;
+        }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #667eea;
+            margin: 25px 0 15px 0;
+        }
+
+        .login-section, .quiz-section, .result-section {
+            display: none;
+        }
+
+        .login-section.active, .quiz-section.active, .result-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #9f7aea;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .question-title {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            margin: 15px 0;
+        }
+
+        .option {
+            display: block;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .option.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #38a169;
+        }
+
+        .option.incorrect {
+            background: #f56565;
+            color: white;
+            border-color: #e53e3e;
+        }
+
+        .feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #e8f5e9;
+            color: #48bb78;
+            border-left: 5px solid #48bb78;
+        }
+
+        .feedback.incorrect {
+            background: #ffebee;
+            color: #f56565;
+            border-left: 5px solid #f56565;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #667eea 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .mastery-excellent {
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .mastery-good {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .mastery-fair {
+            color: #ed8936;
+            font-weight: bold;
+        }
+
+        .mastery-poor {
+            color: #f56565;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #fff8e1;
+            border-left: 5px solid #ed8936;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-option:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+
+        .checkbox-option.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #38a169;
+        }
+
+        .checkbox-option.incorrect {
+            background: #f56565;
+            color: white;
+            border-color: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+    <div id="mathjaxStatus" class="mathjax-status loading">正在加载数学公式...</div>
+    
+    <div class="container">
+        <!-- 登录界面 -->
+        <div class="login-section active">
+            <h1>🎓 DSP-Proj1 练习测验</h1>
+            <div class="info-box">
+                <strong>📌 测验说明</strong>
+                <p>本系统将测试您对《基于DCT原理的音频压缩实验》的掌握程度。每个知识点将随机出题,答对后进入下一知识点,答错将继续该知识点的其他题目。涵盖7大核心知识点,共70+道随机题目。</p>
+            </div>
+            
+            <div class="form-group">
+                <label>学号:</label>
+                <input type="text" id="studentId" placeholder="请输入学号">
+            </div>
+            
+            <div class="form-group">
+                <label>姓名:</label>
+                <input type="text" id="studentName" placeholder="请输入姓名">
+            </div>
+            
+            <button id="startQuizBtn">开始测验</button>
+        </div>
+
+        <!-- 测验界面 -->
+        <div class="quiz-section">
+            <h1>DSP-Proj1 练习测验</h1>
+            <div id="studentInfo"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+            
+            <div id="currentTopic"></div>
+            
+            <div class="question-box">
+                <div class="question-title" id="questionTitle"></div>
+                <div id="questionContent"></div>
+                <div id="options" class="options"></div>
+                <div id="feedback"></div>
+                <button id="submitBtn">提交答案</button>
+                <button id="nextBtn" style="display:none;">下一题</button>
+            </div>
+        </div>
+
+        <!-- 结果界面 -->
+        <div class="result-section">
+            <h1>📊 测验结果报告</h1>
+            <div id="finalReport"></div>
+            <button id="saveBtn">截图保存</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据结构 ====================
+        let studentData = {
+            id: '',
+            name: '',
+            topicStats: {},
+            currentTopicIndex: 0,
+            currentQuestionIndex: 0,
+            usedQuestions: {}
+        };
+
+        // 知识点定义
+        const topics = [
+            {
+                name: 'DCT基本概念',
+                id: 'dct_basics',
+                description: 'DCT变换的定义、性质和与DFT的关系'
+            },
+            {
+                name: '信号分段处理',
+                id: 'windowing',
+                description: '音频信号分段的原理和实现方法'
+            },
+            {
+                name: '能量阈值处理',
+                id: 'energy_threshold',
+                description: '基于能量的系数保留策略'
+            },
+            {
+                name: '量化与解量化',
+                id: 'quantization',
+                description: '均匀量化原理和不同位数的影响'
+            },
+            {
+                name: '均方误差评估',
+                id: 'mse',
+                description: 'MSE和SNR的计算与应用'
+            },
+            {
+                name: '压缩比计算',
+                id: 'compression',
+                description: '压缩比、压缩率的定义和权衡'
+            },
+            {
+                name: '完整压缩流程',
+                id: 'workflow',
+                description: '7步压缩流程的理解和MATLAB实现'
+            }
+        ];
+
+        // ==================== 工具函数 ====================
+        
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function randChoice(arr) {
+            return arr[randInt(0, arr.length - 1)];
+        }
+
+        // 🔥 单选题选项打乱函数
+        function shuffleOptionsWithAnswer(options, correctIndex) {
+            const indices = options.map((_, i) => i);
+            // Fisher-Yates 洗牌算法
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            
+            return {
+                options: indices.map(i => options[i]),
+                correct: indices.indexOf(correctIndex)
+            };
+        }
+
+        // 🔥 多选题选项打乱函数
+        function shuffleOptionsWithAnswers(options, correctIndices) {
+            const indices = options.map((_, i) => i);
+            // Fisher-Yates 洗牌算法
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            
+            return {
+                options: indices.map(i => options[i]),
+                correct: correctIndices.map(ci => indices.indexOf(ci)).sort((a, b) => a - b)
+            };
+        }
+
+        // ==================== 题目生成函数 ====================
+        
+        const questionGenerators = {
+            dct_basics: [
+                // DCT题目1: DCT与DFT的区别
+                () => {
+                    return {
+                        type: 'single',
+                        question: `DCT相比DFT的主要优势是什么?`,
+                        options: [
+                            'DCT使用实数运算,能量更集中在低频部分',
+                            'DCT计算速度比FFT更快',
+                            'DCT可以处理无限长信号',
+                            'DCT的频谱是离散的'
+                        ],
+                        correct: 0,
+                        explanation: 'DCT使用余弦函数作为基函数,全部是实数运算,并且对于平滑信号能将能量集中在低频系数,这正是压缩所需要的特性。'
+                    };
+                },
+                
+                // DCT题目2: DCT基函数
+                () => {
+                    const m = randInt(0, 3);
+                    return {
+                        type: 'single',
+                        question: `DCT的基函数是 $\\cos\\left(\\frac{\\pi m (n + 0.5)}{N}\\right)$,当 $m=${m}$ 时对应:`,
+                        options: [
+                            m === 0 ? 'DC分量(直流)' : (m === 1 ? '最低频率' : '较高频率'),
+                            m === 0 ? '最高频率' : 'DC分量',
+                            '随机频率',
+                            '负频率'
+                        ],
+                        correct: 0,
+                        explanation: `m=${m}时,${m === 0 ? 'm=0对应DC分量(常数)' : m === 1 ? 'm=1对应最低频率' : 'm值越大频率越高'}。DCT将信号分解为不同频率的余弦波组合。`
+                    };
+                },
+                
+                // DCT题目3: 能量集中特性
+                () => {
+                    const percent = randChoice([90, 95, 99]);
+                    return {
+                        type: 'single',
+                        question: `对于大多数音频信号,经过DCT变换后,超过${percent}%的能量通常集中在:`,
+                        options: [
+                            '前10%的低频系数中',
+                            '均匀分布在所有系数中',
+                            '后10%的高频系数中',
+                            '中频系数中'
+                        ],
+                        correct: 0,
+                        explanation: `DCT的能量集中特性是压缩的基础:大部分能量集中在低频系数,高频系数通常很小可以丢弃或粗略量化。`
+                    };
+                },
+                
+                // DCT题目4: 正交性
+                () => {
+                    return {
+                        type: 'single',
+                        question: `DCT变换具有正交性,这意味着:`,
+                        options: [
+                            '时域能量等于频域能量(Parseval定理)',
+                            '所有系数都相等',
+                            '变换不可逆',
+                            '只能用于周期信号'
+                        ],
+                        correct: 0,
+                        explanation: 'DCT是正交变换,满足能量守恒定理,即 $\\sum x[n]^2 = \\sum X[m]^2$,这保证了信息的完整性。'
+                    };
+                },
+                
+                // DCT题目5: MATLAB实现
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,对信号x进行DCT变换的正确命令是:`,
+                        options: [
+                            'X = dct(x)',
+                            'X = fft(x)',
+                            'X = dft(x)',
+                            'X = transform(x)'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB提供了内置的dct()函数进行DCT变换,idct()进行逆变换。'
+                    };
+                },
+                
+                // DCT题目6: 系数归一化
+                () => {
+                    return {
+                        type: 'single',
+                        question: `DCT公式中,m=0时的归一化系数 $c[0]$ 为:`,
+                        options: [
+                            '$\\frac{1}{\\sqrt{2}}$',
+                            '$1$',
+                            '$\\sqrt{2}$',
+                            '$0$'
+                        ],
+                        correct: 0,
+                        explanation: 'DCT-II中,m=0时 $c[0] = \\frac{1}{\\sqrt{2}}$,其他情况 $c[m] = 1$,这保证了变换的正交性。'
+                    };
+                },
+                
+                // DCT题目7: 多选题
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `DCT在音频压缩中的优势包括:(多选)`,
+                        options: [
+                            '实数运算,无需处理复数',
+                            '能量集中在低频,便于压缩',
+                            '边界连续性好,减少边界效应',
+                            '可以表示任意信号'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: 'DCT的三大优势:实数运算简化计算、能量集中特性适合压缩、隐含的偶对称延拓减少了边界不连续。'
+                    };
+                },
+                
+                // DCT题目8: DFT对比
+                () => {
+                    return {
+                        type: 'single',
+                        question: `对于实信号,DFT会产生共轭对称的频谱,这意味着有一半信息是冗余的。DCT如何解决这个问题?`,
+                        options: [
+                            'DCT只使用余弦基函数,直接产生实数频谱',
+                            'DCT压缩掉冗余信息',
+                            'DCT使用更多的系数',
+                            'DCT不能解决这个问题'
+                        ],
+                        correct: 0,
+                        explanation: 'DCT使用余弦基函数(实函数),对实信号产生实数频谱,天然避免了DFT的共轭对称冗余。'
+                    };
+                }
+            ],
+            
+            windowing: [
+                // 分段题目1: 为什么分段
+                () => {
+                    const N = randInt(10000, 50000);
+                    return {
+                        type: 'single',
+                        question: `对一个长度为${N}的音频信号直接做DCT,主要问题是:`,
+                        options: [
+                            '计算量巨大,无法适应信号的局部特性',
+                            '结果不准确',
+                            '无法得到频谱',
+                            '会丢失信息'
+                        ],
+                        correct: 0,
+                        explanation: '长信号直接DCT计算量为O(N²),且音频信号在不同时间段特性不同,分段可以降低计算量并适应局部特性。'
+                    };
+                },
+                
+                // 分段题目2: 窗口大小选择
+                () => {
+                    const options = [256, 512, 1024, 2048];
+                    const W = randChoice(options);
+                    return {
+                        type: 'single',
+                        question: `选择窗口大小为${W}的主要考虑是:`,
+                        options: [
+                            '2的幂次方便于FFT加速,同时平衡时频分辨率',
+                            '这是固定值不能改变',
+                            '窗口越大压缩效果越好',
+                            '窗口越小音质越好'
+                        ],
+                        correct: 0,
+                        explanation: `窗口大小通常选择2的幂次方(如${W}),便于FFT加速。窗口大小需要权衡:太大损失时间分辨率,太小损失频率分辨率。`
+                    };
+                },
+                
+                // 分段题目3: 分段公式
+                () => {
+                    const N = randInt(5000, 10000);
+                    const W = randChoice([256, 512]);
+                    const segments = Math.floor(N / W);
+                    return {
+                        type: 'single',
+                        question: `信号长度为${N},窗口大小为${W},可以分成多少段?`,
+                        options: [
+                            `${segments}段`,
+                            `${segments + 1}段`,
+                            `${Math.ceil(N / W)}段`,
+                            `${N}段`
+                        ],
+                        correct: 0,
+                        explanation: `段数 = $\\lfloor \\frac{N}{W} \\rfloor = \\lfloor \\frac{${N}}{${W}} \\rfloor = ${segments}$段。`
+                    };
+                },
+                
+                // 分段题目4: MATLAB实现
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,从信号x中提取第k段(窗口大小为W)的代码是:`,
+                        options: [
+                            'x_seg = x((k-1)*W+1 : k*W)',
+                            'x_seg = x(k*W : (k+1)*W)',
+                            'x_seg = x(k : k+W)',
+                            'x_seg = x(1:W)'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB索引从1开始,第k段(k=1,2,...)应该是 x((k-1)*W+1 : k*W)。'
+                    };
+                },
+                
+                // 分段题目5: 边界处理
+                () => {
+                    const N = randInt(5000, 6000);
+                    const W = 512;
+                    const lastSegLen = N % W;
+                    return {
+                        type: 'single',
+                        question: `信号长度${N},窗口${W},最后一段长度不足,应该如何处理?`,
+                        options: [
+                            `补零至${W}点`,
+                            '丢弃最后一段',
+                            '重叠前一段',
+                            '不做处理'
+                        ],
+                        correct: 0,
+                        explanation: `最后一段长度为${lastSegLen},不足窗口大小时需要补零至${W}点,确保每段长度相同。`
+                    };
+                },
+                
+                // 分段题目6: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `信号分段处理的优势包括:(多选)`,
+                        options: [
+                            '降低计算复杂度,便于并行处理',
+                            '适应信号的局部特性变化',
+                            '支持流式实时处理',
+                            '增加信号的频率分量'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '分段的优势:计算效率高、适应局部特性、支持实时处理,但不会改变信号本身的频率分量。'
+                    };
+                }
+            ],
+            
+            energy_threshold: [
+                // 能量阈值题目1: 基本原理
+                () => {
+                    const perc = randChoice([95, 99, 99.5]);
+                    return {
+                        type: 'single',
+                        question: `能量阈值为${perc}%意味着:`,
+                        options: [
+                            `保留能量最大的系数,使其累计能量达到总能量的${perc}%`,
+                            `保留${perc}%的系数`,
+                            `丢弃${perc}%的能量`,
+                            `随机保留系数`
+                        ],
+                        correct: 0,
+                        explanation: `能量阈值${perc}%表示保留最重要的系数,使其能量之和 ≥ ${perc}% × 总能量,其余系数置零。`
+                    };
+                },
+                
+                // 能量阈值题目2: 能量计算
+                () => {
+                    return {
+                        type: 'single',
+                        question: `DCT系数X[m]的能量定义为:`,
+                        options: [
+                            '$X[m]^2$',
+                            '$|X[m]|$',
+                            '$\\sqrt{X[m]}$',
+                            '$X[m]$'
+                        ],
+                        correct: 0,
+                        explanation: '能量定义为幅值的平方:$E[m] = X[m]^2$,总能量为 $E_{total} = \\sum_{m=0}^{N-1} X[m]^2$。'
+                    };
+                },
+                
+                // 能量阈值题目3: 算法步骤
+                () => {
+                    return {
+                        type: 'single',
+                        question: `能量阈值处理的正确步骤是:`,
+                        options: [
+                            '计算总能量→按能量大小排序→累加至阈值→保留对应系数',
+                            '随机选择系数→计算能量→判断是否足够',
+                            '直接丢弃一半系数',
+                            '只保留低频系数'
+                        ],
+                        correct: 0,
+                        explanation: '正确流程:1)计算每个系数的能量 2)按能量降序排序 3)累加能量直到达到阈值 4)保留这些系数,其余置零。'
+                    };
+                },
+                
+                // 能量阈值题目4: 保留系数数量
+                () => {
+                    const N = randChoice([256, 512, 1024]);
+                    const perc = randChoice([95, 99]);
+                    const kept = Math.floor(N * 0.1);
+                    return {
+                        type: 'single',
+                        question: `对${N}点DCT,能量阈值${perc}%时,通常需要保留的系数数量约为:`,
+                        options: [
+                            `10-20个左右`,
+                            `${N/2}个`,
+                            `${N}个`,
+                            `1个`
+                        ],
+                        correct: 0,
+                        explanation: `由于DCT的能量集中特性,通常只需保留5-10%的系数(约10-50个)就能达到95-99%的能量,这正是压缩的关键。`
+                    };
+                },
+                
+                // 能量阈值题目5: MATLAB实现
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,按能量大小对DCT系数排序的代码是:`,
+                        options: [
+                            '[~, idx] = sort(abs(X), \'descend\')',
+                            '[~, idx] = sort(X)',
+                            'idx = find(X > threshold)',
+                            'idx = 1:length(X)'
+                        ],
+                        correct: 0,
+                        explanation: '使用sort函数按幅值降序排序:sort(abs(X), \'descend\'),返回排序后的索引用于后续处理。'
+                    };
+                },
+                
+                // 能量阈值题目6: 阈值影响
+                () => {
+                    return {
+                        type: 'single',
+                        question: `降低能量阈值(如从99%降到95%)会导致:`,
+                        options: [
+                            '保留更少系数,压缩比提高,但失真增大',
+                            '保留更多系数,音质更好',
+                            '没有影响',
+                            '压缩比降低'
+                        ],
+                        correct: 0,
+                        explanation: '阈值降低→保留系数减少→压缩比提高,但丢弃了更多信息→失真增大。这是压缩比与音质的权衡。'
+                    };
+                },
+                
+                // 能量阈值题目7: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `能量阈值处理的作用包括:(多选)`,
+                        options: [
+                            '去除能量小的系数,减少数据量',
+                            '保留最重要的频率分量',
+                            '实现有损压缩',
+                            '完全无损重建信号'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '能量阈值是有损压缩的关键步骤:丢弃次要信息、保留主要频率分量、减少数据量,但无法完全无损重建。'
+                    };
+                }
+            ],
+            
+            quantization: [
+                // 量化题目1: 量化原理
+                () => {
+                    const bits = randChoice([2, 4, 6, 8]);
+                    const levels = Math.pow(2, bits);
+                    return {
+                        type: 'single',
+                        question: `${bits}位均匀量化可以表示多少个量化级别?`,
+                        options: [
+                            `${levels}个`,
+                            `${bits}个`,
+                            `${levels * 2}个`,
+                            `${bits * 2}个`
+                        ],
+                        correct: 0,
+                        explanation: `${bits}位量化可表示 $2^{${bits}} = ${levels}$ 个不同的量化级别。位数越多,量化越精细。`
+                    };
+                },
+                
+                // 量化题目2: 量化步长
+                () => {
+                    const L = randInt(8, 16);
+                    const b = randChoice([4, 6, 8]);
+                    const step = (L / (Math.pow(2, b-1) - 1)).toFixed(3);
+                    return {
+                        type: 'single',
+                        question: `量化区间为[-${L}, ${L}],使用${b}位量化,量化步长为:`,
+                        options: [
+                            `约${step}`,
+                            `${L}`,
+                            `${b}`,
+                            `${L / b}`
+                        ],
+                        correct: 0,
+                        explanation: `量化步长 $q_{step} = \\frac{2L}{2^{b}-1} = \\frac{${2*L}}{${Math.pow(2,b)-1}} \\approx ${step}$`
+                    };
+                },
+                
+                // 量化题目3: 量化公式
+                () => {
+                    const x = (Math.random() * 6 + 2).toFixed(2);
+                    return {
+                        type: 'single',
+                        question: `对值 $x=${x}$,量化步长为2,量化后的值为:`,
+                        options: [
+                            `${Math.round(parseFloat(x) / 2) * 2}`,
+                            `${x}`,
+                            `${Math.floor(parseFloat(x))}`,
+                            `${Math.ceil(parseFloat(x))}`
+                        ],
+                        correct: 0,
+                        explanation: `量化: $q = \\text{round}(x / q_{step}) \\times q_{step} = \\text{round}(${x} / 2) \\times 2 = ${Math.round(parseFloat(x) / 2) * 2}$`
+                    };
+                },
+                
+                // 量化题目4: 量化误差
+                () => {
+                    return {
+                        type: 'single',
+                        question: `量化步长为$\\Delta$时,量化误差的范围是:`,
+                        options: [
+                            '$[-\\Delta/2, \\Delta/2]$',
+                            '$[-\\Delta, \\Delta]$',
+                            '$[0, \\Delta]$',
+                            '$[-2\\Delta, 2\\Delta]$'
+                        ],
+                        correct: 0,
+                        explanation: '均匀量化的最大误差为半个步长,即 $e \\in [-\\Delta/2, \\Delta/2]$。'
+                    };
+                },
+                
+                // 量化题目5: 位数影响
+                () => {
+                    return {
+                        type: 'single',
+                        question: `将量化位数从8位降到4位会导致:`,
+                        options: [
+                            '量化级别减少,误差增大,但压缩比提高',
+                            '音质更好',
+                            '计算更复杂',
+                            '没有影响'
+                        ],
+                        correct: 0,
+                        explanation: '位数减少:级别从256降到16,量化更粗糙,误差增大,但每个系数存储空间减半,压缩比提高。'
+                    };
+                },
+                
+                // 量化题目6: MATLAB实现
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中实现量化的核心代码是:`,
+                        options: [
+                            'X_quant = round(X / q_step) * q_step',
+                            'X_quant = floor(X / q_step)',
+                            'X_quant = X / q_step',
+                            'X_quant = quantize(X)'
+                        ],
+                        correct: 0,
+                        explanation: '量化步骤:除以步长→四舍五入→乘回步长,即 round(X / q_step) * q_step。'
+                    };
+                },
+                
+                // 量化题目7: 解量化
+                () => {
+                    return {
+                        type: 'single',
+                        question: `解量化的作用是:`,
+                        options: [
+                            '将量化级别映射回近似的原始值',
+                            '完全恢复原始值',
+                            '进一步压缩数据',
+                            '删除量化误差'
+                        ],
+                        correct: 0,
+                        explanation: '解量化将离散级别转回连续值,但无法消除量化误差,只能得到近似值。'
+                    };
+                },
+                
+                // 量化题目8: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `关于量化位数的选择,正确的是:(多选)`,
+                        options: [
+                            '位数越多,量化越精细,音质越好',
+                            '位数越少,压缩比越高',
+                            '需要在音质和压缩比之间权衡',
+                            '位数越少,计算越快'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '量化位数的权衡:高位数(8-10位)音质好但压缩比低,低位数(2-4位)压缩比高但失真大。'
+                    };
+                }
+            ],
+            
+            mse: [
+                // MSE题目1: MSE定义
+                () => {
+                    return {
+                        type: 'single',
+                        question: `均方误差(MSE)的定义是:`,
+                        options: [
+                            '$\\frac{1}{N}\\sum_{n=0}^{N-1}[x[n] - \\hat{x}[n]]^2$',
+                            '$\\sum_{n=0}^{N-1}|x[n] - \\hat{x}[n]|$',
+                            '$\\frac{1}{N}\\sum_{n=0}^{N-1}|x[n] - \\hat{x}[n]|$',
+                            '$\\sqrt{\\sum_{n=0}^{N-1}[x[n] - \\hat{x}[n]]^2}$'
+                        ],
+                        correct: 0,
+                        explanation: 'MSE是误差平方的平均值,定义为 $\\text{MSE} = \\frac{1}{N}\\sum_{n=0}^{N-1}[x[n] - \\hat{x}[n]]^2$。'
+                    };
+                },
+                
+                // MSE题目2: MSE意义
+                () => {
+                    return {
+                        type: 'single',
+                        question: `MSE越小说明:`,
+                        options: [
+                            '重建信号越接近原始信号,压缩质量越好',
+                            '压缩比越高',
+                            '计算速度越快',
+                            '信号能量越大'
+                        ],
+                        correct: 0,
+                        explanation: 'MSE衡量重建误差,MSE越小表示失真越小,重建质量越高。理想情况是MSE=0(无损)。'
+                    };
+                },
+                
+                // MSE题目3: MATLAB计算
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中计算MSE的代码是:`,
+                        options: [
+                            'mse = mean((x - x_recon).^2)',
+                            'mse = sum(abs(x - x_recon))',
+                            'mse = sqrt(sum((x - x_recon).^2))',
+                            'mse = std(x - x_recon)'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB中: mse = mean((x - x_recon).^2) 计算误差平方的均值。'
+                    };
+                },
+                
+                // MSE题目4: SNR定义
+                () => {
+                    return {
+                        type: 'single',
+                        question: `信噪比(SNR)的定义是:`,
+                        options: [
+                            '$10\\log_{10}\\left(\\frac{\\text{信号能量}}{\\text{噪声能量}}\\right)$ dB',
+                            '$\\frac{\\text{信号幅度}}{\\text{噪声幅度}}$',
+                            '$\\frac{\\text{噪声能量}}{\\text{信号能量}}$',
+                            '$\\log(\\text{MSE})$'
+                        ],
+                        correct: 0,
+                        explanation: 'SNR定义为信号能量与噪声能量之比的对数: $\\text{SNR} = 10\\log_{10}(P_{signal}/P_{noise})$ dB。'
+                    };
+                },
+                
+                // MSE题目5: SNR与MSE关系
+                () => {
+                    return {
+                        type: 'single',
+                        question: `SNR与MSE的关系是:`,
+                        options: [
+                            'SNR越大,MSE越小,质量越好',
+                            'SNR越小,MSE越小',
+                            'SNR与MSE无关',
+                            'SNR等于MSE'
+                        ],
+                        correct: 0,
+                        explanation: 'SNR和MSE是反向关系:SNR↑→噪声↓→误差↓→MSE↓→质量↑。通常SNR>20dB为可接受。'
+                    };
+                },
+                
+                // MSE题目6: 质量评估标准
+                () => {
+                    const snr = randChoice([15, 25, 35]);
+                    const quality = snr < 20 ? '较差' : snr < 30 ? '可接受' : '优秀';
+                    return {
+                        type: 'single',
+                        question: `压缩后SNR为${snr}dB,音质评价为:`,
+                        options: [
+                            quality,
+                            snr < 20 ? '优秀' : '较差',
+                            '无法判断',
+                            '完全无损'
+                        ],
+                        correct: 0,
+                        explanation: `音质评价标准:SNR<20dB较差,20-30dB可接受,>30dB优秀。${snr}dB属于${quality}。`
+                    };
+                },
+                
+                // MSE题目7: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `关于MSE和SNR的说法正确的是:(多选)`,
+                        options: [
+                            'MSE是客观评价指标,直接衡量误差大小',
+                            'SNR用对数表示,单位是dB',
+                            'MSE=0表示完全无损压缩',
+                            'SNR可以为负值'
+                        ],
+                        correct: [0, 1, 2, 3],
+                        explanation: '这些都是正确的:MSE客观衡量误差,SNR用dB表示,MSE=0对应无损,SNR在噪声大时可为负值。'
+                    };
+                }
+            ],
+            
+            compression: [
+                // 压缩比题目1: 压缩比定义
+                () => {
+                    return {
+                        type: 'single',
+                        question: `压缩比的定义是:`,
+                        options: [
+                            '$\\frac{\\text{原始大小}}{\\text{压缩后大小}}$',
+                            '$\\frac{\\text{压缩后大小}}{\\text{原始大小}}$',
+                            '$\\text{原始大小} - \\text{压缩后大小}$',
+                            '$\\text{压缩后大小}$'
+                        ],
+                        correct: 0,
+                        explanation: '压缩比 = 原始大小/压缩后大小。如10:1表示压缩到原来的1/10,节省90%空间。'
+                    };
+                },
+                
+                // 压缩比题目2: 计算实例
+                () => {
+                    const N = randChoice([512, 1024]);
+                    const kept = randInt(20, 50);
+                    const bits = randChoice([4, 6, 8]);
+                    const ratio = ((N * 16) / (kept * bits)).toFixed(2);
+                    return {
+                        type: 'single',
+                        question: `原始${N}个16位系数,压缩后保留${kept}个系数,每个用${bits}位量化,压缩比约为:`,
+                        options: [
+                            `${ratio}:1`,
+                            `${(kept/N).toFixed(2)}:1`,
+                            `${bits}:1`,
+                            `${N}:1`
+                        ],
+                        correct: 0,
+                        explanation: `原始:${N}×16=${N*16}位;压缩后:${kept}×${bits}=${kept*bits}位;压缩比≈${ratio}:1`
+                    };
+                },
+                
+                // 压缩比题目3: 压缩率
+                () => {
+                    const ratio = randChoice([5, 8, 10]);
+                    const rate = ((1 - 1/ratio) * 100).toFixed(0);
+                    return {
+                        type: 'single',
+                        question: `压缩比为${ratio}:1,压缩率(节省的空间百分比)为:`,
+                        options: [
+                            `${rate}%`,
+                            `${100 - parseInt(rate)}%`,
+                            `${ratio}%`,
+                            `${100/ratio}%`
+                        ],
+                        correct: 0,
+                        explanation: `压缩率 = (1 - 1/压缩比) × 100% = (1 - 1/${ratio}) × 100% = ${rate}%`
+                    };
+                },
+                
+                // 压缩比题目4: 影响因素
+                () => {
+                    return {
+                        type: 'single',
+                        question: `提高压缩比的方法不包括:`,
+                        options: [
+                            '增加能量阈值',
+                            '降低能量阈值(保留更少系数)',
+                            '减少量化位数',
+                            '使用更大的窗口'
+                        ],
+                        correct: 0,
+                        explanation: '提高压缩比的方法:降低能量阈值(保留更少系数)、减少量化位数。增加阈值会保留更多系数,降低压缩比。'
+                    };
+                },
+                
+                // 压缩比题目5: 权衡关系
+                () => {
+                    return {
+                        type: 'single',
+                        question: `压缩比与音质的关系是:`,
+                        options: [
+                            '压缩比越高,音质通常越差,需要权衡',
+                            '压缩比越高,音质越好',
+                            '压缩比与音质无关',
+                            '压缩比越低,音质越差'
+                        ],
+                        correct: 0,
+                        explanation: '这是核心权衡:高压缩比→丢弃更多信息→失真↑→音质↓。需根据应用场景选择合适的压缩比。'
+                    };
+                },
+                
+                // 压缩比题目6: MP3对比
+                () => {
+                    return {
+                        type: 'single',
+                        question: `MP3音频通常能达到的压缩比约为:`,
+                        options: [
+                            '10:1左右',
+                            '2:1左右',
+                            '50:1左右',
+                            '100:1左右'
+                        ],
+                        correct: 0,
+                        explanation: 'MP3通过DCT、心理声学模型、哈夫曼编码等技术,通常达到10:1左右的压缩比,音质损失较小。'
+                    };
+                },
+                
+                // 压缩比题目7: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `影响压缩比的因素包括:(多选)`,
+                        options: [
+                            '能量阈值的设定',
+                            '量化位数的选择',
+                            '窗口大小',
+                            '原始信号的特性'
+                        ],
+                        correct: [0, 1, 3],
+                        explanation: '压缩比主要由能量阈值(保留系数数量)、量化位数(每个系数的存储)决定,也受信号特性影响。窗口大小主要影响频率分辨率。'
+                    };
+                }
+            ],
+            
+            workflow: [
+                // 流程题目1: 7步流程
+                () => {
+                    return {
+                        type: 'single',
+                        question: `音频压缩的第一步是:`,
+                        options: [
+                            '读取音频并分段',
+                            'DCT变换',
+                            '能量阈值处理',
+                            '量化'
+                        ],
+                        correct: 0,
+                        explanation: '完整流程:1)读取音频并分段 2)DCT变换 3)能量阈值 4)量化 5)逆DCT 6)合并重建 7)性能分析。'
+                    };
+                },
+                
+                // 流程题目2: 步骤顺序
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在压缩流程中,能量阈值处理和量化的正确顺序是:`,
+                        options: [
+                            '先能量阈值,后量化',
+                            '先量化,后能量阈值',
+                            '两者可以互换',
+                            '只需要其中一个'
+                        ],
+                        correct: 0,
+                        explanation: '正确顺序:DCT→能量阈值(去除小系数)→量化(离散化保留的系数)→逆DCT。'
+                    };
+                },
+                
+                // 流程题目3: MATLAB函数
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中,读取音频文件的函数是:`,
+                        options: [
+                            'audioread(\'filename.wav\')',
+                            'wavread(\'filename.wav\')',
+                            'load(\'filename.wav\')',
+                            'read_audio(\'filename.wav\')'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB中使用audioread函数读取音频:[x, Fs] = audioread(\'filename.wav\')。'
+                    };
+                },
+                
+                // 流程题目4: 合并重建
+                () => {
+                    return {
+                        type: 'single',
+                        question: `将所有压缩后的片段合并成完整音频的方法是:`,
+                        options: [
+                            '按顺序拼接各片段',
+                            '取各片段的平均值',
+                            '只保留第一个片段',
+                            '随机组合'
+                        ],
+                        correct: 0,
+                        explanation: '合并时按原始顺序将各片段依次拼接:x_final = [seg1, seg2, seg3, ...]。'
+                    };
+                },
+                
+                // 流程题目5: 写入音频
+                () => {
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中保存重建音频的函数是:`,
+                        options: [
+                            'audiowrite(\'output.wav\', x, Fs)',
+                            'wavwrite(x, Fs, \'output.wav\')',
+                            'save(\'output.wav\', x)',
+                            'write_audio(x, \'output.wav\')'
+                        ],
+                        correct: 0,
+                        explanation: '使用audiowrite函数保存:audiowrite(\'output.wav\', x, Fs),需指定采样率Fs。'
+                    };
+                },
+                
+                // 流程题目6: 性能指标
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `性能分析阶段需要计算的指标包括:(多选)`,
+                        options: [
+                            '压缩比',
+                            'MSE(均方误差)',
+                            'SNR(信噪比)',
+                            '原始音频时长'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '性能分析主要关注:压缩比(数据量减少)、MSE(重建误差)、SNR(信号质量),时长不是压缩性能指标。'
+                    };
+                },
+                
+                // 流程题目7: 有损vs无损
+                () => {
+                    return {
+                        type: 'single',
+                        question: `本实验的压缩方法属于:`,
+                        options: [
+                            '有损压缩',
+                            '无损压缩',
+                            '部分有损',
+                            '自适应压缩'
+                        ],
+                        correct: 0,
+                        explanation: '由于使用了能量阈值(丢弃系数)和量化(离散化),这是有损压缩,无法完全恢复原始信号。'
+                    };
+                },
+                
+                // 流程题目8: 多选-关键步骤
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: `在7步流程中,哪些步骤导致了信息损失?(多选)`,
+                        options: [
+                            '能量阈值处理(丢弃小系数)',
+                            '量化与解量化(离散化误差)',
+                            'DCT变换',
+                            '信号分段'
+                        ],
+                        correct: [0, 1],
+                        explanation: '信息损失发生在:能量阈值(直接丢弃)和量化(舍入误差)。DCT和分段都是可逆的,不损失信息。'
+                    };
+                }
+            ]
+        };
+
+        // ==================== 事件监听器绑定 ====================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 开始测验按钮
+            document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
+            
+            // 提交答案按钮
+            document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+            
+            // 下一题按钮
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            
+            // 保存截图按钮
+            document.getElementById('saveBtn').addEventListener('click', saveScreenshot);
+        });
+
+        // ==================== 测验逻辑 ====================
+        
+        function startQuiz() {
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            
+            if (!id || !name) {
+                alert('请填写学号和姓名!');
+                return;
+            }
+            
+            studentData.id = id;
+            studentData.name = name;
+            
+            topics.forEach(topic => {
+                studentData.topicStats[topic.id] = {
+                    attempts: 0,
+                    correct: 0,
+                    questions: []
+                };
+                studentData.usedQuestions[topic.id] = [];
+            });
+            
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.quiz-section').classList.add('active');
+            
+            document.getElementById('studentInfo').innerHTML = 
+                `<p style="text-align: center; color: #666;">学号: ${id} | 姓名: ${name}</p>`;
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            
+            const progress = (studentData.currentTopicIndex / topics.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').textContent = 
+                `${studentData.currentTopicIndex}/${topics.length}`;
+            
+            document.getElementById('currentTopic').innerHTML = 
+                `<h2>📚 当前知识点: ${currentTopic.name}</h2>
+                 <p style="color: #666;">${currentTopic.description}</p>`;
+            
+            const generators = questionGenerators[topicId];
+            let questionIndex;
+            
+            if (studentData.usedQuestions[topicId].length >= generators.length) {
+                studentData.usedQuestions[topicId] = [];
+            }
+            
+            do {
+                questionIndex = randInt(0, generators.length - 1);
+            } while (studentData.usedQuestions[topicId].includes(questionIndex));
+            
+            studentData.usedQuestions[topicId].push(questionIndex);
+            
+            const question = generators[questionIndex]();
+            
+            // 🔥🔥🔥 核心修改：打乱选项顺序
+            if (question.type === 'single') {
+                const shuffled = shuffleOptionsWithAnswer(question.options, question.correct);
+                question.options = shuffled.options;
+                question.correct = shuffled.correct;
+            } else if (question.type === 'multiple') {
+                const shuffled = shuffleOptionsWithAnswers(question.options, question.correct);
+                question.options = shuffled.options;
+                question.correct = shuffled.correct;
+            }
+            
+            stats.questions.push({
+                ...question,
+                answered: false,
+                isCorrect: false
+            });
+            
+            document.getElementById('questionTitle').innerHTML = 
+                `题目 ${stats.attempts + 1}`;
+            
+            document.getElementById('questionContent').innerHTML = 
+                `<p style="margin: 15px 0; font-size: 1.1em;">${question.question}</p>`;
+            
+            let optionsHTML = '';
+            
+            if (question.type === 'single') {
+                question.options.forEach((option, index) => {
+                    optionsHTML += `
+                        <div class="option" data-index="${index}">
+                            ${String.fromCharCode(65 + index)}. ${option}
+                        </div>`;
+                });
+            } else {
+                question.options.forEach((option, index) => {
+                    optionsHTML += `
+                        <div class="checkbox-option" data-index="${index}">
+                            <input type="checkbox" id="opt${index}">
+                            <label for="opt${index}" style="cursor: pointer; margin: 0;">
+                                ${String.fromCharCode(65 + index)}. ${option}
+                            </label>
+                        </div>`;
+                });
+            }
+            
+            document.getElementById('options').innerHTML = optionsHTML;
+            
+            // 绑定选项点击事件
+            if (question.type === 'single') {
+                document.querySelectorAll('.option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        selectOption(parseInt(this.getAttribute('data-index')));
+                    });
+                });
+            } else {
+                document.querySelectorAll('.checkbox-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        toggleCheckbox(parseInt(this.getAttribute('data-index')));
+                    });
+                });
+            }
+            
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function selectOption(index) {
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelectorAll('.option')[index].classList.add('selected');
+        }
+
+        function toggleCheckbox(index) {
+            const checkbox = document.getElementById(`opt${index}`);
+            checkbox.checked = !checkbox.checked;
+        }
+
+        function submitAnswer() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            const question = stats.questions[stats.questions.length - 1];
+            
+            let selectedAnswers;
+            let isCorrect;
+            
+            if (question.type === 'single') {
+                const selected = document.querySelector('.option.selected');
+                if (!selected) {
+                    alert('请选择一个答案!');
+                    return;
+                }
+                selectedAnswers = parseInt(selected.getAttribute('data-index'));
+                isCorrect = selectedAnswers === question.correct;
+                
+                document.querySelectorAll('.option').forEach((opt, idx) => {
+                    if (idx === question.correct) {
+                        opt.classList.add('correct');
+                    } else if (idx === selectedAnswers && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                    opt.style.pointerEvents = 'none';
+                });
+            } else {
+                selectedAnswers = [];
+                document.querySelectorAll('input[type="checkbox"]').forEach((cb, idx) => {
+                    if (cb.checked) {
+                        selectedAnswers.push(idx);
+                    }
+                });
+                
+                if (selectedAnswers.length === 0) {
+                    alert('请至少选择一个答案!');
+                    return;
+                }
+                
+                isCorrect = selectedAnswers.length === question.correct.length &&
+                           selectedAnswers.every(ans => question.correct.includes(ans));
+                
+                document.querySelectorAll('.checkbox-option').forEach((opt, idx) => {
+                    if (question.correct.includes(idx)) {
+                        opt.classList.add('correct');
+                    } else if (selectedAnswers.includes(idx)) {
+                        opt.classList.add('incorrect');
+                    }
+                    opt.style.pointerEvents = 'none';
+                });
+            }
+            
+            stats.attempts++;
+            question.answered = true;
+            question.isCorrect = isCorrect;
+            
+            if (isCorrect) {
+                stats.correct++;
+            }
+            
+            const feedbackDiv = document.getElementById('feedback');
+            if (isCorrect) {
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback correct">
+                        ✅ 回答正确!<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = 
+                    studentData.currentTopicIndex < topics.length - 1 ? '下一知识点' : '查看结果';
+            } else {
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback incorrect">
+                        ❌ 回答错误,请再试一次!<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = '继续答题';
+            }
+            
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function nextQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            const lastQuestion = stats.questions[stats.questions.length - 1];
+            
+            if (lastQuestion.isCorrect) {
+                studentData.currentTopicIndex++;
+                
+                if (studentData.currentTopicIndex >= topics.length) {
+                    showResults();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-section').classList.remove('active');
+            document.querySelector('.result-section').classList.add('active');
+            
+            let reportHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #667eea;">🎉 ${studentData.name} 同学(学号:${studentData.id})</h2>
+                    <p style="color: #666; font-size: 1.1em;">您已完成本次DSP-Proj1练习测验!</p>
+                </div>
+                
+                <table class="stats-table">
+                    <tr>
+                        <th>知识点</th>
+                        <th>答题次数</th>
+                        <th>首次正确率</th>
+                        <th>掌握程度</th>
+                    </tr>
+            `;
+            
+            let excellentTopics = [];
+            let goodTopics = [];
+            let fairTopics = [];
+            let poorTopics = [];
+            
+            topics.forEach(topic => {
+                const stats = studentData.topicStats[topic.id];
+                const accuracy = ((1 / stats.attempts) * 100).toFixed(0);
+                
+                let mastery, masteryClass;
+                if (stats.attempts === 1) {
+                    mastery = '优秀 ⭐⭐⭐⭐';
+                    masteryClass = 'mastery-excellent';
+                    excellentTopics.push(topic.name);
+                } else if (stats.attempts === 2) {
+                    mastery = '良好 ⭐⭐⭐';
+                    masteryClass = 'mastery-good';
+                    goodTopics.push(topic.name);
+                } else if (stats.attempts <= 4) {
+                    mastery = '一般 ⭐⭐';
+                    masteryClass = 'mastery-fair';
+                    fairTopics.push(topic.name);
+                } else {
+                    mastery = '需加强 ⭐';
+                    masteryClass = 'mastery-poor';
+                    poorTopics.push(topic.name);
+                }
+                
+                reportHTML += `
+                    <tr>
+                        <td><strong>${topic.name}</strong></td>
+                        <td>${stats.attempts}次</td>
+                        <td>${accuracy}%</td>
+                        <td class="${masteryClass}">${mastery}</td>
+                    </tr>
+                `;
+            });
+            
+            reportHTML += '</table>';
+            
+            reportHTML += '<div style="margin-top: 30px;">';
+            reportHTML += '<h3 style="color: #667eea;">📊 知识掌握分析</h3>';
+            
+            if (excellentTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e8f5e9; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #48bb78;">
+                        <strong style="color: #48bb78;">✅ 掌握优秀的知识点:</strong><br>
+                        ${excellentTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (goodTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #667eea;">
+                        <strong style="color: #667eea;">👍 掌握良好的知识点:</strong><br>
+                        ${goodTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (fairTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #fff8e1; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #ed8936;">
+                        <strong style="color: #ed8936;">⚠️ 需要巩固的知识点:</strong><br>
+                        ${fairTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (poorTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #ffebee; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #f56565;">
+                        <strong style="color: #f56565;">❌ 需要重点加强的知识点:</strong><br>
+                        ${poorTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            reportHTML += `
+                <div style="background: #f0f4ff; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #667eea;">
+                    <h4 style="color: #667eea; margin-top: 0;">💡 复习建议</h4>
+                    <ul style="line-height: 2; color: #555;">
+                        <li>重点复习标记为"需加强"的知识点,结合实验手册详细学习</li>
+                        <li>对于答题次数较多的知识点,建议动手实践MATLAB代码加深理解</li>
+                        <li>理解DCT压缩的完整流程:分段→DCT→阈值→量化→逆DCT→合并</li>
+                        <li>掌握压缩比与音质的权衡关系,这是实际应用的关键</li>
+                    </ul>
+                </div>
+            `;
+            
+            reportHTML += '</div>';
+            
+            document.getElementById('finalReport').innerHTML = reportHTML;
+        }
+
+        function saveScreenshot() {
+            const button = document.getElementById('saveBtn');
+            button.disabled = true;
+            button.textContent = '正在生成截图...';
+            
+            html2canvas(document.body, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false
+            }).then(canvas => {
+                canvas.toBlob(blob => {
+                    const cleanId = studentData.id.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const cleanName = studentData.name.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const filename = `${cleanId}_${cleanName}_Proj1Quiz.png`;
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    button.disabled = false;
+                    button.textContent = '截图已保存';
+                    setTimeout(() => {
+                        button.textContent = '再次截图';
+                    }, 2000);
+                }, 'image/png');
+            }).catch(error => {
+                console.error('截图失败:', error);
+                alert('截图失败,请尝试使用浏览器截图功能');
+                button.disabled = false;
+                button.textContent = '截图保存';
+            });
+        }
+    </script>
+    
+    <script>
+        (function() {
+            const statusDiv = document.getElementById('mathjaxStatus');
+            const primaryCDN = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+            const backupCDN = 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+
+            function loadScript(src, onload, onerror) {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.onload = onload;
+                script.onerror = onerror;
+                document.head.appendChild(script);
+            }
+
+            function onMathJaxLoad() {
+                console.log('MathJax loaded successfully.');
+                statusDiv.textContent = '✓ 数学公式加载成功';
+                statusDiv.className = 'mathjax-status success';
+            }
+
+            loadScript(primaryCDN, onMathJaxLoad, function() {
+                console.warn('Primary MathJax CDN failed. Trying backup...');
+                statusDiv.textContent = '主CDN加载失败,尝试备用...';
+                loadScript(backupCDN, onMathJaxLoad, function() {
+                    console.error('Backup MathJax CDN also failed.');
+                    statusDiv.textContent = '❌ 公式加载失败,请检查网络';
+                    statusDiv.className = 'mathjax-status';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
