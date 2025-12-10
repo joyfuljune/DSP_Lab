@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP-Proj2 练习测验 - 音频变速实验</title>
+    
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            }
+        });
+    </script>
+
+    <style>
+        .mathjax-status {
+            position: fixed;
+            top: 10px;
+            right: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            font-size: 14px;
+            z-index: 10000;
+            font-family: 'Microsoft YaHei', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mathjax-status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+        .mathjax-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+            transition: opacity 0.5s ease-out 1.5s;
+            opacity: 0;
+        }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #667eea;
+            margin: 25px 0 15px 0;
+        }
+
+        .login-section, .quiz-section, .result-section {
+            display: none;
+        }
+
+        .login-section.active, .quiz-section.active, .result-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #9f7aea;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .question-title {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            margin: 15px 0;
+        }
+
+        .option {
+            display: block;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .option.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #38a169;
+        }
+
+        .option.incorrect {
+            background: #f56565;
+            color: white;
+            border-color: #e53e3e;
+        }
+
+        .feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #e8f5e9;
+            color: #48bb78;
+            border-left: 5px solid #48bb78;
+        }
+
+        .feedback.incorrect {
+            background: #ffebee;
+            color: #f56565;
+            border-left: 5px solid #f56565;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #667eea 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .mastery-excellent {
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .mastery-good {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .mastery-fair {
+            color: #ed8936;
+            font-weight: bold;
+        }
+
+        .mastery-poor {
+            color: #f56565;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #fff8e1;
+            border-left: 5px solid #ed8936;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-option:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+
+        .checkbox-option.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #38a169;
+        }
+
+        .checkbox-option.incorrect {
+            background: #f56565;
+            color: white;
+            border-color: #e53e3e;
+        }
+
+        .tf-options {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .tf-option {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tf-option:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+
+        .tf-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .tf-option.correct {
+            background: #48bb78;
+            color: white;
+        }
+
+        .tf-option.incorrect {
+            background: #f56565;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="mathjaxStatus" class="mathjax-status loading">正在加载数学公式...</div>
+    
+    <div class="container">
+        <!-- 登录界面 -->
+        <div class="login-section active">
+            <h1>🎵 DSP-Proj2 练习测验</h1>
+            <h2 style="text-align: center; color: #764ba2; font-size: 1.2em;">音频变速实验 - 基于相位声码器的时间拉伸</h2>
+            <div class="info-box">
+                <strong>📌 测验说明</strong>
+                <p>本系统将测试您对《音频变速实验》的掌握程度。每个知识点将随机出题,答对后进入下一知识点,答错将继续该知识点的其他题目。涵盖<strong>8大核心知识点</strong>,共<strong>60+道随机题目</strong>。</p>
+                <p style="margin-top: 10px;"><strong>题型包括:</strong> 单选题、多选题、判断题</p>
+            </div>
+            
+            <div class="form-group">
+                <label>学号:</label>
+                <input type="text" id="studentId" placeholder="请输入学号">
+            </div>
+            
+            <div class="form-group">
+                <label>姓名:</label>
+                <input type="text" id="studentName" placeholder="请输入姓名">
+            </div>
+            
+            <button id="startQuizBtn">开始测验</button>
+        </div>
+
+        <!-- 测验界面 -->
+        <div class="quiz-section">
+            <h1>🎵 DSP-Proj2 练习测验</h1>
+            <div id="studentInfo"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+            
+            <div id="currentTopic"></div>
+            
+            <div class="question-box">
+                <div class="question-title" id="questionTitle"></div>
+                <div id="questionContent"></div>
+                <div id="options" class="options"></div>
+                <div id="feedback"></div>
+                <button id="submitBtn">提交答案</button>
+                <button id="nextBtn" style="display:none;">下一题</button>
+            </div>
+        </div>
+
+        <!-- 结果界面 -->
+        <div class="result-section">
+            <h1>📊 测验结果报告</h1>
+            <div id="finalReport"></div>
+            <button id="saveBtn">截图保存</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据结构 ====================
+        let studentData = {
+            id: '',
+            name: '',
+            topicStats: {},
+            currentTopicIndex: 0,
+            currentQuestionIndex: 0,
+            usedQuestions: {}
+        };
+
+        // 知识点定义
+        const topics = [
+            {
+                name: '傅里叶变换基础',
+                id: 'fft_basics',
+                description: 'DFT/FFT概念、时频对偶关系'
+            },
+            {
+                name: 'STFT短时傅里叶变换',
+                id: 'stft',
+                description: '分帧+加窗+FFT的组合处理'
+            },
+            {
+                name: '时域插值的陷阱',
+                id: 'time_interpolation',
+                description: '为什么简单插值会改变音高'
+            },
+            {
+                name: '频域插值法',
+                id: 'freq_interpolation',
+                description: '在频域保持音高的时间拉伸方法'
+            },
+            {
+                name: '相位声码器原理',
+                id: 'phase_vocoder',
+                description: 'Phase Vocoder的核心思想和公式'
+            },
+            {
+                name: '分帧与帧移',
+                id: 'framing',
+                description: '重叠分帧、帧移Ra/Rs的概念'
+            },
+            {
+                name: '加窗处理',
+                id: 'windowing',
+                description: 'Hann/Hamming窗、频谱泄露'
+            },
+            {
+                name: '重叠相加重建(OLA)',
+                id: 'ola',
+                description: 'IFFT后的信号重建方法'
+            }
+        ];
+
+        // ==================== 工具函数 ====================
+        
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function randChoice(arr) {
+            return arr[randInt(0, arr.length - 1)];
+        }
+
+        function randFloat(min, max, decimals = 2) {
+            return (Math.random() * (max - min) + min).toFixed(decimals);
+        }
+
+        // 单选题选项打乱函数
+        function shuffleOptionsWithAnswer(options, correctIndex) {
+            const indices = options.map((_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            return {
+                options: indices.map(i => options[i]),
+                correct: indices.indexOf(correctIndex)
+            };
+        }
+
+        // 多选题选项打乱函数
+        function shuffleOptionsWithAnswers(options, correctIndices) {
+            const indices = options.map((_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            return {
+                options: indices.map(i => options[i]),
+                correct: correctIndices.map(ci => indices.indexOf(ci)).sort((a, b) => a - b)
+            };
+        }
+
+        // ==================== 题目生成函数 ====================
+        
+        const questionGenerators = {
+            // ========== 知识点1: 傅里叶变换基础 ==========
+            fft_basics: [
+                // FFT题目1: 时频对偶
+                () => {
+                    return {
+                        type: 'single',
+                        question: '根据时频对偶关系,如果时域信号被拉伸2倍,其频谱会:',
+                        options: [
+                            '频率压缩为原来的1/2',
+                            '频率拉伸为原来的2倍',
+                            '频率不变',
+                            '频率变为0'
+                        ],
+                        correct: 0,
+                        explanation: '时频对偶关系: 时间长度 × 频率 = 常数。时域拉伸2倍 → 频域压缩1/2 → 音高降低。'
+                    };
+                },
+                
+                // FFT题目2: FFT点数
+                () => {
+                    const N = randChoice([256, 512, 1024, 2048]);
+                    return {
+                        type: 'single',
+                        question: `对长度为${N}的信号进行FFT,得到的频谱点数为:`,
+                        options: [
+                            `${N}点`,
+                            `${N/2}点`,
+                            `${N*2}点`,
+                            `${Math.log2(N)}点`
+                        ],
+                        correct: 0,
+                        explanation: `FFT变换后的频谱点数与输入信号长度相同,都是${N}点。但由于共轭对称性,实信号只有前N/2点包含独立信息。`
+                    };
+                },
+                
+                // FFT题目3: 频率分辨率
+                () => {
+                    const fs = randChoice([8000, 16000, 44100]);
+                    const N = randChoice([512, 1024]);
+                    const resolution = (fs / N).toFixed(2);
+                    return {
+                        type: 'single',
+                        question: `采样率${fs}Hz,FFT点数${N},频率分辨率为:`,
+                        options: [
+                            `${resolution} Hz`,
+                            `${(fs * N).toFixed(0)} Hz`,
+                            `${fs} Hz`,
+                            `${N} Hz`
+                        ],
+                        correct: 0,
+                        explanation: `频率分辨率 = 采样率/FFT点数 = ${fs}/${N} = ${resolution} Hz`
+                    };
+                },
+                
+                // FFT题目4: 复数频谱
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'FFT的结果是复数,其中包含了信号的哪些信息?',
+                        options: [
+                            '幅度(模)和相位(辐角)',
+                            '只有幅度',
+                            '只有相位',
+                            '只有实部'
+                        ],
+                        correct: 0,
+                        explanation: '复数频谱 $X[k] = |X[k]|e^{j\\angle X[k]}$,其中 $|X[k]|$ 是幅度,$\\angle X[k]$ 是相位。'
+                    };
+                },
+                
+                // FFT题目5: IFFT作用
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'IFFT(逆傅里叶变换)的作用是:',
+                        options: [
+                            '将频域信号转换回时域信号',
+                            '将时域信号转换为频域信号',
+                            '计算信号的能量',
+                            '对信号进行滤波'
+                        ],
+                        correct: 0,
+                        explanation: 'IFFT是FFT的逆运算,将频域表示转换回时域表示,用于信号重建。'
+                    };
+                },
+                
+                // FFT题目6: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 对于实信号,FFT结果具有共轭对称性,即 $X[N-k] = X[k]^*$。',
+                        correct: true,
+                        explanation: '实信号的FFT具有共轭对称性,这意味着只有一半的频谱点包含独立信息。'
+                    };
+                },
+                
+                // FFT题目7: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于FFT,以下正确的是:(多选)',
+                        options: [
+                            'FFT是DFT的快速算法,计算复杂度为O(NlogN)',
+                            'FFT点数通常选择2的幂次方',
+                            'FFT可以将时域信号分解为不同频率的正弦分量',
+                            'FFT只能用于周期信号'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: 'FFT是高效的DFT算法,通常选择2^n点以获得最佳效率。FFT可用于任何有限长信号的频谱分析。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点2: STFT短时傅里叶变换 ==========
+            stft: [
+                // STFT题目1: 为什么需要STFT
+                () => {
+                    return {
+                        type: 'single',
+                        question: '为什么音频处理需要使用STFT而不是直接对整个信号做FFT?',
+                        options: [
+                            '音频是非平稳信号,STFT能分析时变的频谱特性',
+                            '直接FFT计算量太小',
+                            'STFT结果更精确',
+                            '直接FFT无法得到频谱'
+                        ],
+                        correct: 0,
+                        explanation: '音频信号是非平稳的,不同时刻频率成分不同。STFT通过分帧,让我们能看到时间-频率的二维分布。'
+                    };
+                },
+                
+                // STFT题目2: STFT步骤
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'STFT的正确处理步骤是:',
+                        options: [
+                            '分帧 → 加窗 → FFT',
+                            'FFT → 分帧 → 加窗',
+                            '加窗 → FFT → 分帧',
+                            '分帧 → FFT → 加窗'
+                        ],
+                        correct: 0,
+                        explanation: 'STFT正确流程: 1)将长信号分帧 2)对每帧加窗减少泄露 3)对每帧FFT得到频谱。'
+                    };
+                },
+                
+                // STFT题目3: 频谱矩阵
+                () => {
+                    const N = randChoice([512, 1024]);
+                    const M = randInt(50, 100);
+                    return {
+                        type: 'single',
+                        question: `帧长${N},共${M}帧,STFT得到的频谱矩阵大小为:`,
+                        options: [
+                            `${N} × ${M}`,
+                            `${M} × ${N}`,
+                            `${N} × ${N}`,
+                            `${M} × ${M}`
+                        ],
+                        correct: 0,
+                        explanation: `频谱矩阵大小为 [帧长 × 帧数] = [${N} × ${M}],每列是一帧的频谱。`
+                    };
+                },
+                
+                // STFT题目4: 复数表示
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'STFT频谱的数学表示 $X[n,k] = A[n,k]e^{j\\varphi[n,k]}$ 中,$A[n,k]$ 和 $\\varphi[n,k]$ 分别表示:',
+                        options: [
+                            '第n帧第k频率的幅度和相位',
+                            '第k帧第n频率的幅度和相位',
+                            '时间和频率',
+                            '实部和虚部'
+                        ],
+                        correct: 0,
+                        explanation: '$A[n,k]$ 是幅度(绝对值),$\\varphi[n,k]$ 是相位(辐角),n是帧索引,k是频率索引。'
+                    };
+                },
+                
+                // STFT题目5: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: STFT的结果是一个三维数据(时间、频率、幅度)。',
+                        correct: false,
+                        explanation: 'STFT结果是二维复数矩阵[帧数×频率点],但每个元素是复数,包含幅度和相位两个信息。'
+                    };
+                },
+                
+                // STFT题目6: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: 'STFT在音频变速中的作用包括:(多选)',
+                        options: [
+                            '获取每帧的频谱幅度和相位',
+                            '为频域插值或相位声码器提供输入',
+                            '实现时间-频率二维分析',
+                            '直接改变音频时长'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: 'STFT提供时频分析,是频域处理的基础。音频变速需要修改STFT结果后再重建。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点3: 时域插值的陷阱 ==========
+            time_interpolation: [
+                // 时域插值题目1: 失败原因
+                () => {
+                    return {
+                        type: 'single',
+                        question: '对音频信号直接进行2倍时域插值(如最邻近插值),会导致:',
+                        options: [
+                            '时长变为2倍,但音高降低(频率减半)',
+                            '时长变为2倍,音高不变',
+                            '时长不变,音高升高',
+                            '时长减半,音高不变'
+                        ],
+                        correct: 0,
+                        explanation: '时域拉伸2倍 → 相同数量的周期分布在更长时间 → 频率变为1/2 → 音高降低!'
+                    };
+                },
+                
+                // 时域插值题目2: 数学关系
+                () => {
+                    const factor = randChoice([2, 3, 4]);
+                    return {
+                        type: 'single',
+                        question: `将正弦信号 $\\sin(\\omega t)$ 进行${factor}倍时域插值后,频率变为:`,
+                        options: [
+                            `$\\omega / ${factor}$`,
+                            `$\\omega \\times ${factor}$`,
+                            `$\\omega$`,
+                            `$\\omega^2$`
+                        ],
+                        correct: 0,
+                        explanation: `时域拉伸${factor}倍,频率压缩${factor}倍,变为 $\\omega/${factor}$。这就是简单插值改变音高的原因。`
+                    };
+                },
+                
+                // 时域插值题目3: 时频反比
+                () => {
+                    return {
+                        type: 'single',
+                        question: '时频反比关系可以表示为:',
+                        options: [
+                            '时间长度 × 频率 = 常数',
+                            '时间长度 + 频率 = 常数',
+                            '时间长度 / 频率 = 常数',
+                            '时间长度 = 频率'
+                        ],
+                        correct: 0,
+                        explanation: '这是傅里叶变换的基本性质: $t \\times f = const$,时域拉伸必然导致频域压缩。'
+                    };
+                },
+                
+                // 时域插值题目4: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 通过简单的时域插值可以实现音频变速而保持音高不变。',
+                        correct: false,
+                        explanation: '错误!简单时域插值会改变频率,导致音高变化。需要使用频域插值或相位声码器。'
+                    };
+                },
+                
+                // 时域插值题目5: 应用场景
+                () => {
+                    return {
+                        type: 'single',
+                        question: '视频播放器的"倍速播放"功能,如果直接改变采样点数会导致:',
+                        options: [
+                            '语音变调(加速时声音变尖,减速时声音变低沉)',
+                            '语音保持原来的音色',
+                            '只改变音量',
+                            '不会有任何影响'
+                        ],
+                        correct: 0,
+                        explanation: '直接改变时长会改变频率:加速时频率升高(声音尖),减速时频率降低(声音低沉)。'
+                    };
+                },
+                
+                // 时域插值题目6: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于时域插值法的问题,正确的是:(多选)',
+                        options: [
+                            '会改变信号的频率成分',
+                            '时域拉伸导致频率降低',
+                            '时域压缩导致频率升高',
+                            '可以完美保持音高不变'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '时域插值的致命问题是改变频率:拉伸→频率降低,压缩→频率升高,无法保持音高。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点4: 频域插值法 ==========
+            freq_interpolation: [
+                // 频域插值题目1: 基本原理
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频域插值法实现音频变速的核心思想是:',
+                        options: [
+                            '对频谱进行插值,改变帧数,频率成分保持不变',
+                            '对时域信号直接插值',
+                            '丢弃部分频率成分',
+                            '增加采样率'
+                        ],
+                        correct: 0,
+                        explanation: '频域插值在频谱上操作,通过改变帧数实现时长变化,而每帧的频率成分保持不变。'
+                    };
+                },
+                
+                // 频域插值题目2: 步骤
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频域插值法的正确步骤是:',
+                        options: [
+                            'STFT → 对频谱矩阵插值 → IFFT → 重叠相加',
+                            '时域插值 → FFT → IFFT',
+                            'FFT → 时域插值 → IFFT',
+                            '直接对音频波形插值'
+                        ],
+                        correct: 0,
+                        explanation: '频域插值: 先STFT得到频谱 → 在频域对帧进行插值 → IFFT回时域 → OLA重建。'
+                    };
+                },
+                
+                // 频域插值题目3: 帧数变化
+                () => {
+                    const M = randInt(50, 100);
+                    const factor = randChoice([1.5, 2, 2.5]);
+                    const newM = Math.floor(M * factor);
+                    return {
+                        type: 'single',
+                        question: `原始${M}帧,拉伸因子为${factor},频域插值后帧数为:`,
+                        options: [
+                            `${newM}帧`,
+                            `${M}帧`,
+                            `${Math.floor(M / factor)}帧`,
+                            `${M * M}帧`
+                        ],
+                        correct: 0,
+                        explanation: `新帧数 = 原帧数 × 拉伸因子 = ${M} × ${factor} = ${newM}帧(取整)。`
+                    };
+                },
+                
+                // 频域插值题目4: MATLAB实现
+                () => {
+                    return {
+                        type: 'single',
+                        question: '在MATLAB中,对频谱进行线性插值可以使用:',
+                        options: [
+                            'interp1函数',
+                            'fft函数',
+                            'ifft函数',
+                            'conv函数'
+                        ],
+                        correct: 0,
+                        explanation: 'interp1是MATLAB的一维插值函数,可以将M个点插值到newM个点。'
+                    };
+                },
+                
+                // 频域插值题目5: 优缺点
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频域插值法相比相位声码器的特点是:',
+                        options: [
+                            '实现简单,但可能导致帧间相位不连续',
+                            '实现复杂,但音质更好',
+                            '不能改变音频时长',
+                            '会改变音高'
+                        ],
+                        correct: 0,
+                        explanation: '频域插值法简单(用interp1),但直接插值可能造成帧间相位不连续,产生杂音。'
+                    };
+                },
+                
+                // 频域插值题目6: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 频域插值法在重建时应使用原始帧移Ra,而不是新帧移Rs。',
+                        correct: true,
+                        explanation: '频域插值法通过增加帧数来延长信号,重建时使用原始帧移Ra进行OLA。'
+                    };
+                },
+                
+                // 频域插值题目7: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '频域插值法的特点包括:(多选)',
+                        options: [
+                            '在频域对帧进行插值',
+                            '保持频率成分不变',
+                            '实现相对简单',
+                            '完全避免相位不连续'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '频域插值简单有效,保持频率,但可能有相位不连续问题,需要相位声码器解决。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点5: 相位声码器原理 ==========
+            phase_vocoder: [
+                // 相位声码器题目1: 核心思想
+                () => {
+                    return {
+                        type: 'single',
+                        question: '相位声码器(Phase Vocoder)的核心思想是:',
+                        options: [
+                            '保持幅度不变,通过调整相位实现帧间连续',
+                            '直接修改幅度和相位',
+                            '只修改幅度,忽略相位',
+                            '对时域信号直接操作'
+                        ],
+                        correct: 0,
+                        explanation: '相位声码器保持每帧的幅度谱不变,通过重新计算相位使帧间无缝衔接。'
+                    };
+                },
+                
+                // 相位声码器题目2: 理论相位递进
+                () => {
+                    return {
+                        type: 'single',
+                        question: '如果频率为$\\Omega$,帧移为$R_a$,两帧之间的理论相位递进为:',
+                        options: [
+                            '$\\Omega \\cdot R_a$',
+                            '$\\Omega + R_a$',
+                            '$\\Omega / R_a$',
+                            '$\\Omega - R_a$'
+                        ],
+                        correct: 0,
+                        explanation: '理论相位递进 = 角频率 × 时间间隔 = $\\Omega \\cdot R_a$(采样点为单位)。'
+                    };
+                },
+                
+                // 相位声码器题目3: 相位展开
+                () => {
+                    return {
+                        type: 'single',
+                        question: '相位声码器中"相位展开"的目的是:',
+                        options: [
+                            '将相位差限制在$[-\\pi, \\pi]$范围内',
+                            '增大相位值',
+                            '消除相位',
+                            '计算频率'
+                        ],
+                        correct: 0,
+                        explanation: '相位具有$2\\pi$周期性,展开公式 $\\Delta\\varphi_{wrapped} = mod(\\Delta\\varphi + \\pi, 2\\pi) - \\pi$ 将相位差归一化。'
+                    };
+                },
+                
+                // 相位声码器题目4: 瞬时频率
+                () => {
+                    return {
+                        type: 'single',
+                        question: '相位声码器中,瞬时频率$\\omega_{true}$的计算公式是:',
+                        options: [
+                            '$\\omega_{true} = \\Omega + \\Delta\\omega$,其中$\\Delta\\omega$是频率偏移',
+                            '$\\omega_{true} = \\Omega \\cdot \\Delta\\omega$',
+                            '$\\omega_{true} = \\Omega - \\Delta\\omega$',
+                            '$\\omega_{true} = \\Omega / \\Delta\\omega$'
+                        ],
+                        correct: 0,
+                        explanation: '真实频率 = 理论bin频率 + 频率偏移。偏移来自相位差的归一化: $\\Delta\\omega = \\Delta\\varphi_{wrapped} / R_a$。'
+                    };
+                },
+                
+                // 相位声码器题目5: 相位累积
+                () => {
+                    return {
+                        type: 'single',
+                        question: '相位声码器重建时,输出相位的更新公式是:',
+                        options: [
+                            '$\\varphi_{out} = \\varphi_{out} + \\omega_{true} \\cdot R_s$',
+                            '$\\varphi_{out} = \\varphi_{out} + \\omega_{true} \\cdot R_a$',
+                            '$\\varphi_{out} = \\omega_{true}$',
+                            '$\\varphi_{out} = \\varphi_{out} + \\Omega$'
+                        ],
+                        correct: 0,
+                        explanation: '关键: 使用新帧移$R_s$(而非$R_a$)累积相位,这是实现时间拉伸的核心!'
+                    };
+                },
+                
+                // 相位声码器题目6: Ra和Rs关系
+                () => {
+                    const Ra = randChoice([256, 512]);
+                    const factor = randChoice([1.5, 2, 2.5]);
+                    const Rs = Math.round(Ra * factor);
+                    return {
+                        type: 'single',
+                        question: `原帧移$R_a=${Ra}$,拉伸因子${factor},新帧移$R_s$为:`,
+                        options: [
+                            `${Rs}`,
+                            `${Ra}`,
+                            `${Math.round(Ra / factor)}`,
+                            `${Ra * Ra}`
+                        ],
+                        correct: 0,
+                        explanation: `$R_s = R_a \\times factor = ${Ra} \\times ${factor} = ${Rs}$。拉伸时$R_s > R_a$。`
+                    };
+                },
+                
+                // 相位声码器题目7: 优势
+                () => {
+                    return {
+                        type: 'single',
+                        question: '相位声码器相比频域插值法的主要优势是:',
+                        options: [
+                            '避免帧间相位不连续,音质更好',
+                            '计算更简单',
+                            '不需要FFT',
+                            '可以改变音高'
+                        ],
+                        correct: 0,
+                        explanation: '相位声码器通过相位调整确保帧间连续,消除了频域插值可能产生的"相位爆炸"杂音。'
+                    };
+                },
+                
+                // 相位声码器题目8: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 相位声码器会修改频谱的幅度和相位。',
+                        correct: false,
+                        explanation: '相位声码器只修改相位,幅度保持不变!这是它的核心特点。'
+                    };
+                },
+                
+                // 相位声码器题目9: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '相位声码器的关键步骤包括:(多选)',
+                        options: [
+                            '计算相位差并展开到$[-\\pi,\\pi]$',
+                            '计算瞬时频率偏移',
+                            '用新帧移$R_s$累积输出相位',
+                            '修改频谱幅度'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '相位声码器三步: 1)相位展开 2)计算真实频率 3)用$R_s$累积相位。幅度不变!'
+                    };
+                },
+                
+                // 相位声码器题目10: 输出帧数
+                () => {
+                    const M = randInt(50, 100);
+                    return {
+                        type: 'single',
+                        question: `相位声码器处理${M}帧输入,输出帧数为:`,
+                        options: [
+                            `${M - 1}帧(第一帧用于初始化)`,
+                            `${M}帧`,
+                            `${M + 1}帧`,
+                            `${M * 2}帧`
+                        ],
+                        correct: 0,
+                        explanation: `输出帧数 = 输入帧数 - 1 = ${M - 1}帧,因为第一帧用于初始化相位。`
+                    };
+                }
+            ],
+            
+            // ========== 知识点6: 分帧与帧移 ==========
+            framing: [
+                // 分帧题目1: 帧移定义
+                () => {
+                    return {
+                        type: 'single',
+                        question: '帧移(Hop Size)$R_a$的定义是:',
+                        options: [
+                            '相邻两帧起始位置之间的采样点间隔',
+                            '每帧的长度',
+                            '信号的总长度',
+                            '帧的数量'
+                        ],
+                        correct: 0,
+                        explanation: '帧移$R_a$是两帧起始点之间的距离,决定了帧间重叠程度。'
+                    };
+                },
+                
+                // 分帧题目2: 重叠率计算
+                () => {
+                    const Lwin = randChoice([512, 1024]);
+                    const Ra = Lwin / 4;
+                    const overlap = ((1 - Ra / Lwin) * 100).toFixed(0);
+                    return {
+                        type: 'single',
+                        question: `帧长${Lwin},帧移${Ra},帧间重叠率为:`,
+                        options: [
+                            `${overlap}%`,
+                            `${100 - parseInt(overlap)}%`,
+                            `50%`,
+                            `0%`
+                        ],
+                        correct: 0,
+                        explanation: `重叠率 = (1 - $R_a$/帧长) × 100% = (1 - ${Ra}/${Lwin}) × 100% = ${overlap}%`
+                    };
+                },
+                
+                // 分帧题目3: 帧数计算
+                () => {
+                    const Lx = randInt(8000, 10000);
+                    const Lwin = 1024;
+                    const Ra = 256;
+                    const numFrames = Math.floor((Lx - Lwin) / Ra) + 1;
+                    return {
+                        type: 'single',
+                        question: `信号长度${Lx},帧长${Lwin},帧移${Ra},可分成多少帧?`,
+                        options: [
+                            `约${numFrames}帧`,
+                            `${Math.floor(Lx / Lwin)}帧`,
+                            `${Lx}帧`,
+                            `${Ra}帧`
+                        ],
+                        correct: 0,
+                        explanation: `帧数 ≈ (信号长度 - 帧长) / 帧移 + 1 = (${Lx} - ${Lwin}) / ${Ra} + 1 ≈ ${numFrames}`
+                    };
+                },
+                
+                // 分帧题目4: 帧移选择
+                () => {
+                    return {
+                        type: 'single',
+                        question: '帧移通常选择为帧长的多少?',
+                        options: [
+                            '25%~50%(如帧长的1/4或1/2)',
+                            '100%(无重叠)',
+                            '1%',
+                            '200%'
+                        ],
+                        correct: 0,
+                        explanation: '通常选择25%~50%的帧移,即75%~50%重叠,以获得平滑的时频分析和良好的重建效果。'
+                    };
+                },
+                
+                // 分帧题目5: MATLAB索引
+                () => {
+                    return {
+                        type: 'single',
+                        question: '在MATLAB中,分帧起始位置索引序列应为:',
+                        options: [
+                            '1 : Ra : (Lx - Lwin)',
+                            '0 : Ra : Lx',
+                            '1 : Lwin : Lx',
+                            'Ra : Ra : Lx'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB从1开始,起始索引: 1, 1+Ra, 1+2Ra, ...,直到不超过Lx-Lwin(防止越界)。'
+                    };
+                },
+                
+                // 分帧题目6: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 分帧时,帧移越小,时间分辨率越高,但计算量越大。',
+                        correct: true,
+                        explanation: '帧移小→帧数多→时间分辨率高,但需要处理更多帧,计算量增加。'
+                    };
+                },
+                
+                // 分帧题目7: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于分帧处理,正确的是:(多选)',
+                        options: [
+                            '帧间需要重叠以保证平滑过渡',
+                            '帧长通常选择2的幂次方便于FFT',
+                            '帧移决定了时间分辨率',
+                            '帧移必须等于帧长'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '分帧要点: 重叠分帧、2^n帧长、帧移影响分辨率。帧移通常小于帧长。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点7: 加窗处理 ==========
+            windowing: [
+                // 加窗题目1: 目的
+                () => {
+                    return {
+                        type: 'single',
+                        question: '对每帧信号加窗的主要目的是:',
+                        options: [
+                            '减少频谱泄露,使帧边界平滑过渡',
+                            '增加信号能量',
+                            '改变信号频率',
+                            '延长信号时长'
+                        ],
+                        correct: 0,
+                        explanation: '加窗使帧两端平滑过渡到零,减少因截断造成的频谱泄露和不连续性。'
+                    };
+                },
+                
+                // 加窗题目2: Hann窗公式
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'Hann窗(汉宁窗)的公式是:',
+                        options: [
+                            '$w(n) = 0.5 \\times (1 - \\cos(\\frac{2\\pi n}{N-1}))$',
+                            '$w(n) = 1$',
+                            '$w(n) = n$',
+                            '$w(n) = \\sin(n)$'
+                        ],
+                        correct: 0,
+                        explanation: 'Hann窗是升余弦窗,两端为0,中间为1,公式为 $0.5(1-\\cos(2\\pi n/(N-1)))$。'
+                    };
+                },
+                
+                // 加窗题目3: 窗函数形状
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'Hann窗和Hamming窗的形状特点是:',
+                        options: [
+                            '两端小(接近0),中间大(接近1)',
+                            '两端大,中间小',
+                            '全部为1(矩形窗)',
+                            '线性递增'
+                        ],
+                        correct: 0,
+                        explanation: '这两种窗都是钟形,中间最大(约1),两端最小,使帧边界平滑。'
+                    };
+                },
+                
+                // 加窗题目4: MATLAB实现
+                () => {
+                    const N = randChoice([512, 1024]);
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中生成长度为${N}的Hann窗:`,
+                        options: [
+                            `hann(${N})`,
+                            `hamming(${N})`,
+                            `ones(${N},1)`,
+                            `zeros(${N},1)`
+                        ],
+                        correct: 0,
+                        explanation: `MATLAB提供hann()函数生成Hann窗,hamming()生成Hamming窗。`
+                    };
+                },
+                
+                // 加窗题目5: 加窗操作
+                () => {
+                    return {
+                        type: 'single',
+                        question: '对信号帧x进行加窗的数学操作是:',
+                        options: [
+                            '逐点相乘: $x_{windowed} = x \\cdot w$',
+                            '相加: $x_{windowed} = x + w$',
+                            '卷积: $x_{windowed} = x * w$',
+                            '相除: $x_{windowed} = x / w$'
+                        ],
+                        correct: 0,
+                        explanation: '加窗是信号与窗函数的逐点乘法(点乘),MATLAB中用 .* 运算符。'
+                    };
+                },
+                
+                // 加窗题目6: 频谱泄露
+                () => {
+                    return {
+                        type: 'single',
+                        question: '不加窗(即使用矩形窗)会导致:',
+                        options: [
+                            '频谱泄露严重,出现旁瓣',
+                            '频谱更准确',
+                            '信号能量增加',
+                            '没有影响'
+                        ],
+                        correct: 0,
+                        explanation: '矩形窗的频谱旁瓣很大,导致严重的频谱泄露,能量"泄露"到相邻频率。'
+                    };
+                },
+                
+                // 加窗题目7: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: Hamming窗两端不完全为零,但非常接近零。',
+                        correct: true,
+                        explanation: 'Hamming窗公式为 $0.54 - 0.46\\cos(...)$,两端值约为0.08,不是严格的0。'
+                    };
+                },
+                
+                // 加窗题目8: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于加窗处理,正确的是:(多选)',
+                        options: [
+                            '分析时使用Hann窗减少泄露',
+                            '合成时使用Hamming窗便于重建',
+                            '窗函数与信号逐点相乘',
+                            '加窗会改变信号的基频'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '加窗用于分析和合成,是点乘操作,不改变信号的频率成分,只改变其能量分布。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点8: 重叠相加重建(OLA) ==========
+            ola: [
+                // OLA题目1: 基本原理
+                () => {
+                    return {
+                        type: 'single',
+                        question: '重叠相加(Overlap-Add, OLA)的基本操作是:',
+                        options: [
+                            '将各帧加窗后按帧移间隔叠加到输出信号',
+                            '将各帧直接拼接',
+                            '对各帧取平均',
+                            '只保留第一帧'
+                        ],
+                        correct: 0,
+                        explanation: 'OLA: 每帧IFFT后加窗,然后按帧移间隔叠加到输出数组,重叠部分相加。'
+                    };
+                },
+                
+                // OLA题目2: 输出长度
+                () => {
+                    const numFrames = randInt(50, 100);
+                    const Lwin = 1024;
+                    const Ra = 256;
+                    const outLen = (numFrames - 1) * Ra + Lwin;
+                    return {
+                        type: 'single',
+                        question: `${numFrames}帧,帧长${Lwin},帧移${Ra},重建信号长度约为:`,
+                        options: [
+                            `${outLen}`,
+                            `${numFrames * Lwin}`,
+                            `${numFrames * Ra}`,
+                            `${Lwin}`
+                        ],
+                        correct: 0,
+                        explanation: `输出长度 = (帧数-1) × 帧移 + 帧长 = (${numFrames}-1) × ${Ra} + ${Lwin} = ${outLen}`
+                    };
+                },
+                
+                // OLA题目3: 帧移选择
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频域插值法重建时应使用哪个帧移?',
+                        options: [
+                            '原始帧移$R_a$',
+                            '新帧移$R_s$',
+                            '帧长$L_{win}$',
+                            '信号长度'
+                        ],
+                        correct: 0,
+                        explanation: '频域插值法通过增加帧数实现延长,重建时使用原始帧移$R_a$。'
+                    };
+                },
+                
+                // OLA题目4: 相位声码器帧移
+                () => {
+                    return {
+                        type: 'single',
+                        question: '相位声码器重建时应使用哪个帧移?',
+                        options: [
+                            '新帧移$R_s$(变速后的帧移)',
+                            '原始帧移$R_a$',
+                            '帧长',
+                            '固定值256'
+                        ],
+                        correct: 0,
+                        explanation: '相位声码器通过调整帧移实现变速,重建时使用新帧移$R_s = R_a \\times factor$。'
+                    };
+                },
+                
+                // OLA题目5: 合成窗
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'OLA重建时通常使用的合成窗是:',
+                        options: [
+                            'Hamming窗',
+                            '矩形窗',
+                            '三角窗',
+                            '不需要加窗'
+                        ],
+                        correct: 0,
+                        explanation: '合成时通常使用Hamming窗,配合分析时的Hann窗,可以实现较好的重建效果。'
+                    };
+                },
+                
+                // OLA题目6: MATLAB实现
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'MATLAB中IFFT确保输出为实数的正确写法是:',
+                        options: [
+                            'ifft(X, \'symmetric\')',
+                            'ifft(X)',
+                            'real(ifft(X))',
+                            'fft(X)'
+                        ],
+                        correct: 0,
+                        explanation: 'ifft(..., \'symmetric\')假设输入满足共轭对称性,直接输出实数,避免数值误差。'
+                    };
+                },
+                
+                // OLA题目7: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: OLA重建时,相邻帧的重叠部分是直接相加的。',
+                        correct: true,
+                        explanation: 'OLA的核心就是重叠部分相加(Overlap-Add),加窗确保叠加后平滑。'
+                    };
+                },
+                
+                // OLA题目8: 多选
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: 'OLA重建的关键步骤包括:(多选)',
+                        options: [
+                            '对每帧频谱进行IFFT',
+                            '对时域帧进行加窗',
+                            '按帧移间隔叠加到输出数组',
+                            '对输出再次进行FFT'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: 'OLA三步: IFFT回时域 → 加窗 → 按帧移叠加。不需要再次FFT。'
+                    };
+                }
+            ]
+        };
+
+        // ==================== 事件处理 ====================
+        
+        document.getElementById('startQuizBtn').addEventListener('click', function() {
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            
+            if (!id || !name) {
+                alert('请填写学号和姓名!');
+                return;
+            }
+            
+            studentData.id = id;
+            studentData.name = name;
+            
+            topics.forEach(topic => {
+                studentData.topicStats[topic.id] = {
+                    attempts: 0,
+                    questions: []
+                };
+                studentData.usedQuestions[topic.id] = [];
+            });
+            
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.quiz-section').classList.add('active');
+            
+            document.getElementById('studentInfo').innerHTML = 
+                `<p style="text-align:center; color:#667eea;">学号: ${id} | 姓名: ${name}</p>`;
+            
+            loadQuestion();
+        });
+
+        document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+        document.getElementById('saveBtn').addEventListener('click', saveScreenshot);
+
+        // ==================== 核心逻辑 ====================
+        
+        function loadQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const generators = questionGenerators[topicId];
+            
+            // 更新进度
+            const progress = ((studentData.currentTopicIndex / topics.length) * 100).toFixed(0);
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').textContent = 
+                `${studentData.currentTopicIndex}/${topics.length} 知识点`;
+            
+            // 显示当前知识点
+            document.getElementById('currentTopic').innerHTML = 
+                `<h2 style="color: #764ba2;">📚 知识点 ${studentData.currentTopicIndex + 1}/${topics.length}: ${currentTopic.name}</h2>
+                 <p style="color: #666;">${currentTopic.description}</p>`;
+            
+            // 获取未使用的题目
+            const usedIndices = studentData.usedQuestions[topicId];
+            const availableIndices = [];
+            for (let i = 0; i < generators.length; i++) {
+                if (!usedIndices.includes(i)) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            // 如果所有题目都用过,重置
+            if (availableIndices.length === 0) {
+                studentData.usedQuestions[topicId] = [];
+                for (let i = 0; i < generators.length; i++) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            // 随机选择一道题
+            const selectedIndex = availableIndices[randInt(0, availableIndices.length - 1)];
+            studentData.usedQuestions[topicId].push(selectedIndex);
+            
+            // 生成题目
+            const question = generators[selectedIndex]();
+            studentData.currentQuestion = question;
+            
+            // 显示题目
+            const stats = studentData.topicStats[topicId];
+            document.getElementById('questionTitle').textContent = 
+                `第 ${stats.attempts + 1} 次尝试`;
+            
+            let questionHTML = `<p style="font-size: 1.1em; margin-bottom: 15px;">${question.question}</p>`;
+            
+            if (question.type === 'single') {
+                // 单选题 - 打乱选项
+                const shuffled = shuffleOptionsWithAnswer(question.options, question.correct);
+                studentData.currentQuestion.shuffledOptions = shuffled.options;
+                studentData.currentQuestion.shuffledCorrect = shuffled.correct;
+                
+                let optionsHTML = '';
+                shuffled.options.forEach((opt, idx) => {
+                    optionsHTML += `<div class="option" data-index="${idx}">${String.fromCharCode(65 + idx)}. ${opt}</div>`;
+                });
+                document.getElementById('questionContent').innerHTML = questionHTML;
+                document.getElementById('options').innerHTML = optionsHTML;
+                
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.addEventListener('click', function() {
+                        document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                });
+            } else if (question.type === 'multiple') {
+                // 多选题 - 打乱选项
+                const shuffled = shuffleOptionsWithAnswers(question.options, question.correct);
+                studentData.currentQuestion.shuffledOptions = shuffled.options;
+                studentData.currentQuestion.shuffledCorrect = shuffled.correct;
+                
+                questionHTML += '<p style="color: #ed8936; font-weight: bold;">（多选题,请选择所有正确答案）</p>';
+                let optionsHTML = '';
+                shuffled.options.forEach((opt, idx) => {
+                    optionsHTML += `<label class="checkbox-option">
+                        <input type="checkbox" value="${idx}">
+                        ${String.fromCharCode(65 + idx)}. ${opt}
+                    </label>`;
+                });
+                document.getElementById('questionContent').innerHTML = questionHTML;
+                document.getElementById('options').innerHTML = optionsHTML;
+            } else if (question.type === 'tf') {
+                // 判断题
+                document.getElementById('questionContent').innerHTML = questionHTML;
+                document.getElementById('options').innerHTML = `
+                    <div class="tf-options">
+                        <div class="tf-option" data-value="true">✓ 正确</div>
+                        <div class="tf-option" data-value="false">✗ 错误</div>
+                    </div>`;
+                
+                document.querySelectorAll('.tf-option').forEach(opt => {
+                    opt.addEventListener('click', function() {
+                        document.querySelectorAll('.tf-option').forEach(o => o.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                });
+            }
+            
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function submitAnswer() {
+            const question = studentData.currentQuestion;
+            const topicId = topics[studentData.currentTopicIndex].id;
+            const stats = studentData.topicStats[topicId];
+            
+            let userAnswer, isCorrect;
+            
+            if (question.type === 'single') {
+                const selected = document.querySelector('.option.selected');
+                if (!selected) {
+                    alert('请选择一个答案!');
+                    return;
+                }
+                userAnswer = parseInt(selected.dataset.index);
+                isCorrect = (userAnswer === question.shuffledCorrect);
+                
+                document.querySelectorAll('.option').forEach((opt, idx) => {
+                    if (idx === question.shuffledCorrect) {
+                        opt.classList.add('correct');
+                    } else if (idx === userAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            } else if (question.type === 'multiple') {
+                const checked = document.querySelectorAll('.checkbox-option input:checked');
+                if (checked.length === 0) {
+                    alert('请至少选择一个答案!');
+                    return;
+                }
+                userAnswer = Array.from(checked).map(c => parseInt(c.value)).sort((a, b) => a - b);
+                isCorrect = JSON.stringify(userAnswer) === JSON.stringify(question.shuffledCorrect);
+                
+                document.querySelectorAll('.checkbox-option').forEach((opt, idx) => {
+                    if (question.shuffledCorrect.includes(idx)) {
+                        opt.classList.add('correct');
+                    } else if (userAnswer.includes(idx)) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            } else if (question.type === 'tf') {
+                const selected = document.querySelector('.tf-option.selected');
+                if (!selected) {
+                    alert('请选择正确或错误!');
+                    return;
+                }
+                userAnswer = selected.dataset.value === 'true';
+                isCorrect = (userAnswer === question.correct);
+                
+                document.querySelectorAll('.tf-option').forEach(opt => {
+                    const val = opt.dataset.value === 'true';
+                    if (val === question.correct) {
+                        opt.classList.add('correct');
+                    } else if (val === userAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            }
+            
+            stats.attempts++;
+            stats.questions.push({
+                question: question.question,
+                userAnswer: userAnswer,
+                isCorrect: isCorrect
+            });
+            
+            const feedbackDiv = document.getElementById('feedback');
+            if (isCorrect) {
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback correct">
+                        ✅ 回答正确!<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = 
+                    studentData.currentTopicIndex < topics.length - 1 ? '下一知识点' : '查看结果';
+            } else {
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback incorrect">
+                        ❌ 回答错误,请再试一次!<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = '继续答题';
+            }
+            
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function nextQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            const lastQuestion = stats.questions[stats.questions.length - 1];
+            
+            if (lastQuestion.isCorrect) {
+                studentData.currentTopicIndex++;
+                
+                if (studentData.currentTopicIndex >= topics.length) {
+                    showResults();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-section').classList.remove('active');
+            document.querySelector('.result-section').classList.add('active');
+            
+            let reportHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #667eea;">🎉 ${studentData.name} 同学(学号:${studentData.id})</h2>
+                    <p style="color: #666; font-size: 1.1em;">您已完成DSP-Proj2音频变速实验练习测验!</p>
+                </div>
+                
+                <table class="stats-table">
+                    <tr>
+                        <th>知识点</th>
+                        <th>答题次数</th>
+                        <th>首次正确率</th>
+                        <th>掌握程度</th>
+                    </tr>
+            `;
+            
+            let excellentTopics = [];
+            let goodTopics = [];
+            let fairTopics = [];
+            let poorTopics = [];
+            
+            topics.forEach(topic => {
+                const stats = studentData.topicStats[topic.id];
+                const accuracy = ((1 / stats.attempts) * 100).toFixed(0);
+                
+                let mastery, masteryClass;
+                if (stats.attempts === 1) {
+                    mastery = '优秀 ⭐⭐⭐⭐';
+                    masteryClass = 'mastery-excellent';
+                    excellentTopics.push(topic.name);
+                } else if (stats.attempts === 2) {
+                    mastery = '良好 ⭐⭐⭐';
+                    masteryClass = 'mastery-good';
+                    goodTopics.push(topic.name);
+                } else if (stats.attempts <= 4) {
+                    mastery = '一般 ⭐⭐';
+                    masteryClass = 'mastery-fair';
+                    fairTopics.push(topic.name);
+                } else {
+                    mastery = '需加强 ⭐';
+                    masteryClass = 'mastery-poor';
+                    poorTopics.push(topic.name);
+                }
+                
+                reportHTML += `
+                    <tr>
+                        <td><strong>${topic.name}</strong></td>
+                        <td>${stats.attempts}次</td>
+                        <td>${accuracy}%</td>
+                        <td class="${masteryClass}">${mastery}</td>
+                    </tr>
+                `;
+            });
+            
+            reportHTML += '</table>';
+            
+            reportHTML += '<div style="margin-top: 30px;">';
+            reportHTML += '<h3 style="color: #667eea;">📊 知识掌握分析</h3>';
+            
+            if (excellentTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e8f5e9; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #48bb78;">
+                        <strong style="color: #48bb78;">✅ 掌握优秀的知识点:</strong><br>
+                        ${excellentTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (goodTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #667eea;">
+                        <strong style="color: #667eea;">👍 掌握良好的知识点:</strong><br>
+                        ${goodTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (fairTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #fff8e1; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #ed8936;">
+                        <strong style="color: #ed8936;">⚠️ 需要巩固的知识点:</strong><br>
+                        ${fairTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (poorTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #ffebee; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #f56565;">
+                        <strong style="color: #f56565;">❌ 需要重点加强的知识点:</strong><br>
+                        ${poorTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            reportHTML += `
+                <div style="background: #f0f4ff; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #667eea;">
+                    <h4 style="color: #667eea; margin-top: 0;">💡 复习建议</h4>
+                    <ul style="line-height: 2; color: #555;">
+                        <li>重点复习标记为"需加强"的知识点,结合实验手册详细学习</li>
+                        <li>理解时频对偶关系是理解变速的关键:时域拉伸→频域压缩</li>
+                        <li>掌握STFT完整流程:分帧→加窗→FFT→修改→IFFT→OLA</li>
+                        <li>区分频域插值法和相位声码器的重建帧移:前者用Ra,后者用Rs</li>
+                        <li>动手实践MATLAB代码,加深对相位展开和相位累积的理解</li>
+                    </ul>
+                </div>
+            `;
+            
+            reportHTML += '</div>';
+            
+            document.getElementById('finalReport').innerHTML = reportHTML;
+        }
+
+        function saveScreenshot() {
+            const button = document.getElementById('saveBtn');
+            button.disabled = true;
+            button.textContent = '正在生成截图...';
+            
+            html2canvas(document.body, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false
+            }).then(canvas => {
+                canvas.toBlob(blob => {
+                    const cleanId = studentData.id.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const cleanName = studentData.name.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const filename = `${cleanId}_${cleanName}_Proj2Quiz.png`;
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    button.disabled = false;
+                    button.textContent = '截图已保存';
+                    setTimeout(() => {
+                        button.textContent = '再次截图';
+                    }, 2000);
+                }, 'image/png');
+            }).catch(error => {
+                console.error('截图失败:', error);
+                alert('截图失败,请尝试使用浏览器截图功能');
+                button.disabled = false;
+                button.textContent = '截图保存';
+            });
+        }
+    </script>
+    
+    <script>
+        (function() {
+            const statusDiv = document.getElementById('mathjaxStatus');
+            const primaryCDN = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+            const backupCDN = 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+
+            function loadScript(src, onload, onerror) {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.onload = onload;
+                script.onerror = onerror;
+                document.head.appendChild(script);
+            }
+
+            function onMathJaxLoad() {
+                console.log('MathJax loaded successfully.');
+                statusDiv.textContent = '✓ 数学公式加载成功';
+                statusDiv.className = 'mathjax-status success';
+            }
+
+            loadScript(primaryCDN, onMathJaxLoad, function() {
+                console.warn('Primary MathJax CDN failed. Trying backup...');
+                statusDiv.textContent = '主CDN加载失败,尝试备用...';
+                loadScript(backupCDN, onMathJaxLoad, function() {
+                    console.error('Backup MathJax CDN also failed.');
+                    statusDiv.textContent = '❌ 公式加载失败,请检查网络';
+                    statusDiv.className = 'mathjax-status';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

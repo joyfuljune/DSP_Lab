@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DSP 项目2 - 音频变速实验代码模板</title>
+    <style>
+        body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .control-panel {
+            position: sticky; top: 0; z-index: 100;
+            background: white; padding: 15px; margin-bottom: 20px;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .control-btn {
+            background: #667eea; color: white; border: none; padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;
+        }
+        .control-btn:hover { background: #5a67d8; }
+        .control-btn.secondary { background: #6c757d; }
+
+        .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        
+        .file-header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; user-select: none;
+        }
+        .file-header:hover { opacity: 0.9; }
+        
+        .file-title { font-weight: bold; display: flex; align-items: center; }
+        .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
+        .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
+        
+        .file-content { display: block; }
+        .file-block.collapsed .file-content { display: none; }
+
+        .copy-btn { background: #48bb78; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .copy-btn:hover { background: #38a169; }
+
+        pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        
+        /* 代码高亮样式 */
+        .keyword { color: #0000ff; font-weight: bold; }
+        .comment { color: #228b22; font-style: italic; }
+        .string { color: #a020f0; }
+        .number { color: #ff0000; }
+        .todo { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; }
+        
+        /* Banner样式 */
+        .info-banner { background: linear-gradient(135deg, #e7f3ff 0%, #f0f7ff 100%); border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .warning-banner { background: linear-gradient(135deg, #fff3cd 0%, #fffdf7 100%); border-left: 4px solid #ed8936; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .success-banner { background: linear-gradient(135deg, #f0fff4 0%, #f7fafc 100%); border-left: 4px solid #48bb78; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 3px; color: #667eea; font-size: 0.95em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2 style="margin:0; color:#667eea;">🎵 DSP 项目2 - 音频变速实验代码模板</h2>
+            <div>
+                <button class="control-btn" onclick="expandAll()">全部展开</button>
+                <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <strong>📌 项目说明：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>本项目实现基于<strong>相位声码器（Phase Vocoder）</strong>的音频时间拉伸技术</li>
+                <li>代码中 <code>?</code> 标记处需要填写合适的代码</li>
+                <li>完成ex1-ex6后，使用 <code>test_project2.p</code> 进行自动检查</li>
+                <li>全部完成后运行 <code>ex0_synthesize_all.m</code> 查看完整效果，收听变速后的音频</li>
+            </ul>
+        </div>
+
+        <div class="warning-banner">
+            <strong>⚠️ 提交清单：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li>ex1_frame_signal.m（信号分帧）</li>
+                <li>ex2_window_signal.m（加窗处理）</li>
+                <li>ex3_compute_spectrum.m（频谱计算）</li>
+                <li>ex4_modify_STFT.m（频域插值法）</li>
+                <li>ex5_reconstruct_signal.m（信号重建）</li>
+                <li>ex6_Phase_Vocoder.m（相位声码器 - 进阶）</li>
+            </ul>
+        </div>
+
+        <div class="success-banner">
+            <strong>✅ 实验流程：</strong>
+            <ol style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>阅读实验手册《音频变速实验》（DSP-Proj2_handout）</li>
+                <li>按顺序完成ex1-ex6，填写标记为 <code>?</code> 的代码</li>
+                <li>运行 <code>test_project2.p</code> 检查代码（输入1-6检查对应模块）</li>
+                <li>完成后输入0，提交学号姓名，生成加密成绩</li>
+                <li>将所有完成后的M文件压缩到【学号_姓名.zip】提交到学习通</li>
+            </ol>
+        </div>
+
+        <!-- ex0 主函数 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex0_synthesize_all.m（主函数，无需修改）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code0')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code0">%% ========================================================================
+%  ex0_synthesize_all.m - 音频变速实验主控程序
+%  ========================================================================
+%  功能：调用 ex1-ex6 函数实现基于相位声码器/频域插值的音频时间拉伸
+%  兼容版本：MATLAB 2014b 及以上
+%  ========================================================================
+
+clc;            % 清除命令窗口
+clear;          % 清除工作区变量
+close all;      % 关闭所有打开的图形窗口
+
+%% ========================== 程序开始提示 ================================
+fprintf('\n');
+fprintf('================================================================\n');
+fprintf('      音频变速实验 - 基于相位声码器的时间拉伸\n');
+fprintf('             Digital Signal Processing\n');
+fprintf('================================================================\n');
+fprintf('\n');
+
+%% ========================== 步骤1：读取音频文件 ==========================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 1/8] 读取音频文件...\n');
+fprintf('----------------------------------------------------------------\n');
+
+try
+    audioFile = './audio/orig.wav';  % 使用单引号（兼容2014b）
+    [x, fs] = audioread(audioFile);
+    fprintf('  [OK] 音频文件读取成功!\n');
+    fprintf('    - 文件路径: %s\n', audioFile);
+    fprintf('    - 采样率: %d Hz\n', fs);
+    fprintf('    - 信号长度: %d 样本点\n', length(x));
+    fprintf('    - 音频时长: %.2f 秒\n', length(x)/fs);
+    if size(x, 2) > 1
+        x = x(:, 1);  % 如果是立体声，取左声道
+        fprintf('    - 注意: 检测到立体声，已转换为单声道\n');
+    end
+catch ME
+    fprintf('  [ERROR] 无法读取音频文件!\n');
+    fprintf('    - 错误信息: %s\n', ME.message);
+    fprintf('    - 请检查文件路径是否正确\n');
+    return;
+end
+fprintf('\n');
+
+%% ========================== 步骤2：参数设置 ==============================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 2/8] 参数设置...\n');
+fprintf('----------------------------------------------------------------\n');
+
+Lwin = 1024;           % 每帧的长度（通常为 2 的幂次）
+Ra = Lwin / 4;         % 帧移 (Hop size)，通常为帧长的 1/4 或 1/2
+stretchFactor = 2;     % 时间拉伸因子
+
+fprintf('  [OK] 参数设置完成!\n');
+fprintf('    - 帧长 (Lwin): %d 样本点\n', Lwin);
+fprintf('    - 帧移 (Ra): %d 样本点 (%.1f%% 重叠)\n', Ra, (1-Ra/Lwin)*100);
+fprintf('    - 拉伸因子: %.2f\n', stretchFactor);
+if stretchFactor > 1
+    fprintf('    - 效果: 音频将被拉伸为原来的 %.1f 倍（减速播放）\n', stretchFactor);
+elseif stretchFactor < 1
+    fprintf('    - 效果: 音频将被压缩为原来的 %.1f 倍（加速播放）\n', stretchFactor);
+else
+    fprintf('    - 效果: 音频长度保持不变\n');
+end
+fprintf('\n');
+
+%% ========================== 步骤3：信号分帧 ==============================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 3/8] 调用 ex1_frame_signal 进行信号分帧...\n');
+fprintf('----------------------------------------------------------------\n');
+
+try
+    tic;
+    [x_mat] = ex1_frame_signal(x, Lwin, Ra);
+    time_ex1 = toc;
+    
+    % 统一命名图形窗口
+    set(gcf, 'Name', '分帧结果 - ex1_frame_signal', 'NumberTitle', 'off');
+    
+    fprintf('  [OK] ex1_frame_signal 执行成功! (耗时 %.3f 秒)\n', time_ex1);
+    fprintf('    - 输入: 长度为 %d 的一维信号\n', length(x));
+    fprintf('    - 输出: %d x %d 的分帧矩阵\n', size(x_mat, 1), size(x_mat, 2));
+    fprintf('    - 总帧数: %d 帧\n', size(x_mat, 2));
+    fprintf('\n');
+    fprintf('  [图形输出 - 来自 ex1_frame_signal]\n');
+    fprintf('    - 图形内容: 原始信号与各帧信号的叠加显示\n');
+    fprintf('    - 说明: 不同颜色代表不同的帧，可观察帧间重叠情况\n');
+catch ME
+    fprintf('  [ERROR] ex1_frame_signal 执行失败!\n');
+    fprintf('    - 错误信息: %s\n', ME.message);
+    return;
+end
+fprintf('\n');
+
+%% ========================== 步骤4：加窗处理 ==============================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 4/8] 调用 ex2_window_signal 进行加窗处理...\n');
+fprintf('----------------------------------------------------------------\n');
+
+try
+    tic;
+    [W_x_mat] = ex2_window_signal(x_mat, Lwin);
+    time_ex2 = toc;
+    
+    % 统一命名图形窗口
+    set(gcf, 'Name', '加窗处理 - ex2_window_signal', 'NumberTitle', 'off');
+    
+    fprintf('  [OK] ex2_window_signal 执行成功! (耗时 %.3f 秒)\n', time_ex2);
+    fprintf('    - 窗函数类型: Hann 窗\n');
+    fprintf('    - 窗口长度: %d 样本点\n', Lwin);
+    fprintf('    - 输出矩阵大小: %d x %d\n', size(W_x_mat, 1), size(W_x_mat, 2));
+    fprintf('\n');
+    fprintf('  [图形输出 - 来自 ex2_window_signal]\n');
+    fprintf('    - 子图1: 原始信号的第一帧（未加窗）\n');
+    fprintf('    - 子图2: Hann 窗函数形状\n');
+    fprintf('    - 子图3: 加窗后的第一帧信号（两端幅度减小）\n');
+catch ME
+    fprintf('  [ERROR] ex2_window_signal 执行失败!\n');
+    fprintf('    - 错误信息: %s\n', ME.message);
+    return;
+end
+fprintf('\n');
+
+%% ========================== 步骤5：计算频谱 ==============================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 5/8] 调用 ex3_compute_spectrum 计算频谱...\n');
+fprintf('----------------------------------------------------------------\n');
+
+try
+    tic;
+    [W_X_MAT] = ex3_compute_spectrum(W_x_mat);
+    time_ex3 = toc;
+    
+    % 统一命名图形窗口
+    set(gcf, 'Name', '频谱分析 - ex3_compute_spectrum', 'NumberTitle', 'off');
+    
+    fprintf('  [OK] ex3_compute_spectrum 执行成功! (耗时 %.3f 秒)\n', time_ex3);
+    fprintf('    - 变换类型: FFT (快速傅里叶变换)\n');
+    fprintf('    - 频谱矩阵大小: %d x %d (复数矩阵)\n', size(W_X_MAT, 1), size(W_X_MAT, 2));
+    fprintf('    - 频率分辨率: %.2f Hz\n', fs/Lwin);
+    fprintf('\n');
+    fprintf('  [图形输出 - 来自 ex3_compute_spectrum]\n');
+    fprintf('    - 子图1: 加窗后第一帧的时域波形\n');
+    fprintf('    - 子图2: 第一帧的幅度谱（显示各频率成分强度）\n');
+    fprintf('    - 子图3: 第一帧的相位谱（显示各频率成分相位）\n');
+catch ME
+    fprintf('  [ERROR] ex3_compute_spectrum 执行失败!\n');
+    fprintf('    - 错误信息: %s\n', ME.message);
+    return;
+end
+fprintf('\n');
+
+%% ========================== 步骤6：修改频谱 ==============================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 6/8] 修改频谱（时间拉伸核心步骤）...\n');
+fprintf('----------------------------------------------------------------\n');
+
+usePhaseVocoder = true;  % true: 相位声码器法; false: 频域插值法
+
+if ~usePhaseVocoder
+    % -------------------- 方法1：频域插值法 --------------------
+    fprintf('  -> 使用方法: 频域插值法 (ex4_modify_STFT)\n');
+    fprintf('    - 原理: 通过线性插值调整频谱矩阵的帧数\n');
+    fprintf('\n');
+    
+    try
+        tic;
+        [freq_mat_modified] = ex4_modify_STFT(W_X_MAT, stretchFactor);
+        time_ex4 = toc;
+        
+        % 统一命名图形窗口
+        set(gcf, 'Name', '频域插值 - ex4_modify_STFT', 'NumberTitle', 'off');
+        
+        fprintf('  [OK] ex4_modify_STFT 执行成功! (耗时 %.3f 秒)\n', time_ex4);
+        fprintf('    - 原始帧数: %d\n', size(W_X_MAT, 2));
+        fprintf('    - 拉伸后帧数: %d\n', size(freq_mat_modified, 2));
+        fprintf('    - 重建帧移: %d (使用原始帧移 Ra)\n', Ra);
+        fprintf('\n');
+        fprintf('  [图形输出 - 来自 ex4_modify_STFT]\n');
+        fprintf('    - 子图1: 原始最低频率分量随时间变化\n');
+        fprintf('    - 子图2: 插值后最低频率分量随时间变化\n');
+        fprintf('    - 说明: 可观察到帧数变化，但频率成分形状保持\n');
+        
+        % 设置重建用的帧移
+        Rs_reconstruct = Ra;
+    catch ME
+        fprintf('  [ERROR] ex4_modify_STFT 执行失败!\n');
+        fprintf('    - 错误信息: %s\n', ME.message);
+        return;
+    end
+    
+else
+    % -------------------- 方法2：相位声码器法 --------------------
+    fprintf('  -> 使用方法: 相位声码器法 (ex6_Phase_Vocoder)\n');
+    fprintf('    - 原理: 保持幅度不变，通过相位调整实现时间拉伸\n');
+    fprintf('    - 优势: 避免帧间相位不连续，音质更好\n');
+    fprintf('\n');
+    
+    Rs = round(Ra * stretchFactor);
+    fprintf('    - 原始帧移 Ra: %d\n', Ra);
+    fprintf('    - 拉伸后帧移 Rs: %d\n', Rs);
+    fprintf('\n');
+    
+    try
+        tic;
+        [freq_mat_modified] = ex6_Phase_Vocoder(W_X_MAT, Lwin, Ra, Rs);
+        time_ex6 = toc;
+        
+        % 统一命名图形窗口
+        set(gcf, 'Name', '相位声码器 - ex6_Phase_Vocoder', 'NumberTitle', 'off');
+        
+        fprintf('  [OK] ex6_Phase_Vocoder 执行成功! (耗时 %.3f 秒)\n', time_ex6);
+        fprintf('    - 输入帧数: %d\n', size(W_X_MAT, 2));
+        fprintf('    - 输出帧数: %d (少1帧用于相位差计算)\n', size(freq_mat_modified, 2));
+        fprintf('    - 重建帧移: %d (使用拉伸后帧移 Rs)\n', Rs);
+        fprintf('\n');
+        fprintf('  [图形输出 - 来自 ex6_Phase_Vocoder]\n');
+        fprintf('    - 子图1-2: 原始与处理后的幅度谱对比\n');
+        fprintf('    - 子图3-4: 原始与处理后的相位谱对比\n');
+        fprintf('    - 说明: 幅度应基本保持，相位经过重新累积\n');
+        
+        % 设置重建用的帧移
+        Rs_reconstruct = Rs;
+    catch ME
+        fprintf('  [ERROR] ex6_Phase_Vocoder 执行失败!\n');
+        fprintf('    - 错误信息: %s\n', ME.message);
+        return;
+    end
+end
+fprintf('\n');
+
+%% ========================== 步骤7：信号重建 ==============================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 7/8] 调用 ex5_reconstruct_signal 重建信号...\n');
+fprintf('----------------------------------------------------------------\n');
+
+try
+    tic;
+    [outputSignal] = ex5_reconstruct_signal(freq_mat_modified, Lwin, Rs_reconstruct);
+    time_ex5 = toc;
+    
+    fprintf('  [OK] ex5_reconstruct_signal 执行成功! (耗时 %.3f 秒)\n', time_ex5);
+    fprintf('    - 重建方法: IFFT + Hamming窗 + 重叠相加(OLA)\n');
+    fprintf('    - 使用帧移: %d\n', Rs_reconstruct);
+    fprintf('    - 输出信号长度: %d 样本点\n', length(outputSignal));
+    fprintf('    - 输出音频时长: %.2f 秒\n', length(outputSignal)/fs);
+    fprintf('    - 实际拉伸比例: %.2f 倍\n', length(outputSignal)/length(x));
+catch ME
+    fprintf('  [ERROR] ex5_reconstruct_signal 执行失败!\n');
+    fprintf('    - 错误信息: %s\n', ME.message);
+    return;
+end
+fprintf('\n');
+
+%% ========================== 步骤8：播放和绘图 ============================
+fprintf('----------------------------------------------------------------\n');
+fprintf('[步骤 8/8] 播放重构音频并绘制对比图...\n');
+fprintf('----------------------------------------------------------------\n');
+
+% 播放重构后的音频
+fprintf('  >> 正在播放重构后的音频...\n');
+fprintf('    - 预计播放时长: %.2f 秒\n', length(outputSignal)/fs);
+sound(outputSignal, fs);
+
+% 创建时间轴
+t_orig = (0:length(x)-1) / fs;
+t_recon = (0:length(outputSignal)-1) / fs;
+
+% 创建图形窗口进行对比绘图（统一命名风格）
+figure;
+set(gcf, 'Name', '音频变速结果对比 - ex0_synthesize_all', 'NumberTitle', 'off');
+
+% 绘制原始音频信号
+subplot(2, 1, 1);
+plot(t_orig, x, 'b', 'LineWidth', 0.5);
+title('原始音频信号');
+xlabel('时间 (秒)');
+ylabel('幅度');
+xlim([0, max(t_orig)]);
+grid on;
+
+% 绘制重构后的音频信号
+subplot(2, 1, 2);
+plot(t_recon, outputSignal, 'r', 'LineWidth', 0.5);
+title('重构后的音频信号');
+xlabel('时间 (秒)');
+ylabel('幅度');
+xlim([0, max(t_recon)]);
+grid on;
+
+fprintf('\n');
+fprintf('  [图形输出 - 来自 ex0_synthesize_all]\n');
+fprintf('    - 子图1: 原始音频波形 (蓝色，时长 %.2f 秒)\n', length(x)/fs);
+fprintf('    - 子图2: 重构音频波形 (红色，时长 %.2f 秒)\n', length(outputSignal)/fs);
+fprintf('    - 说明: 重构信号应比原始信号长 %.1f 倍\n', stretchFactor);
+fprintf('\n');
+
+%% ========================== 运行总结 =====================================
+fprintf('================================================================\n');
+fprintf('                       运 行 总 结\n');
+fprintf('================================================================\n');
+fprintf('\n');
+fprintf('  [处理参数]\n');
+fprintf('    - 帧长: %d | 帧移: %d | 拉伸因子: %.2f\n', Lwin, Ra, stretchFactor);
+if usePhaseVocoder
+    fprintf('    - 处理方法: 相位声码器法 (Phase Vocoder)\n');
+else
+    fprintf('    - 处理方法: 频域插值法\n');
+end
+fprintf('\n');
+fprintf('  [处理结果]\n');
+fprintf('    - 原始时长: %.2f 秒 -> 输出时长: %.2f 秒\n', length(x)/fs, length(outputSignal)/fs);
+fprintf('    - 实际拉伸比: %.2f (目标: %.2f)\n', length(outputSignal)/length(x), stretchFactor);
+fprintf('\n');
+fprintf('  [生成图形汇总]\n');
+fprintf('    - Figure 1: 分帧结果 - ex1_frame_signal\n');
+fprintf('    - Figure 2: 加窗处理 - ex2_window_signal\n');
+fprintf('    - Figure 3: 频谱分析 - ex3_compute_spectrum\n');
+if usePhaseVocoder
+    fprintf('    - Figure 4: 相位声码器 - ex6_Phase_Vocoder\n');
+else
+    fprintf('    - Figure 4: 频域插值 - ex4_modify_STFT\n');
+end
+fprintf('    - Figure 5: 音频变速结果对比 - ex0_synthesize_all\n');
+fprintf('\n');
+fprintf('  [执行状态] 所有步骤执行成功! 音频正在播放中...\n');
+fprintf('\n');
+fprintf('================================================================\n');
+fprintf('                     程序运行完成\n');
+fprintf('================================================================\n');
+fprintf('\n');</pre>
+            </div>
+        </div>
+
+        <!-- ex1 信号分帧 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex1_frame_signal.m（信号分帧）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code1">function [x_mat] = ex1_frame_signal(x, Lwin, Ra)
+% EX1_FRAME_SIGNAL - 将输入时域信号分帧处理
+%
+% 此函数将输入信号 x 按照指定的帧长度 Lwin 和帧移 Ra 进行分段处理。
+% 每帧长度为 Lwin，相邻帧之间的采样点间隔为 Ra，结果输出一个信号矩阵。
+%
+% 输入参数：
+%   x    - 输入的时域信号，1维数组（列向量）
+%   Lwin - 每帧的长度（样本数），通常为2的幂次如1024
+%   Ra   - 帧移（步长），即相邻帧起始位置之间的采样点间隔
+%
+% 输出参数：
+%   x_mat - 分帧后的信号矩阵，大小为 [Lwin, Lframe]
+%           每列代表一个时间帧
+
+%% 1. 获取输入信号的长度
+% 信号 x 的总采样点数
+Lx = <span class="todo">?</span>;
+
+%% 2. 计算每帧的起始位置索引
+% 起始位置从1开始，每隔Ra个采样点取一帧
+% 最后一帧的起始位置不能超过 (Lx - Lwin)，否则会越界
+% 生成索引序列: [1, 1+Ra, 1+2*Ra, ..., 直到不超过Lx-Lwin]
+Idx = <span class="todo">?</span>;
+
+%% 3. 计算总帧数
+% 帧数 = 起始位置索引序列的元素个数
+Lframe = <span class="todo">?</span>;
+
+%% 4. 初始化信号矩阵
+% 创建全零矩阵，大小为 [Lwin, Lframe]
+% 每列存放一帧数据
+x_mat = <span class="todo">?</span>;
+
+%% 5. 遍历每一帧并存入矩阵
+for idx = 1:Lframe
+    % 当前帧起始位置：Idx(idx)
+    % 当前帧结束位置：Idx(idx) + Lwin - 1
+    % 提取信号片段 x(起始:结束) 并存入矩阵第 idx 列
+    x_mat(:, idx) = <span class="todo">?</span>;
+end
+
+%% 6. 绘图部分（可选，用于可视化分帧效果）
+figure;
+hold on;
+% 绘制原始信号（灰色背景）
+plot(x, 'Color', [0.7 0.7 0.7], 'LineWidth', 1);
+
+% 用不同颜色绘制前几帧，展示重叠效果
+colors = lines(min(5, Lframe));
+for idx = 1:min(5, Lframe)
+    frame_start = Idx(idx);
+    frame_end = frame_start + Lwin - 1;
+    plot(frame_start:frame_end, x_mat(:, idx), 'Color', colors(idx,:), 'LineWidth', 1.5);
+end
+
+title('信号分帧示意图');
+xlabel('采样点');
+ylabel('幅度');
+legend('原始信号', '第1帧', '第2帧', '第3帧', '第4帧', '第5帧');
+grid on;
+hold off;
+
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex2 加窗处理 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex2_window_signal.m（加窗处理）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2">function [W_x_mat] = ex2_window_signal(x_mat, Lwin)
+% EX2_WINDOW_SIGNAL - 对分帧信号矩阵应用 Hann 窗进行加窗处理
+%
+% 加窗的目的是减少频谱泄露，使信号在帧边界处平滑过渡到零。
+% Hann窗是一种常用的窗函数，其形状类似于余弦函数的一部分。
+% Hann窗公式：w(n) = 0.5 × (1 - cos(2πn/(N-1)))
+%
+% 输入参数：
+%   x_mat - 分帧后的时域信号矩阵，大小为 [Lwin, numFrames]
+%           每列表示一个时间帧
+%   Lwin  - 窗口的长度，与每帧的长度相同
+%
+% 输出参数：
+%   W_x_mat - 加窗后的信号矩阵，大小与 x_mat 相同
+
+%% 1. 生成 Hann 窗函数
+% 生成长度为 Lwin 的 Hann 窗向量
+Whann = <span class="todo">?</span>;
+
+%% 2. 初始化加窗后的信号矩阵
+% 创建与 x_mat 大小相同的全零矩阵
+W_x_mat = <span class="todo">?</span>;
+
+%% 3. 获取帧数（矩阵的列数）
+numFrames = size(x_mat, 2);
+
+%% 4. 遍历每一列，逐列进行加窗
+for i = 1:numFrames
+    % 4.1 提取当前帧的信号
+    currentFrame = x_mat(:, i);
+    
+    % 4.2 对当前帧进行加窗
+    % 窗函数与信号逐点相乘（逐元素乘法）
+    windowedFrame = <span class="todo">?</span>;
+
+    % 4.3 将加窗后的帧存入矩阵
+    W_x_mat(:, i) = <span class="todo">?</span>;
+end
+
+%% 5. 绘图部分（展示加窗效果）
+figure;
+
+% 子图1：原始第一帧信号
+subplot(3, 1, 1);
+plot(x_mat(:, 1), 'b', 'LineWidth', 1);
+title('原始信号（第一帧）');
+xlabel('采样点');
+ylabel('幅度');
+grid on;
+
+% 子图2：Hann窗函数形状
+subplot(3, 1, 2);
+plot(Whann, 'r', 'LineWidth', 1.5);
+title('Hann 窗函数');
+xlabel('采样点');
+ylabel('窗函数值');
+ylim([0, 1.1]);
+grid on;
+
+% 子图3：加窗后的第一帧信号
+subplot(3, 1, 3);
+plot(W_x_mat(:, 1), 'g', 'LineWidth', 1);
+title('加窗后信号（第一帧）');
+xlabel('采样点');
+ylabel('幅度');
+grid on;
+
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex3 频谱计算 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex3_compute_spectrum.m（频谱计算）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code3">function [W_X_MAT] = ex3_compute_spectrum(W_x_mat)
+% EX3_COMPUTE_SPECTRUM - 对加窗后的信号矩阵计算频谱
+%
+% 此函数对输入的每一帧加窗信号进行快速傅里叶变换 (FFT)，
+% 将时域信号转换为频域表示。FFT结果为复数，包含幅度和相位信息。
+%
+% 输入参数：
+%   W_x_mat - 加窗后的时域信号矩阵，大小为 [Lwin, Lframe]
+%             每列是一帧加窗后的时域信号
+%
+% 输出参数：
+%   W_X_MAT - 频谱矩阵（复数），大小与 W_x_mat 相同
+%             每列对应一帧信号的频谱
+
+%% 1. 获取输入矩阵的尺寸
+% Lwin 是每帧的长度，Lframe 是总帧数
+[Lwin, Lframe] = <span class="todo">?</span>;
+
+%% 2. 初始化频谱矩阵
+% 创建与 W_x_mat 相同大小的零矩阵
+% FFT结果为复数，存储时会自动转为复数类型
+W_X_MAT = <span class="todo">?</span>;
+
+%% 3. 遍历每一帧并计算频谱
+for idx = 1:Lframe
+    % 3.1 提取当前帧的时域信号
+    currentFrame = W_x_mat(:, idx);
+
+    % 3.2 计算当前帧的频谱
+    % 对时域信号进行快速傅里叶变换，得到复数频谱
+    spectrum = <span class="todo">?</span>;
+
+    % 3.3 将频谱存入频谱矩阵
+    W_X_MAT(:, idx) = <span class="todo">?</span>;
+end
+
+%% 4. 绘图部分（展示频谱分析结果）
+figure;
+
+% 子图1：加窗后第一帧的时域波形
+subplot(3, 1, 1);
+plot(real(W_x_mat(:, 1)), 'b', 'LineWidth', 1);
+title('加窗后第一帧（时域）');
+xlabel('采样点');
+ylabel('幅度');
+grid on;
+
+% 子图2：第一帧的幅度谱
+subplot(3, 1, 2);
+plot(abs(W_X_MAT(:, 1)), 'r', 'LineWidth', 1);
+title('第一帧的幅度谱 |X(k)|');
+xlabel('频率索引 k');
+ylabel('幅度');
+grid on;
+
+% 子图3：第一帧的相位谱
+subplot(3, 1, 3);
+plot(angle(W_X_MAT(:, 1)), 'g', 'LineWidth', 1);
+title('第一帧的相位谱 ∠X(k)');
+xlabel('频率索引 k');
+ylabel('相位 (rad)');
+grid on;
+
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex4 频域插值 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex4_modify_STFT.m（频域插值法）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code4">function [freq_mat_modified] = ex4_modify_STFT(freq_mat, stretchFactor)
+% EX4_MODIFY_STFT - 对 STFT 频谱矩阵进行时间拉伸或缩放
+%
+% 该函数通过线性插值调整频谱矩阵的帧数，实现音频信号的时间尺度变换。
+% 这是一种简单的频域插值方法，但可能导致相位不连续。
+%
+% 原理：将原始帧序列视为在 [0,1] 区间上均匀采样的点，
+%       然后在新的帧数上重新采样（线性插值）
+%
+% 输入参数：
+%   freq_mat      - 原始 STFT 频谱矩阵，大小为 [Lwin, numFrames]
+%   stretchFactor - 时间拉伸因子
+%                   > 1 表示延长（减速），< 1 表示缩短（加速）
+%
+% 输出参数：
+%   freq_mat_modified - 调整后的频谱矩阵，大小为 [Lwin, newNumFrames]
+
+%% 1. 获取原始频谱矩阵的尺寸信息
+% Lwin 是每帧的FFT长度，numFrames 是原始帧数
+[Lwin, numFrames] = <span class="todo">?</span>;
+
+%% 2. 计算拉伸后的新帧数
+% 新帧数 = 原帧数 × 拉伸因子（向下取整）
+newNumFrames = <span class="todo">?</span>;
+
+%% 3. 初始化新的频谱矩阵
+% 大小为 [Lwin, newNumFrames]
+freq_mat_modified = <span class="todo">?</span>;
+
+%% 4. 生成原始和新的时间点序列
+% 将时间归一化到 [0, 1] 区间
+% 原始时间点：numFrames 个均匀分布的点
+% 新时间点：newNumFrames 个均匀分布的点
+originalTimePoints = <span class="todo">?</span>;
+newTimePoints = <span class="todo">?</span>;
+
+%% 5. 遍历每一行（每个频率分量）进行线性插值
+for k = 1:Lwin
+    % 5.1 提取当前行的频域数据（第k个频率分量在所有帧的值）
+    currentRow = freq_mat(k, :);
+
+    % 5.2 对当前行进行线性插值
+    % 根据原始时间点和数据，在新时间点上进行插值
+    % 插值方法：线性插值，允许外推
+    interpolatedValues = <span class="todo">?</span>;
+
+    % 5.3 将插值结果存入新的频谱矩阵
+    freq_mat_modified(k, :) = <span class="todo">?</span>;
+end
+
+%% 6. 绘图部分（展示插值效果）
+figure;
+
+% 子图1：原始第一行频率分量随时间变化
+subplot(2, 1, 1);
+plot(1:numFrames, abs(freq_mat(1, :)), 'b-o', 'LineWidth', 1, 'MarkerSize', 3);
+title('原始频谱（最低频率分量）');
+xlabel('帧索引');
+ylabel('幅度');
+grid on;
+
+% 子图2：插值后第一行频率分量随时间变化
+subplot(2, 1, 2);
+plot(1:newNumFrames, abs(freq_mat_modified(1, :)), 'r-o', 'LineWidth', 1, 'MarkerSize', 3);
+title(sprintf('插值后频谱（拉伸因子=%.2f）', stretchFactor));
+xlabel('帧索引');
+ylabel('幅度');
+grid on;
+
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex5 信号重建 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex5_reconstruct_signal.m（信号重建）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code5')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code5">function [outputSignal] = ex5_reconstruct_signal(freq_mat_modified, Lwin, Ra)
+% EX5_RECONSTRUCT_SIGNAL - 重构时间拉伸后的音频信号
+%
+% 该函数通过对 STFT 矩阵逐帧进行 IFFT 和加窗重叠相加（OLA），
+% 将频域表示转换回时域信号。
+%
+% 重叠相加原理：
+% 1. 对每帧频谱进行逆FFT得到时域帧
+% 2. 对时域帧乘以合成窗函数（Hamming窗）
+% 3. 按帧移间隔将各帧叠加到输出信号中
+%
+% 输入参数：
+%   freq_mat_modified - 修改后的 STFT 矩阵，大小为 [Lwin, newNumFrames]
+%   Lwin              - 窗口大小（FFT长度）
+%   Ra                - 帧移 (hop size)，决定相邻帧的间隔
+%
+% 输出参数：
+%   outputSignal - 重构后的时域音频信号（列向量）
+
+%% 1. 获取 STFT 矩阵的帧数
+% 矩阵的列数即为帧数
+[~, newNumFrames] = <span class="todo">?</span>;
+
+%% 2. 生成 Hamming 窗函数用于合成加窗
+% Hamming窗在重叠相加时具有良好的重建特性
+% 生成长度为 Lwin 的 Hamming 窗
+window = <span class="todo">?</span>;
+
+%% 3. 计算输出信号的总长度
+% 输出长度 = (帧数-1) × 帧移 + 帧长
+% 第1帧从位置1开始，第n帧从位置(n-1)*Ra+1开始
+outputLength = <span class="todo">?</span>;
+
+%% 4. 初始化输出信号为全零向量
+% 创建 outputLength × 1 的零向量
+outputSignal = <span class="todo">?</span>;
+
+%% 5. 遍历每一帧，进行IFFT和重叠加和
+for i = 1:newNumFrames
+    % 5.1 提取第 i 帧的频域数据
+    freqData = freq_mat_modified(:, i);
+
+    % 5.2 对第 i 帧进行逆 FFT，得到时域信号
+    % 逆FFT将频域复数序列转换回时域实数信号
+    % 注意：需要确保输出为实数（对称FFT假设）
+    frame = <span class="todo">?</span>;
+
+    % 5.3 计算该帧在输出信号中的起始位置
+    % 第 i 帧的起始偏移 = (i-1) × 帧移
+    startIdx = <span class="todo">?</span>;
+
+    % 5.4 确定该帧对应的输出信号索引范围
+    % 索引范围：从 startIdx+1 到 startIdx+Lwin
+    indices = <span class="todo">?</span>;
+
+    % 5.5 对当前帧进行加窗处理
+    % 时域帧与窗函数逐点相乘
+    windowedFrame = <span class="todo">?</span>;
+
+    % 5.6 重叠相加：将加窗帧累加到输出信号对应位置
+    % outputSignal(indices) = outputSignal(indices) + windowedFrame
+    outputSignal(indices) = <span class="todo">?</span>;
+end
+
+end</pre>
+            </div>
+        </div>
+
+        <!-- ex6 相位声码器 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex6_Phase_Vocoder.m（相位声码器 - 进阶）
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code6')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code6">function [freq_mat_modified] = ex6_Phase_Vocoder(freq_mat, Lwin, Ra, Rs)
+% EX6_PHASE_VOCODER - 基于相位声码器法的时间尺度修改处理
+%
+% 相位声码器是一种更高级的时间拉伸方法。它的核心思想是：
+% 1. 保持每帧的幅度谱不变
+% 2. 根据帧移比例重新计算累积相位
+% 3. 避免简单插值导致的相位不连续问题
+%
+% 关键概念：
+% - 瞬时频率：每个频率分量的实际频率（可能与理论bin频率有偏差）
+% - 相位展开：处理相位的2π周期性，将相位差限制在[-π, π]范围
+% - 相位累积：根据新帧移Rs累积输出相位
+%
+% 核心公式：
+% - 理论角频率：Ω(k) = 2πk/Lwin
+% - 相位差：Δφ = φ_current - φ_prev - Ω×Ra
+% - 相位归一化：Δφ_wrapped = mod(Δφ+π, 2π) - π
+% - 频率偏移：Δω = Δφ_wrapped / Ra
+% - 真实频率：ω_true = Ω + Δω
+% - 输出相位累积：φ_out = φ_out + ω_true × Rs
+%
+% 输入参数：
+%   freq_mat - STFT 频谱矩阵，大小为 [Lwin, numFrames]
+%   Lwin     - 每帧的窗口长度（FFT点数）
+%   Ra       - 原始信号的帧移
+%   Rs       - 拉伸后的帧移（Rs = Ra × stretchFactor）
+%
+% 输出参数：
+%   freq_mat_modified - 相位调整后的频谱矩阵，大小为 [Lwin, numFrames-1]
+%                       注意：输出比输入少1帧（第一帧用于初始化）
+
+%% 1. 获取输入矩阵尺寸
+[Lwin, numFrames] = <span class="todo">?</span>;
+
+%% 2. 初始化频率相关变量
+% 2.1 生成频率索引向量 k = [0, 1, 2, ..., Lwin-1]'（列向量）
+k = <span class="todo">?</span>;
+
+% 2.2 计算每个频率bin的理论角频率
+% 公式：Ω(k) = 2π × k / Lwin （弧度/样本）
+Omega = <span class="todo">?</span>;
+
+%% 3. 初始化相位变量
+% 3.1 prev_phase: 存储上一帧的相位
+%     初始化为第一帧频谱的相位（提取复数的辐角）
+prev_phase = <span class="todo">?</span>;
+
+% 3.2 phase_out: 累积输出相位
+%     初始化为第一帧的相位，后续会不断累加
+phase_out = <span class="todo">?</span>;
+
+%% 4. 初始化输出频谱矩阵
+% 输出帧数 = 输入帧数 - 1（第1帧用于初始化）
+numOutputFrames = <span class="todo">?</span>;
+freq_mat_modified = <span class="todo">?</span>;
+
+%% 5. 遍历每一帧，计算新的频谱相位
+for idx = 2:numFrames
+    %% 5.1 提取当前帧的幅度和相位
+    % 幅度：复数的模
+    % 相位：复数的辐角
+    Amp = <span class="todo">?</span>;
+    Pha = <span class="todo">?</span>;
+
+    %% 5.2 计算相位差（去除理论线性相位递进）
+    % Δφ = 当前相位 - 上一帧相位 - 理论递进量(Ω×Ra)
+    delta_phase = <span class="todo">?</span>;
+
+    %% 5.3 将相位差限制在 [-π, π] 范围（相位展开）
+    % 公式：wrapped = mod(Δφ + π, 2π) - π
+    % 这是处理2π周期性的关键步骤
+    delta_phase_wrapped = <span class="todo">?</span>;
+
+    %% 5.4 计算瞬时频率偏移量
+    % Δω = 归一化相位差 / 原帧移Ra
+    delta_omega = <span class="todo">?</span>;
+
+    %% 5.5 计算真实的瞬时角频率
+    % ω_true = 理论频率Ω + 频率偏移Δω
+    omega_true = <span class="todo">?</span>;
+
+    %% 5.6 累积输出相位
+    % 关键：使用新帧移 Rs（而非Ra）来累积相位
+    % φ_out = φ_out + ω_true × Rs
+    phase_out = <span class="todo">?</span>;
+
+    %% 5.7 生成新的复数频谱
+    % 使用原始幅度 + 新累积相位
+    % 复数表示：A × e^(j×φ) = A × (cos(φ) + j×sin(φ))
+    freq_mat_modified(:, idx - 1) = <span class="todo">?</span>;
+
+    %% 5.8 更新上一帧相位
+    prev_phase = <span class="todo">?</span>;
+end
+
+%% 6. 绘图部分（对比原始和处理后的频谱）
+figure;
+
+% 选取中间帧进行对比
+midFrame_in = round(numFrames/2);
+midFrame_out = round(numOutputFrames/2);
+
+% 子图1：原始频谱幅度
+subplot(2, 2, 1);
+plot(abs(freq_mat(:, midFrame_in)));
+title('原始频谱幅度（中间帧）');
+xlabel('频率索引');
+ylabel('幅度');
+grid on;
+
+% 子图2：处理后频谱幅度
+subplot(2, 2, 2);
+plot(abs(freq_mat_modified(:, midFrame_out)));
+title('处理后频谱幅度（中间帧）');
+xlabel('频率索引');
+ylabel('幅度');
+grid on;
+
+% 子图3：原始频谱相位
+subplot(2, 2, 3);
+plot(angle(freq_mat(:, midFrame_in)));
+title('原始频谱相位（中间帧）');
+xlabel('频率索引');
+ylabel('相位 (rad)');
+grid on;
+
+% 子图4：处理后频谱相位
+subplot(2, 2, 4);
+plot(angle(freq_mat_modified(:, midFrame_out)));
+title('处理后频谱相位（中间帧）');
+xlabel('频率索引');
+ylabel('相位 (rad)');
+grid on;
+
+end</pre>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleBlock(header) {
+            const block = header.parentElement;
+            block.classList.toggle('collapsed');
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.file-block').forEach(block => {
+                block.classList.remove('collapsed');
+            });
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.file-block').forEach(block => {
+                block.classList.add('collapsed');
+            });
+        }
+
+        function copyCode(event, codeId) {
+            event.stopPropagation();
+            const code = document.getElementById(codeId).innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ 已复制';
+                btn.style.background = '#38a169';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#48bb78';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

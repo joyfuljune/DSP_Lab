@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频变速实验 - 基于相位声码器的时间拉伸</title>
+    
+    <!-- MathJax for mathematical formulas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            CommonHTML: { scale: 110 },
+            "HTML-CSS": { scale: 110 }
+        });
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 竖直进度条 */
+        .vertical-progress {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 400px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            z-index: 1000;
+        }
+
+        .vertical-progress::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: var(--progress, 0%);
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            border-radius: 2px;
+            transition: height 0.3s ease;
+        }
+
+        .progress-markers {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 80px;
+            height: 100%;
+        }
+
+        .progress-marker {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .progress-marker::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #e0e0e0;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            left: 34px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 2;
+        }
+
+        .progress-marker.active::before {
+            background: #667eea;
+            width: 16px;
+            height: 16px;
+            left: 32px;
+        }
+
+        .progress-marker-label {
+            position: absolute;
+            right: 55px;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            pointer-events: none;
+        }
+
+        .progress-marker:hover .progress-marker-label,
+        .progress-marker.active .progress-marker-label {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .progress-marker.active .progress-marker-label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 40px;
+            text-align: center;
+            border-bottom: 5px solid #9f7aea;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-top: 8px;
+        }
+
+        header .institution {
+            font-size: 0.95em;
+            margin-top: 12px;
+            opacity: 0.9;
+            border-top: 2px solid rgba(255,255,255,0.3);
+            padding-top: 12px;
+        }
+
+        nav {
+            background: #f5f7fa;
+            padding: 15px 40px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 3px solid #9f7aea;
+        }
+
+        nav a {
+            color: #5a67d8;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            font-weight: 500;
+            background: white;
+            border: 2px solid #9f7aea;
+        }
+
+        nav a:hover {
+            background: #9f7aea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(159, 122, 234, 0.4);
+        }
+
+        .content {
+            padding: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 不同模块的背景色 */
+        section {
+            margin-bottom: 0;
+            padding: 40px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        #review {
+            background: #f8f9ff;
+        }
+
+        #overview {
+            background: #fff;
+        }
+
+        #stage1 {
+            background: #fff5f5;
+        }
+
+        #stage2 {
+            background: #f0fff4;
+        }
+
+        #stage3 {
+            background: #fffaf0;
+        }
+
+        #workflow {
+            background: #f5f7ff;
+        }
+
+        #experiments {
+            background: #fafafa;
+        }
+
+        section:last-of-type {
+            background: #f8f9ff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #5a67d8;
+            font-size: 1.9em;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 4px solid #9f7aea;
+            font-weight: bold;
+        }
+
+        h3 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+            font-weight: bold;
+        }
+
+        h4 {
+            color: #5a67d8;
+            font-size: 1.2em;
+            margin: 20px 0 12px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+            line-height: 1.8;
+        }
+
+        code {
+            background-color: #edf2f7;
+            color: #5a67d8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 5px solid #667eea;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .info-box strong {
+            color: #5a67d8;
+            font-size: 1.05em;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border-left: 5px solid #f56565;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .warning-box strong {
+            color: #c53030;
+            font-size: 1.05em;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border-left: 5px solid #48bb78;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .success-box strong {
+            color: #2f855a;
+            font-size: 1.05em;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #f0fff4 0%, #f7fafc 100%);
+            border-left: 5px solid #48bb78;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .analysis-box {
+            background: linear-gradient(135deg, #fffaf0 0%, #fefcbf 100%);
+            border-left: 5px solid #ed8936;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .analysis-box h4 {
+            color: #c05621;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #9f7aea;
+            overflow-x: auto;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .figure {
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .figure-caption {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .two-column, .three-column {
+                grid-template-columns: 1fr;
+            }
+            section {
+                padding: 25px 15px;
+            }
+            .vertical-progress {
+                display: none;
+            }
+        }
+
+        .step-box {
+            background: white;
+            padding: 18px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .step-box:hover {
+            border-color: #9f7aea;
+            box-shadow: 0 4px 16px rgba(159, 122, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .step-box h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .step-box p {
+            margin-bottom: 8px;
+        }
+
+        /* 文件卡片样式 */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .comparison-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .comparison-card:hover {
+            border-color: #9f7aea;
+            box-shadow: 0 4px 16px rgba(159, 122, 234, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .comparison-card h4 {
+            margin: 0 0 10px 0;
+            color: #5a67d8;
+        }
+
+        .comparison-card p {
+            margin: 0;
+            font-size: 0.95em;
+            color: #666;
+            text-align: center;
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        li {
+            margin: 8px 0;
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fef5e7 0%, #ffeaa7 100%);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-size: 1.5em;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        /* 动态流程图样式 */
+        .animated-flowchart {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 10px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .flow-step:hover {
+            transform: translateX(8px);
+            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .flow-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85em;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .flow-content {
+            flex: 1;
+            padding: 8px 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .flow-content h4 {
+            margin: 0 0 5px 0;
+            color: #5a67d8;
+            font-size: 1em;
+        }
+
+        .flow-content p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .flow-connector {
+            position: absolute;
+            left: 45px;
+            top: 50px;
+            bottom: -18px;
+            width: 3px;
+            background: linear-gradient(180deg, #9f7aea, #667eea);
+            z-index: 1;
+        }
+
+        .flow-step:last-child .flow-connector {
+            display: none;
+        }
+
+        /* 图例样式 */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 音频变速实验</h1>
+            <p class="subtitle">基于相位声码器的时间拉伸技术</p>
+            <p class="institution">Digital Signal Processing · Project 2</p>
+        </header>
+
+        <nav>
+            <a href="#review">知识回顾</a>
+            <a href="#overview">实验概述</a>
+            <a href="#stage1">第一阶段思考</a>
+            <a href="#stage2">第二阶段思考</a>
+            <a href="#stage3">第三阶段思考</a>
+            <a href="#workflow">音频变速流程</a>
+            <a href="#experiments">实验任务</a>
+        </nav>
+
+        <!-- 竖直进度条 -->
+        <div class="vertical-progress">
+            <div class="progress-markers">
+                <div class="progress-marker active" style="top: 0%;" data-section="overview">
+                    <span class="progress-marker-label">概述</span>
+                </div>
+                <div class="progress-marker" style="top: 20%;" data-section="stage1">
+                    <span class="progress-marker-label">时域插值</span>
+                </div>
+                <div class="progress-marker" style="top: 40%;" data-section="stage2">
+                    <span class="progress-marker-label">频域插值</span>
+                </div>
+                <div class="progress-marker" style="top: 60%;" data-section="stage3">
+                    <span class="progress-marker-label">相位声码器</span>
+                </div>
+                <div class="progress-marker" style="top: 80%;" data-section="workflow">
+                    <span class="progress-marker-label">完整流程</span>
+                </div>
+                <div class="progress-marker" style="top: 100%;" data-section="experiments">
+                    <span class="progress-marker-label">实验任务</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            
+            <!-- ==================== 知识回顾 ==================== -->
+            <section id="review">
+                <h2>📚 知识回顾：傅里叶变换基础</h2>
+                
+                <p>在开始音频变速实验之前，让我们先回顾数字信号处理中的核心工具——<strong>傅里叶变换</strong>。本实验将大量使用DFT和FFT，理解它们的原理对掌握音频变速技术至关重要。</p>
+
+                <h3>1. 离散傅里叶变换 (DFT)</h3>
+                
+                <div class="formula-box">
+                    <p><strong>DFT 正变换（时域 → 频域）：</strong></p>
+                    <p>$$X[k] = \sum_{n=0}^{N-1} x[n] e^{-j\frac{2\pi}{N}kn}, \quad k=0,1,\ldots,N-1$$</p>
+                    
+                    <p style="margin-top: 15px;"><strong>DFT 反变换（频域 → 时域）：</strong></p>
+                    <p>$$x[n] = \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi}{N}kn}, \quad n=0,1,\ldots,N-1$$</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 核心理解：</strong>
+                    <p>DFT将<strong>时域</strong>的离散信号 $x[n]$ 转换为<strong>频域</strong>的频谱 $X[k]$。频谱包含两个信息：</p>
+                    <ul style="margin: 8px 0 0 18px;">
+                        <li><strong>幅度</strong> $|X[k]|$：表示各频率成分的强度</li>
+                        <li><strong>相位</strong> $\angle X[k]$：表示各频率成分的初始相位</li>
+                    </ul>
+                    <p style="margin-top: 8px;">可以写成极坐标形式：$X[k] = |X[k]| e^{j\angle X[k]}$</p>
+                </div>
+
+                <h3>2. 快速傅里叶变换 (FFT)</h3>
+                
+                <p>FFT是DFT的快速算法，通过分治策略将计算复杂度从 $O(N^2)$ 降低到 $O(N\log N)$。在实际应用中，我们总是使用FFT来计算DFT。</p>
+
+                <div class="success-box">
+                    <strong>✅ 在本实验中：</strong>
+                    <p>MATLAB的 <code>fft()</code> 和 <code>ifft()</code> 函数就是FFT算法的实现，它们计算的结果和DFT完全相同，只是速度更快。</p>
+                </div>
+
+                <h3>3. 时频对偶关系 ⚡</h3>
+                
+                <div class="warning-box">
+                    <strong>⚠️ 关键性质：时间与频率成反比</strong>
+                    <p>这是理解音频变速的<strong>核心</strong>！</p>
+                    <ul style="margin: 8px 0 0 18px;">
+                        <li><strong>时域拉伸</strong>（信号变长）→ <strong>频域压缩</strong>（频率变低）</li>
+                        <li><strong>时域压缩</strong>（信号变短）→ <strong>频域拉伸</strong>（频率变高）</li>
+                    </ul>
+                </div>
+
+                <h3>4. 短时傅里叶变换 (STFT)</h3>
+                
+                <p>对于长音频信号，我们需要分析其<strong>时变的频谱</strong>。STFT的思想是：</p>
+                
+                <div class="two-column">
+                    <div class="step-box">
+                        <h4>第1步：分帧</h4>
+                        <p>将长信号分成若干短帧，每帧长度为 $N$ 个采样点。</p>
+                    </div>
+                    <div class="step-box">
+                        <h4>第2步：加窗</h4>
+                        <p>对每帧乘以窗函数（如汉明窗），减少边界效应。</p>
+                    </div>
+                    <div class="step-box">
+                        <h4>第3步：FFT</h4>
+                        <p>对每一帧加窗后的信号进行FFT，得到该帧的频谱。</p>
+                    </div>
+                    <div class="step-box">
+                        <h4>第4步：组合</h4>
+                        <p>所有帧的频谱组成 $N \times M$ 的频谱矩阵。</p>
+                    </div>
+                </div>
+
+                <div class="formula-box">
+                    <p><strong>STFT的数学表达：</strong></p>
+                    <p>第 $n$ 帧，第 $k$ 个频率分量的频谱为：</p>
+                    <p>$$X[n,k] = A[n,k] e^{j\varphi[n,k]}$$</p>
+                    <p>其中 $A[n,k]$ 为幅度，$\varphi[n,k]$ 为相位，$n$ 为帧索引，$k$ 为频率索引。</p>
+                </div>
+
+                <div class="success-box">
+                    <strong>🎯 为什么需要STFT？</strong>
+                    <p>音频信号是<strong>非平稳</strong>的——不同时刻的频率成分不同。STFT通过分帧，让我们能够看到<strong>时间-频率</strong>的二维分布，这是音频变速的基础。</p>
+                </div>
+            </section>
+
+            <!-- ==================== 实验概述 ==================== -->
+            <section id="overview">
+                <h2>📋 实验概述</h2>
+                
+                <p>音频信号的<strong>时间压缩或扩展</strong>，也称为"<span class="highlight">时间拉伸（Time Stretching）</span>"，是音高转换的倒数过程。它在改变速度（节奏）的同时<strong>保持信号音高不变</strong>。</p>
+
+                <div class="info-box">
+                    <strong>💡 核心挑战：</strong>
+                    <p>如何改变音频的播放速度，同时保持音高不变？</p>
+                    <p style="margin-top: 8px;">举例：将一段2分钟的语音拉伸为4分钟，说话速度变慢一半，但<strong>音调不变</strong>（不能变成"低沉的声音"）。</p>
+                </div>
+
+                <h3>三阶段递进学习</h3>
+                
+                <p>本实验采用<strong>三阶段递进式学习</strong>，逐步揭示音频变速的正确方法：</p>
+
+                <div class="two-column">
+                    <div class="step-box">
+                        <h4 style="color: #e74c3c;">🔴 第一阶段：时域插值</h4>
+                        <p>直观但<strong>错误</strong>的方法——时域拉伸会导致频率改变</p>
+                    </div>
+                    <div class="step-box">
+                        <h4 style="color: #48bb78;">🟢 第二阶段：频域插值</h4>
+                        <p><strong>正确</strong>的方法——在频域进行变速可保持音高</p>
+                    </div>
+                </div>
+                <div class="step-box" style="border-color: #ed8936; margin-top: 15px;">
+                    <h4 style="color: #ed8936;">🟠 第三阶段：相位声码器</h4>
+                    <p><strong>进阶</strong>方法——消除帧间不连续性，获得更高音质</p>
+                </div>
+            </section>
+
+            <!-- ==================== 第一阶段思考 ==================== -->
+            <section id="stage1">
+                <h2>🔴 第一阶段思考：时域插值</h2>
+
+                <p>最直观的想法是：<strong>直接在时域对信号进行插值</strong>来改变信号长度。比如，要把音频拉伸2倍，就在每两个采样点之间插入一个新的点。</p>
+
+                <div class="analysis-box">
+                    <h4>💭 直觉想法</h4>
+                    <p>将100点的信号插值成200点的信号，播放时间变为原来的2倍，音频就"变慢"了。</p>
+                </div>
+
+                <h3>时域插值的问题</h3>
+                
+                <p>从时间轴上看，信号被拉长了2倍，原始音频约5秒，拉伸后接近10秒，且波形相似。但是聆听拉伸后的音频会发现在<strong>音高（频率）上变低了</strong>，而这是我们不希望发生的。</p>
+
+                <!-- 静态对比图 -->
+                <div class="figure">
+                    <canvas id="discontinuityCanvas" width="950" height="420"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #2b5797;"></div>原始信号</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div>拉伸后信号</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div>关键观察：周期变长 = 频率降低</div>
+                    </div>
+                    <p class="figure-caption">图1：时域插值对比——拉伸导致周期加倍，频率减半</p>
+                </div>
+
+                <p>设有原始正弦信号 $\sin(\omega t)$，时长为 $L$。经过插值后，时间上具有 $2L$ 个点，但从频率来看为原来的 $1/2$。</p>
+
+                <div class="warning-box">
+                    <strong>⚠️ 时频对偶法则</strong>
+                    <p>$$\text{时间长度} \times \text{频率} = \text{常数}$$</p>
+                    <p>拉伸2倍 → 时间×2 → 频率÷2 → <span style="color: #f56565;">音高降低！❌</span></p>
+                </div>
+
+                <!-- 频谱对比 -->
+                <div class="figure">
+                    <canvas id="spectrumCanvas" width="950" height="380"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #2b5797;"></div>原始频谱</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div>拉伸后频谱（峰值左移）</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div>压缩后频谱（峰值右移）</div>
+                    </div>
+                    <p class="figure-caption">图2：频谱对比——简单时域插值/抽取改变了主频率位置</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>📌 结论</strong>
+                    <p>由于<strong>时间和频率成反比</strong>的关系，我们<strong>无法通过直接改变音频时长</strong>而得到理想结果。必须采用更高级的信号处理技术！</p>
+                </div>
+            </section>
+
+            <!-- ==================== 第二阶段思考 ==================== -->
+            <section id="stage2">
+                <h2>🟢 第二阶段思考：频域插值</h2>
+
+                <p>既然时域插值会改变频率，那我们可以换一个思路：<strong>先变换到频域，在频域上进行操作，再变换回时域</strong>。</p>
+
+                <h3>频域插值的思路</h3>
+                
+                <div class="success-box">
+                    <strong>✅ 正确方法：频域插值</strong>
+                    <ol style="margin: 8px 0 0 18px;">
+                        <li>将时域信号<strong>分帧</strong>，对每帧进行<strong>FFT</strong>得到频谱</li>
+                        <li>在频域上对频谱进行<strong>插值或抽取</strong></li>
+                        <li>对修改后的频谱进行<strong>IFFT</strong></li>
+                        <li>得到拉伸后的时域信号，<strong>频率成分保持不变</strong> ✓</li>
+                    </ol>
+                </div>
+
+                <!-- 频域插值对比图 -->
+                <div class="figure">
+                    <canvas id="freqInterpolationCanvas" width="950" height="520"></canvas>
+                    <p class="figure-caption">图3：时域插值 vs 频域插值——频域方法保持了原始频率成分</p>
+                </div>
+
+                <div class="analysis-box">
+                    <h4>💡 为什么频域插值有效？</h4>
+                    <p>在频域进行2倍抽取（每隔一个点取一个），得到的IFFT结果长度变为原来的一半，但频率成分不变。要得到2倍长的信号，可以通过频域2倍插值（在频点之间插入零值后进行适当处理）。</p>
+                </div>
+
+                <h3>频域插值的局限</h3>
+                
+                <p>虽然频域插值能够保持音高，但它也有一个问题：<strong>相邻帧之间可能产生不连续</strong>。</p>
+                
+                <div class="warning-box">
+                    <strong>⚠️ 帧间不连续问题</strong>
+                    <p>由于每帧独立处理FFT/IFFT，相邻帧在边界处的相位可能不匹配，导致杂音。</p>
+                </div>
+            </section>
+
+            <!-- ==================== 第三阶段思考 ==================== -->
+            <section id="stage3">
+                <h2>🟠 第三阶段思考：相位声码器</h2>
+
+                <div class="info-box">
+                    <strong>📚 历史背景：</strong>
+                    <p>相位声码器（Phase Vocoder，简称PV）的概念由 <strong>Flanagan 和 Golden</strong> 于 <strong>1966年</strong> 提出，是音频信号处理领域的重要里程碑。</p>
+                </div>
+
+                <h3>PV核心思想</h3>
+                
+                <p>相位声码器的解决方法就是通过<strong>调整相位</strong>使得帧和帧之间的频率值无缝衔接。让我们深入理解这个过程：</p>
+
+                <!-- 相位声码器原理动画 -->
+                <div class="figure">
+                    <canvas id="phaseVocoderCanvas" width="950" height="560"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #999;"></div>原始信号（频率Ω）</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #c0392b;"></div>第m帧相位 φ₁</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div>第m+1帧相位 φ₂</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #3498db;"></div>相位误差 φErr</div>
+                    </div>
+                    <p class="figure-caption">图4：相位声码器的相位关系分析——展示如何从相邻帧相位计算实际频率</p>
+                </div>
+
+                <div class="analysis-box">
+                    <h4>📐 相位关系详解</h4>
+                    <p><strong>上半部分：</strong>灰色正弦曲线表示原始音频信号的第 $k$ 个频率分量 $\Omega$。$t_1$ 和 $t_2$ 时刻分别是两帧信号的起始点。</p>
+                    <p style="margin-top: 8px;"><strong>时间间隔：</strong>两帧之间的时差是 $\Delta t = R_a / F_s$，其中 $R_a$ 是帧移（采样点数），$F_s$ 是采样频率。</p>
+                    <p style="margin-top: 8px;"><strong>下半部分（单位圆）：</strong>用极坐标直观展示相位角。理论上 $\varphi_2 = \varphi_1 + \Omega\Delta t$，但由于FFT频率分辨率有限，存在误差 $\varphi_{Err}$。</p>
+                </div>
+
+                <h3>数学推导</h3>
+                
+                <div class="formula-box">
+                    <p><strong>步骤1：理论相位递进关系</strong></p>
+                    <p>$$\varphi_2 = \varphi_1 + \Omega\Delta t$$</p>
+                    <p style="font-size: 0.9em; color: #666;">如果信号是纯正弦波且频率恰好落在FFT频点上，这个关系精确成立。</p>
+                    
+                    <p style="margin-top: 15px;"><strong>步骤2：实际相位关系（考虑FFT误差）</strong></p>
+                    <p>$$\varphi_2 = \varphi_1 + \Omega\Delta t + \varphi_{\text{Err}}$$</p>
+                    <p style="font-size: 0.9em; color: #666;">由于实际频率可能偏离FFT频点，产生相位误差。</p>
+                    
+                    <p style="margin-top: 15px;"><strong>步骤3：从相位误差反推频率偏移</strong></p>
+                    <p>$$\Delta\omega = \frac{\varphi_{\text{Err}}}{R_a}$$</p>
+                    <p style="font-size: 0.9em; color: #666;">相位误差除以帧移时间，得到频率修正量。</p>
+                    
+                    <p style="margin-top: 15px;"><strong>步骤4：计算实际角频率</strong></p>
+                    <p>$$\omega = \Omega + \Delta\omega$$</p>
+                    <p style="font-size: 0.9em; color: #666;">FFT频点频率加上修正量，得到更精确的瞬时频率。</p>
+                    
+                    <p style="margin-top: 15px;"><strong>步骤5：输出相位更新</strong></p>
+                    <p>$$\varphi_{\text{out}} = \varphi_{\text{out}} + \omega \cdot R_s$$</p>
+                    <p style="font-size: 0.9em; color: #666;">用实际频率和<strong>新的帧移</strong> $R_s$ 计算输出相位，实现平滑过渡。</p>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 注意：</strong>
+                    <p>由于我们需要用第1、2帧的误差来预测第0帧，以此类推，所以在实验中，我们的计算结果比原始数据少两列。</p>
+                </div>
+
+                <h3>频域插值法 vs 相位声码器</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>对比项</th>
+                            <th>频域插值法</th>
+                            <th>相位声码器</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>修改对象</strong></td>
+                            <td>频谱幅度和相位</td>
+                            <td>只修改相位，保留幅度</td>
+                        </tr>
+                        <tr>
+                            <td><strong>实现复杂度</strong></td>
+                            <td>简单（使用interp1）</td>
+                            <td>复杂（需要相位展开）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>音质</strong></td>
+                            <td>较好</td>
+                            <td>更好（无帧间杂音）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>适用场景</strong></td>
+                            <td>基础任务</td>
+                            <td>进阶任务，追求高质量</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ==================== 完整流程 ==================== -->
+            <section id="workflow">
+                <h2>⚙️ 音频变速完整流程</h2>
+
+                <p>依据上述音频变速原理搭建的音频变速器示意图如下所示：</p>
+
+                <!-- 完整流程动画 - 重新设计 -->
+                <div class="figure">
+                    <canvas id="workflowCanvas" width="950" height="550"></canvas>
+                    <p class="figure-caption">图5：音频变速完整处理流程</p>
+                </div>
+
+                <!-- 动态流程图 -->
+                <div class="animated-flowchart">
+                    <h4 style="text-align: center; margin-bottom: 20px; color: #5a67d8;">🔄 处理流程动态展示</h4>
+                    <div class="flow-container">
+                        <div class="flow-step">
+                            <div class="flow-icon">信号</div>
+                            <div class="flow-content">
+                                <h4>原始音频信号</h4>
+                                <p>输入待处理的音频信号 x[n]</p>
+                            </div>
+                            <div class="flow-connector"></div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-icon">分帧</div>
+                            <div class="flow-content">
+                                <h4>分帧处理</h4>
+                                <p>将信号分成重叠的短帧，定义帧长和帧移</p>
+                            </div>
+                            <div class="flow-connector"></div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-icon">加窗</div>
+                            <div class="flow-content">
+                                <h4>加窗处理</h4>
+                                <p>对每帧乘以汉明窗，减少频谱泄漏</p>
+                            </div>
+                            <div class="flow-connector"></div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-icon">FFT</div>
+                            <div class="flow-content">
+                                <h4>频谱分析</h4>
+                                <p>对每帧信号进行FFT，得到频谱矩阵</p>
+                            </div>
+                            <div class="flow-connector"></div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-icon" style="background: linear-gradient(135deg, #48bb78, #38a169);">修改</div>
+                            <div class="flow-content" style="border-color: #48bb78;">
+                                <h4 style="color: #2f855a;">改变频谱</h4>
+                                <p>使用频域插值法或相位声码器修改频谱</p>
+                            </div>
+                            <div class="flow-connector"></div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-icon">IFFT</div>
+                            <div class="flow-content">
+                                <h4>反变换</h4>
+                                <p>对修改后的频谱进行IFFT，得到时域帧</p>
+                            </div>
+                            <div class="flow-connector"></div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-icon">重建</div>
+                            <div class="flow-content">
+                                <h4>重叠相加</h4>
+                                <p>对时域帧加窗后按新帧移叠加重建</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>详细步骤解析</h3>
+
+                <h4>1. 分帧 (Frame)</h4>
+                
+                <p>分帧的概念和上一次实验中分割信号的目的相同，都是为了获取更好的结果。但和上次实验的区别是，本次分帧涉及到<strong>重叠（Overlap）</strong>。</p>
+
+                <div class="info-box">
+                    <strong>📌 重叠分帧示例：</strong>
+                    <p>100点序列以20点帧长进行分段：</p>
+                    <ul style="margin: 6px 0 0 18px;">
+                        <li><strong>无重叠：</strong>第1段: 1-20，第2段: 21-40，第3段: 41-60...</li>
+                        <li><strong>有重叠：</strong>第1段: 1-20，第2段: 5-24 或 10-29...</li>
+                    </ul>
+                    <p style="margin-top: 6px;"><strong>帧移（Hop Size）</strong> $R_a$：两帧信号之间的距离，通常在帧长的 25%~75%</p>
+                </div>
+
+                <!-- 分帧示意动画 -->
+                <div class="figure">
+                    <canvas id="framingCanvas" width="950" height="400"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: rgba(102, 126, 234, 0.3);"></div>帧重叠区域</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div>拉伸（帧移增大）</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div>压缩（帧移减小）</div>
+                    </div>
+                    <p class="figure-caption">图6：不同帧移对信号长度的影响（展示重叠分帧原理）</p>
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ 注意：</strong>
+                    <p>这种仅通过改变帧移来实现变速的方法，和我们第一阶段的思考是类似的，都可能导致频率成分的重叠、失真或不连续性。因此需要配合<strong>频域插值或相位声码器</strong>使用。</p>
+                </div>
+
+                <h4>2. 加窗 (Windowing)</h4>
+                
+                <p>分帧以后，我们还需要对每一帧信号作<strong>加窗处理</strong>。窗函数的作用是削弱帧的两端，使得在分析处理时得到的频谱图更加准确。</p>
+
+                <!-- 加窗示意 -->
+                <div class="figure">
+                    <canvas id="windowingCanvas" width="950" height="280"></canvas>
+                    <p class="figure-caption">图7：时域信号 × 汉明窗 = 加窗后信号（汉明窗公式：$w[n] = 0.54 - 0.46\cos(2\pi n/N)$）</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 为什么需要加窗？</strong>
+                    <p>通过加窗，之前帧的频率分量与当前帧的融合由于尾端削弱而更加平滑，减少了<strong>频谱泄漏</strong>和不连续性。</p>
+                </div>
+
+                <!-- 帧融合示意 -->
+                <div class="figure">
+                    <canvas id="fusionCanvas" width="950" height="280"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #c0392b;"></div>前一帧（衰减）</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #2980b9;"></div>当前帧（渐入）</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div>叠加结果</div>
+                    </div>
+                    <p class="figure-caption">图8：重叠相加（OLA）示意 - 加窗使相邻帧平滑融合</p>
+                </div>
+
+                <h4>3. FFT 频谱分析</h4>
+                
+                <div class="formula-box">
+                    <p><strong>短时频谱表示：</strong></p>
+                    <p>$$x[n] = \sum_{k_r=1}^{I[n]} A[n,k_r]e^{j\varphi_a[n,k_r]}, \quad n \geq 0$$</p>
+                    <p>式中 $A[n,k]$ 为第 $n$ 帧第 $k$ 频率的幅度，$\varphi_a[n,k]$ 为相位。</p>
+                </div>
+
+                <h4>4. 改变频谱</h4>
+                
+                <div class="two-column">
+                    <div class="step-box">
+                        <h4 style="color: #48bb78;">方法1: 频域插值法</h4>
+                        <p>通过 MATLAB 的 <code>interp1</code> 函数对频率进行插值。</p>
+                        <p style="color: #48bb78;"><strong>✓ 简单易实现</strong></p>
+                    </div>
+                    <div class="step-box">
+                        <h4 style="color: #ed8936;">方法2: 相位声码器</h4>
+                        <p>保留频谱<strong>幅度不变</strong>，只改变<strong>相位</strong>。</p>
+                        <p style="color: #ed8936;"><strong>✓ 音质更好</strong></p>
+                    </div>
+                </div>
+
+                <h4>5. 反变换 (IFFT)</h4>
+                
+                <p>修改后的频谱需要经过 <strong>IFFT</strong> 重新得到时间信号。</p>
+
+                <h4>6. 重建 (OLA - Overlap-Add)</h4>
+                
+                <p>重建的过程是经过反变换的时间信号再次进行<strong>加窗</strong>后依序<strong>叠加</strong>。</p>
+                
+                <div class="info-box">
+                    <strong>📌 帧移选择：</strong>
+                    <ul style="margin: 6px 0 0 18px;">
+                        <li>频域插值法：使用<strong>原始帧移</strong> $R_a$</li>
+                        <li>相位声码器：使用<strong>变速后的帧移</strong> $R_s$</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ==================== 实验任务 (简化版) ==================== -->
+            <section id="experiments">
+                <h2>🧪 实验任务</h2>
+
+                <p>本项目要求完成基于频域插值和相位声码器的音频变速系统的MATLAB实现。根据代码中的提示填写标记为<code>?</code>的部分。</p>
+
+                <h3>📁 核心文件</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-card">
+                        <h4>🎯 ex0_synthesize_all.m</h4>
+                        <p>主函数，调用其他模块</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>📝 ex1-ex6.m</h4>
+                        <p>6个处理模块</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>✅ test_Project2.p</h4>
+                        <p>自动批改程序</p>
+                    </div>
+                </div>
+
+                <h3>🚀 实验步骤</h3>
+                <ol style="padding-left: 20px; line-height: 2;">
+                    <li>仔细阅读本手册，理解音频变速的整体流程</li>
+                    <li>将所有实验文件放在同一目录，设置MATLAB当前文件夹</li>
+                    <li>按顺序完成ex1到ex5（基础），ex6为进阶</li>
+                    <li>运行test_Project2.p检查各模块正确性</li>
+                    <li>运行ex0_synthesize_all.m观察完整流程</li>
+                    <li>获得加密成绩，压缩为【学号_姓名.zip】提交</li>
+                </ol>
+
+                <div class="tip-box">
+                    <strong>📋 重要提醒</strong>
+                    <ul>
+                        <li>✅ 可以小组合作（不超过6人），但每人需独立提交</li>
+                        <li>⏰ 必须在实验课结束前完成并提交</li>
+                        <li>💡 鼓励在理解原理的基础上自己编写代码</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ 学术诚信提醒</strong>
+                    <p>本实验旨在加深对音频时频处理和相位声码器原理的理解。请确保理解每一行代码的含义。</p>
+                </div>
+            </section>
+
+            <!-- ==================== 总结 ==================== -->
+            <section>
+                <h2>📝 总结</h2>
+                
+                <div class="success-box">
+                    <strong>🎊 学习收获：</strong>
+                    <p>通过本实验，我们深入理解了音频变速的原理和实现方法：</p>
+                    <ul style="margin: 8px 0 0 18px;">
+                        <li><strong>DFT/FFT基础</strong>：回顾了时频分析的核心工具</li>
+                        <li><strong>时频对偶关系</strong>：理解了为什么简单插值会失败</li>
+                        <li><strong>频域插值法</strong>：学会了在频域保持音高的方法</li>
+                        <li><strong>相位声码器</strong>：掌握了消除帧间不连续的高级技术</li>
+                        <li><strong>STFT处理流程</strong>：熟悉了分帧、加窗、FFT、修改、IFFT、OLA的完整流程</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>🚀 扩展思考：</strong>
+                    <p>音频变速技术在现实中有广泛应用：视频播放器的倍速播放、音乐制作中的节奏调整、语音合成和变声效果、DJ设备中的实时音频处理等。</p>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <section style="text-align: center; padding: 30px; background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%); border-radius: 10px; margin: 0 40px 40px 40px; border: 2px solid #9f7aea;">
+            <p style="color: #5a67d8; font-size: 1em; font-weight: 600; margin-bottom: 8px;">
+                南京工业大学浦江学院 | 计算机与通信工程专业
+            </p>
+            <p style="color: #667eea; font-size: 0.95em; margin-bottom: 5px;">
+                通信工程 | DSP课程实践
+            </p>
+            <p style="color: #999; font-size: 0.85em; margin-top: 15px;">
+                数字信号处理课程实验 - 基于相位声码器的音频变速
+            </p>
+        </section>
+    </div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+
+    <script>
+        // ==================== 全局动画变量 ====================
+        let pvFrame = 0;
+        let workflowFrame = 0;
+        let framingFrame = 0;
+
+        // ==================== 返回顶部按钮和进度条 ====================
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            const verticalProgress = document.querySelector('.vertical-progress');
+            
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+            
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (window.pageYOffset / docHeight) * 100;
+            if (verticalProgress) {
+                verticalProgress.style.setProperty('--progress', scrollPercent + '%');
+            }
+            
+            // 更新进度标记
+            const markers = document.querySelectorAll('.progress-marker');
+            const sections = ['overview', 'stage1', 'stage2', 'stage3', 'workflow', 'experiments'];
+            
+            sections.forEach((sectionId, index) => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top <= 200 && rect.bottom >= 200) {
+                        markers.forEach(m => m.classList.remove('active'));
+                        markers[index].classList.add('active');
+                    }
+                }
+            });
+        });
+
+        // ==================== 点击进度标记跳转 ====================
+        document.querySelectorAll('.progress-marker').forEach(marker => {
+            marker.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // ==================== 静态时域对比图 ====================
+        function drawDiscontinuityStatic() {
+            const canvas = document.getElementById('discontinuityCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            const padding = 50;
+            
+            // 标题
+            ctx.font = 'bold 16px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText('时域插值对比：原始信号 vs 拉伸后信号', width/2, 30);
+            
+            // ===== 左侧：原始信号 =====
+            const leftX = padding;
+            const plotW = (width - 3*padding) / 2;
+            const plotH = 140;
+            const topY = 70;
+            
+            // 原始信号标题
+            ctx.font = 'bold 14px Microsoft YaHei';
+            ctx.fillStyle = '#2b5797';
+            ctx.textAlign = 'center';
+            ctx.fillText('原始信号（频率 f₀，时长 L）', leftX + plotW/2, topY - 10);
+            
+            // 原始信号坐标轴
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(leftX + 30, topY + plotH/2);
+            ctx.lineTo(leftX + plotW - 10, topY + plotH/2);
+            ctx.stroke();
+            
+            // 原始正弦波 - 3个周期
+            ctx.strokeStyle = '#2b5797';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            for (let i = 0; i < plotW - 50; i++) {
+                const t = (i / (plotW - 50)) * 3 * 2 * Math.PI;
+                const py = topY + plotH/2 - Math.sin(t) * 50;
+                if (i === 0) ctx.moveTo(leftX + 35 + i, py);
+                else ctx.lineTo(leftX + 35 + i, py);
+            }
+            ctx.stroke();
+            
+            // 周期标注
+            const periodW = (plotW - 50) / 3;
+            ctx.strokeStyle = '#2b5797';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 3]);
+            for (let i = 1; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(leftX + 35 + i * periodW, topY + 10);
+                ctx.lineTo(leftX + 35 + i * periodW, topY + plotH - 10);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+            
+            // 周期标签
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#2b5797';
+            ctx.textAlign = 'center';
+            ctx.fillText('T₀', leftX + 35 + periodW/2, topY + plotH + 15);
+            ctx.fillText('T₀', leftX + 35 + periodW * 1.5, topY + plotH + 15);
+            ctx.fillText('T₀', leftX + 35 + periodW * 2.5, topY + plotH + 15);
+            
+            // 时长标注
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(leftX + 35, topY + plotH + 30);
+            ctx.lineTo(leftX + plotW - 15, topY + plotH + 30);
+            ctx.stroke();
+            ctx.fillStyle = '#666';
+            ctx.fillText('L', leftX + plotW/2, topY + plotH + 45);
+            
+            // ===== 右侧：拉伸后信号 =====
+            const rightX = leftX + plotW + padding;
+            
+            // 拉伸信号标题
+            ctx.font = 'bold 14px Microsoft YaHei';
+            ctx.fillStyle = '#27ae60';
+            ctx.textAlign = 'center';
+            ctx.fillText('拉伸2倍后（频率 f₀/2，时长 2L）', rightX + plotW/2, topY - 10);
+            
+            // 拉伸信号坐标轴
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(rightX + 30, topY + plotH/2);
+            ctx.lineTo(rightX + plotW - 10, topY + plotH/2);
+            ctx.stroke();
+            
+            // 拉伸后正弦波 - 1.5个周期（同样的显示宽度）
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            for (let i = 0; i < plotW - 50; i++) {
+                const t = (i / (plotW - 50)) * 1.5 * 2 * Math.PI;
+                const py = topY + plotH/2 - Math.sin(t) * 50;
+                if (i === 0) ctx.moveTo(rightX + 35 + i, py);
+                else ctx.lineTo(rightX + 35 + i, py);
+            }
+            ctx.stroke();
+            
+            // 周期标注
+            const periodW2 = (plotW - 50) / 1.5;
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath();
+            ctx.moveTo(rightX + 35 + periodW2, topY + 10);
+            ctx.lineTo(rightX + 35 + periodW2, topY + plotH - 10);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 周期标签
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('2T₀', rightX + 35 + periodW2/2, topY + plotH + 15);
+            
+            // 时长标注
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(rightX + 35, topY + plotH + 30);
+            ctx.lineTo(rightX + plotW - 15, topY + plotH + 30);
+            ctx.stroke();
+            ctx.fillStyle = '#666';
+            ctx.fillText('2L', rightX + plotW/2, topY + plotH + 45);
+            
+            // ===== 底部结论框 =====
+            const boxY = topY + plotH + 70;
+            ctx.fillStyle = '#fff5f5';
+            ctx.fillRect(padding, boxY, width - 2*padding, 100);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(padding, boxY, width - 2*padding, 100);
+            
+            ctx.font = 'bold 16px Microsoft YaHei';
+            ctx.fillStyle = '#c0392b';
+            ctx.textAlign = 'center';
+            ctx.fillText('❌ 时域拉伸的问题', width/2, boxY + 30);
+            
+            ctx.font = '14px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.fillText('时间拉伸 2 倍 → 周期变为 2T₀ → 频率变为 f₀/2 → 音高降低一个八度！', width/2, boxY + 58);
+            ctx.fillText('这违背了我们"变速不变调"的目标', width/2, boxY + 82);
+            
+            // ===== 对比箭头 =====
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(width/2 - 30, topY + plotH/2 - 30);
+            ctx.lineTo(width/2 + 30, topY + plotH/2 - 30);
+            ctx.stroke();
+            
+            // 箭头头部
+            ctx.beginPath();
+            ctx.moveTo(width/2 + 30, topY + plotH/2 - 30);
+            ctx.lineTo(width/2 + 20, topY + plotH/2 - 37);
+            ctx.lineTo(width/2 + 20, topY + plotH/2 - 23);
+            ctx.closePath();
+            ctx.fillStyle = '#e74c3c';
+            ctx.fill();
+            
+            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = '#e74c3c';
+            ctx.textAlign = 'center';
+            ctx.fillText('插值', width/2, topY + plotH/2 - 45);
+        }
+
+        // ==================== 频谱对比图 ====================
+        function drawSpectrum() {
+            const canvas = document.getElementById('spectrumCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            const subW = (width - 80) / 3;
+            const plotH = 180;
+            const startY = 60;
+            
+            const specs = [
+                { x: 40, title: '原始频谱', peakPos: 0.15, peakLabel: 'f₀', color: '#2b5797' },
+                { x: 40 + subW + 20, title: '拉伸后频谱（时域×2）', peakPos: 0.075, peakLabel: 'f₀/2', color: '#27ae60' },
+                { x: 40 + (subW + 20) * 2, title: '压缩后频谱（时域÷2）', peakPos: 0.30, peakLabel: '2f₀', color: '#e74c3c' }
+            ];
+            
+            // 绘制连接线
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 4]);
+            const baseY = startY + plotH - plotH * 0.85;
+            
+            ctx.beginPath();
+            ctx.moveTo(specs[0].x + 30 + specs[0].peakPos * (subW - 40), baseY);
+            ctx.lineTo(specs[1].x + 30 + specs[1].peakPos * (subW - 40), baseY);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(specs[0].x + 30 + specs[0].peakPos * (subW - 40), baseY);
+            ctx.lineTo(specs[2].x + 30 + specs[2].peakPos * (subW - 40), baseY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            specs.forEach((spec, idx) => {
+                ctx.font = 'bold 14px Microsoft YaHei';
+                ctx.fillStyle = spec.color;
+                ctx.textAlign = 'center';
+                ctx.fillText(spec.title, spec.x + subW/2, startY - 15);
+                
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(spec.x + 30, startY);
+                ctx.lineTo(spec.x + 30, startY + plotH);
+                ctx.lineTo(spec.x + subW - 10, startY + plotH);
+                ctx.stroke();
+                
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('频率 f', spec.x + subW/2, startY + plotH + 20);
+                
+                ctx.save();
+                ctx.translate(spec.x + 15, startY + plotH/2);
+                ctx.rotate(-Math.PI/2);
+                ctx.fillText('|X(f)|', 0, 0);
+                ctx.restore();
+                
+                const peakX = spec.x + 30 + spec.peakPos * (subW - 40);
+                ctx.fillStyle = spec.color;
+                for (let i = 0; i < 25; i++) {
+                    const h = plotH * 0.85 * Math.exp(-Math.pow((i - 12) / 4, 2));
+                    ctx.fillRect(peakX + i - 12, startY + plotH - h, 3, h);
+                }
+                
+                ctx.fillStyle = spec.color;
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(spec.peakLabel, peakX, startY - 2);
+                
+                ctx.strokeStyle = spec.color;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(peakX, startY);
+                ctx.lineTo(peakX, startY + plotH);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = '#ccc';
+                ctx.globalAlpha = 0.3;
+                for (let i = 0; i < subW - 40; i += 5) {
+                    const h = Math.random() * 15 + 5;
+                    ctx.fillRect(spec.x + 30 + i, startY + plotH - h, 3, h);
+                }
+                ctx.globalAlpha = 1;
+            });
+            
+            ctx.fillStyle = '#fff5f5';
+            ctx.fillRect(40, height - 100, width - 80, 85);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(40, height - 100, width - 80, 85);
+            
+            ctx.font = 'bold 14px Microsoft YaHei';
+            ctx.fillStyle = '#c0392b';
+            ctx.textAlign = 'left';
+            ctx.fillText('📊 结论：简单的时域操作会改变信号的频率成分', 60, height - 75);
+            
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.fillText('• 时域拉伸2倍 → 频谱峰值从 f₀ 移动到 f₀/2（左移）→ 音高降低一个八度', 80, height - 50);
+            ctx.fillText('• 时域压缩2倍 → 频谱峰值从 f₀ 移动到 2f₀（右移）→ 音高升高一个八度', 80, height - 28);
+        }
+        
+        // ==================== 频域插值对比图 ====================
+        function drawFreqInterpolation() {
+            const canvas = document.getElementById('freqInterpolationCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.moveTo(width/2, 20);
+            ctx.lineTo(width/2, height - 20);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#c0392b';
+            ctx.font = 'bold 16px Microsoft YaHei';
+            ctx.textAlign = 'center';
+            ctx.fillText('❌ 错误方法：时域插值', width/4, 30);
+            
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('✓ 正确方法：频域插值', width * 3/4, 30);
+            
+            const leftX = 60, rightX = width/2 + 60;
+            const topY = 50;
+            
+            // 左侧
+            drawStepLabel(ctx, leftX - 30, topY + 40, '1', '#c0392b');
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'left';
+            ctx.fillText('原始信号 x[n]（频率 f₀）', leftX + 5, topY + 25);
+            drawSineWave(ctx, leftX, topY + 40, 160, 30, '#2b5797', 1);
+            drawLengthMarker(ctx, leftX, leftX + 160, topY + 85, 'L');
+            
+            drawArrowDown(ctx, leftX + 80, topY + 105, topY + 145);
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.textAlign = 'left';
+            ctx.fillText('时域2倍插值', leftX + 95, topY + 130);
+            
+            drawStepLabel(ctx, leftX - 30, topY + 175, '2', '#c0392b');
+            ctx.fillStyle = '#333';
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillText('拉伸信号（频率变为 f₀/2 ❌）', leftX + 5, topY + 160);
+            drawSineWave(ctx, leftX, topY + 175, 320, 30, '#c0392b', 0.5);
+            drawLengthMarker(ctx, leftX, leftX + 320, topY + 220, '2L');
+            
+            ctx.fillStyle = '#fff5f5';
+            ctx.fillRect(leftX - 30, topY + 250, 380, 50);
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(leftX - 30, topY + 250, 380, 50);
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillStyle = '#c0392b';
+            ctx.textAlign = 'center';
+            ctx.fillText('时长变为2倍，但频率也变为一半', leftX + 160, topY + 280);
+            
+            // 右侧
+            drawStepLabel(ctx, rightX - 30, topY + 40, '1', '#27ae60');
+            ctx.fillStyle = '#333';
+            ctx.font = '13px Microsoft YaHei';
+            ctx.textAlign = 'left';
+            ctx.fillText('原始信号 x[n]', rightX + 5, topY + 25);
+            drawSineWave(ctx, rightX, topY + 40, 140, 25, '#2b5797', 1);
+            
+            drawArrowDown(ctx, rightX + 70, topY + 75, topY + 105);
+            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = '#27ae60';
+            ctx.textAlign = 'left';
+            ctx.fillText('FFT', rightX + 85, topY + 95);
+            
+            drawStepLabel(ctx, rightX - 30, topY + 130, '2', '#27ae60');
+            ctx.fillStyle = '#333';
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillText('频谱 X[k]', rightX + 5, topY + 118);
+            drawSpectrumDots(ctx, rightX + 10, topY + 135, 130, 45, 15);
+            
+            drawArrowDown(ctx, rightX + 75, topY + 195, topY + 225);
+            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('频域2倍插值', rightX + 90, topY + 215);
+            
+            drawStepLabel(ctx, rightX - 30, topY + 250, '3', '#27ae60');
+            ctx.fillStyle = '#333';
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillText('插值频谱 X\'[k]（频率位置不变）', rightX + 5, topY + 238);
+            drawSpectrumDots(ctx, rightX + 10, topY + 255, 260, 45, 30);
+            
+            drawArrowDown(ctx, rightX + 130, topY + 315, topY + 345);
+            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('IFFT', rightX + 145, topY + 335);
+            
+            drawStepLabel(ctx, rightX - 30, topY + 375, '4', '#27ae60');
+            ctx.fillStyle = '#333';
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillText('输出信号（频率 f₀ 不变 ✓）', rightX + 5, topY + 360);
+            drawSineWave(ctx, rightX, topY + 375, 280, 25, '#27ae60', 1);
+            drawLengthMarker(ctx, rightX, rightX + 280, topY + 415, '2L');
+            
+            ctx.fillStyle = '#f0fff4';
+            ctx.fillRect(rightX - 30, topY + 440, 380, 50);
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(rightX - 30, topY + 440, 380, 50);
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillStyle = '#27ae60';
+            ctx.textAlign = 'center';
+            ctx.fillText('时长变为2倍，频率保持不变！', rightX + 160, topY + 470);
+        }
+        
+        function drawStepLabel(ctx, x, y, num, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(num, x, y);
+            ctx.textBaseline = 'alphabetic';
+        }
+        
+        function drawSineWave(ctx, x, y, w, amp, color, freqMult) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < w; i++) {
+                const t = (i / w) * 6 * Math.PI * freqMult;
+                const py = y + Math.sin(t) * amp;
+                if (i === 0) ctx.moveTo(x + i, py);
+                else ctx.lineTo(x + i, py);
+            }
+            ctx.stroke();
+        }
+        
+        function drawLengthMarker(ctx, x1, x2, y, label) {
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x1, y + 10);
+            ctx.moveTo(x2, y);
+            ctx.lineTo(x2, y + 10);
+            ctx.moveTo(x1, y + 5);
+            ctx.lineTo(x2, y + 5);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y + 5);
+            ctx.lineTo(x1 + 6, y + 2);
+            ctx.lineTo(x1 + 6, y + 8);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x2, y + 5);
+            ctx.lineTo(x2 - 6, y + 2);
+            ctx.lineTo(x2 - 6, y + 8);
+            ctx.fill();
+            
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, (x1 + x2) / 2, y + 22);
+        }
+        
+        function drawSpectrumDots(ctx, x, y, w, h, count) {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + h);
+            ctx.lineTo(x + w, y + h);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#2b5797';
+            for (let i = 0; i < count; i++) {
+                const px = x + 10 + (i / count) * (w - 20);
+                const mag = Math.exp(-Math.pow((i - count * 0.2) / 3, 2)) * h * 0.8 + 
+                           Math.exp(-Math.pow((i - count * 0.8) / 3, 2)) * h * 0.5;
+                ctx.beginPath();
+                ctx.arc(px, y + h - mag, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawArrowDown(ctx, x, y1, y2) {
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y1);
+            ctx.lineTo(x, y2);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.moveTo(x, y2 + 8);
+            ctx.lineTo(x - 6, y2);
+            ctx.lineTo(x + 6, y2);
+            ctx.fill();
+        }
+
+        // ==================== 加窗示意 ====================
+        function drawWindowing() {
+            const canvas = document.getElementById('windowingCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            const plotW = 220, plotH = 150;
+            const startX = 60, startY = 55, gap = 80;
+            
+            // 原始信号
+            drawAxisBox(ctx, startX, startY, plotW, plotH, '原始信号（一帧）');
+            ctx.strokeStyle = '#2b5797';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < plotW - 40; i++) {
+                const t = (i / (plotW - 40)) * 6 * Math.PI;
+                const py = startY + plotH/2 + Math.sin(t) * 45;
+                if (i === 0) ctx.moveTo(startX + 20 + i, py);
+                else ctx.lineTo(startX + 20 + i, py);
+            }
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 2]);
+            ctx.beginPath();
+            ctx.moveTo(startX + 20, startY + 15);
+            ctx.lineTo(startX + 20, startY + plotH - 15);
+            ctx.moveTo(startX + plotW - 20, startY + 15);
+            ctx.lineTo(startX + plotW - 20, startY + plotH - 15);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#e74c3c';
+            ctx.textAlign = 'center';
+            ctx.fillText('边界突变', startX + 20, startY + plotH + 15);
+            ctx.fillText('边界突变', startX + plotW - 20, startY + plotH + 15);
+            
+            ctx.font = 'bold 28px Arial';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText('×', startX + plotW + gap/2, startY + plotH/2 + 5);
+            
+            // 汉明窗
+            const winX = startX + plotW + gap;
+            drawAxisBox(ctx, winX, startY, plotW, plotH, '汉明窗');
+            ctx.strokeStyle = '#ed8936';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            for (let i = 0; i < plotW - 40; i++) {
+                const t = i / (plotW - 40);
+                const ham = 0.54 - 0.46 * Math.cos(2 * Math.PI * t);
+                const py = startY + plotH - 20 - ham * (plotH - 40);
+                if (i === 0) ctx.moveTo(winX + 20 + i, py);
+                else ctx.lineTo(winX + 20 + i, py);
+            }
+            ctx.stroke();
+            
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#ed8936';
+            ctx.textAlign = 'right';
+            ctx.fillText('1.0', winX + 15, startY + 25);
+            ctx.fillText('0', winX + 15, startY + plotH - 15);
+            
+            ctx.font = 'bold 28px Arial';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText('=', winX + plotW + gap/2, startY + plotH/2 + 5);
+            
+            // 加窗后信号
+            const outX = winX + plotW + gap;
+            drawAxisBox(ctx, outX, startY, plotW, plotH, '加窗后信号');
+            ctx.strokeStyle = '#48bb78';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < plotW - 40; i++) {
+                const t = (i / (plotW - 40)) * 6 * Math.PI;
+                const ham = 0.54 - 0.46 * Math.cos(2 * Math.PI * i / (plotW - 40));
+                const py = startY + plotH/2 + Math.sin(t) * 45 * ham;
+                if (i === 0) ctx.moveTo(outX + 20 + i, py);
+                else ctx.lineTo(outX + 20 + i, py);
+            }
+            ctx.stroke();
+            
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#48bb78';
+            ctx.textAlign = 'center';
+            ctx.fillText('边界平滑', outX + 20, startY + plotH + 15);
+            ctx.fillText('边界平滑', outX + plotW - 20, startY + plotH + 15);
+        }
+        
+        function drawAxisBox(ctx, x, y, w, h, title) {
+            ctx.font = 'bold 13px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, x + w/2, y - 8);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(x + 20, y + 10);
+            ctx.lineTo(x + 20, y + h - 15);
+            ctx.lineTo(x + w - 20, y + h - 15);
+            ctx.stroke();
+        }
+
+        // ==================== 帧融合示意 ====================
+        function drawFusion() {
+            const canvas = document.getElementById('fusionCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            const plotW = 800, plotH = 180;
+            const startX = 75, startY = 50;
+            
+            ctx.font = 'bold 15px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText('重叠相加（OLA）原理示意', width/2, 25);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(startX, startY + plotH);
+            ctx.lineTo(startX + plotW, startY + plotH);
+            ctx.stroke();
+            
+            const overlapStart = plotW * 0.35;
+            const overlapEnd = plotW * 0.65;
+            
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.15)';
+            ctx.fillRect(startX + overlapStart, startY, overlapEnd - overlapStart, plotH);
+            
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < overlapEnd; i++) {
+                const t = (i / plotW) * 8 * Math.PI;
+                let envelope = 1;
+                if (i > overlapStart) {
+                    envelope = 1 - (i - overlapStart) / (overlapEnd - overlapStart);
+                }
+                const py = startY + plotH/2 + Math.sin(t) * 50 * envelope;
+                if (i === 0) ctx.moveTo(startX + i, py);
+                else ctx.lineTo(startX + i, py);
+            }
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#2980b9';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = overlapStart; i < plotW; i++) {
+                const t = (i / plotW) * 8 * Math.PI + 0.5;
+                let envelope = 1;
+                if (i < overlapEnd) {
+                    envelope = (i - overlapStart) / (overlapEnd - overlapStart);
+                }
+                const py = startY + plotH/2 + Math.sin(t) * 50 * envelope;
+                if (i === overlapStart) ctx.moveTo(startX + i, py);
+                else ctx.lineTo(startX + i, py);
+            }
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 3]);
+            ctx.beginPath();
+            for (let i = 0; i < plotW; i++) {
+                const t = (i / plotW) * 8 * Math.PI;
+                let val = 0;
+                
+                if (i < overlapStart) {
+                    val = Math.sin(t) * 50;
+                } else if (i < overlapEnd) {
+                    const fadeOut = 1 - (i - overlapStart) / (overlapEnd - overlapStart);
+                    const fadeIn = (i - overlapStart) / (overlapEnd - overlapStart);
+                    val = Math.sin(t) * 50 * fadeOut + Math.sin(t + 0.5) * 50 * fadeIn;
+                } else {
+                    val = Math.sin(t + 0.5) * 50;
+                }
+                
+                const py = startY + plotH/2 + val;
+                if (i === 0) ctx.moveTo(startX + i, py);
+                else ctx.lineTo(startX + i, py);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#667eea';
+            ctx.textAlign = 'center';
+            ctx.fillText('重叠区域', startX + (overlapStart + overlapEnd)/2, startY + plotH + 20);
+            
+            ctx.font = '12px Microsoft YaHei';
+            ctx.fillStyle = '#c0392b';
+            ctx.textAlign = 'left';
+            ctx.fillText('前一帧', startX + 10, startY + 20);
+            ctx.fillStyle = '#2980b9';
+            ctx.textAlign = 'right';
+            ctx.fillText('当前帧', startX + plotW - 10, startY + 20);
+        }
+
+        // ==================== 相位声码器动画 ====================
+        function animatePhaseVocoder() {
+            const canvas = document.getElementById('phaseVocoderCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            pvFrame++;
+            const animT = (pvFrame % 300) / 300;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 上半部分：时域信号
+            const topH = 200;
+            ctx.font = 'bold 15px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'left';
+            ctx.fillText('时域信号（第 k 个频率分量）', 60, 30);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(60, topH - 30);
+            ctx.lineTo(width - 60, topH - 30);
+            ctx.stroke();
+            
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText('时间 t', width - 40, topH - 25);
+            
+            const waveStart = 80, waveEnd = width - 80;
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < waveEnd - waveStart; i++) {
+                const t = (i / (waveEnd - waveStart)) * 6 * Math.PI + animT * 2 * Math.PI;
+                const py = topH/2 + 20 + Math.sin(t) * 50;
+                if (i === 0) ctx.moveTo(waveStart + i, py);
+                else ctx.lineTo(waveStart + i, py);
+            }
+            ctx.stroke();
+            
+            const t1X = waveStart + (waveEnd - waveStart) * 0.25;
+            const t2X = waveStart + (waveEnd - waveStart) * 0.55;
+            
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            ctx.moveTo(t1X, 50);
+            ctx.lineTo(t1X, topH - 35);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.font = 'bold 13px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.textAlign = 'center';
+            ctx.fillText('t₁', t1X, topH - 15);
+            ctx.fillText('第 m 帧', t1X, 45);
+            
+            ctx.strokeStyle = '#27ae60';
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            ctx.moveTo(t2X, 50);
+            ctx.lineTo(t2X, topH - 35);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('t₂', t2X, topH - 15);
+            ctx.fillText('第 m+1 帧', t2X, 45);
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(t1X, topH - 50);
+            ctx.lineTo(t2X, topH - 50);
+            ctx.stroke();
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText('Δt = Rₐ / Fₛ', (t1X + t2X) / 2, topH - 55);
+            
+            // 下半部分：单位圆
+            const circleY = topH + 180;
+            const circleR = 100;
+            const circle1X = width * 0.28;
+            const circle2X = width * 0.72;
+            
+            ctx.font = 'bold 14px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText('单位圆表示（相位可视化）', width/2, topH + 30);
+            
+            // 第一个单位圆
+            ctx.font = 'bold 13px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.fillText('第 m 帧相位 φ₁', circle1X, topH + 55);
+            
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(circle1X, circleY, circleR, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(circle1X - circleR - 10, circleY);
+            ctx.lineTo(circle1X + circleR + 10, circleY);
+            ctx.moveTo(circle1X, circleY - circleR - 10);
+            ctx.lineTo(circle1X, circleY + circleR + 10);
+            ctx.stroke();
+            
+            const phi1 = animT * Math.PI * 1.5;
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(circle1X, circleY);
+            ctx.lineTo(circle1X + Math.cos(phi1) * circleR * 0.9, circleY - Math.sin(phi1) * circleR * 0.9);
+            ctx.stroke();
+            
+            const phi1End = { x: circle1X + Math.cos(phi1) * circleR * 0.9, y: circleY - Math.sin(phi1) * circleR * 0.9 };
+            ctx.fillStyle = '#c0392b';
+            ctx.beginPath();
+            ctx.arc(phi1End.x, phi1End.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(circle1X, circleY, 30, 0, -phi1, true);
+            ctx.stroke();
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.fillText('φ₁', circle1X + 40, circleY - 15);
+            
+            // 第二个单位圆
+            ctx.font = 'bold 13px Arial';
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('第 m+1 帧相位 φ₂', circle2X, topH + 55);
+            
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(circle2X, circleY, circleR, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(circle2X - circleR - 10, circleY);
+            ctx.lineTo(circle2X + circleR + 10, circleY);
+            ctx.moveTo(circle2X, circleY - circleR - 10);
+            ctx.lineTo(circle2X, circleY + circleR + 10);
+            ctx.stroke();
+            
+            const phi2Theory = phi1 + 1.2;
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            ctx.moveTo(circle2X, circleY);
+            ctx.lineTo(circle2X + Math.cos(phi2Theory) * circleR * 0.85, circleY - Math.sin(phi2Theory) * circleR * 0.85);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            const phi2Actual = phi2Theory + 0.3;
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(circle2X, circleY);
+            ctx.lineTo(circle2X + Math.cos(phi2Actual) * circleR * 0.9, circleY - Math.sin(phi2Actual) * circleR * 0.9);
+            ctx.stroke();
+            
+            const phi2End = { x: circle2X + Math.cos(phi2Actual) * circleR * 0.9, y: circleY - Math.sin(phi2Actual) * circleR * 0.9 };
+            ctx.fillStyle = '#27ae60';
+            ctx.beginPath();
+            ctx.arc(phi2End.x, phi2End.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(circle2X, circleY, circleR * 0.5, -phi2Theory, -phi2Actual, true);
+            ctx.stroke();
+            
+            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = '#e74c3c';
+            const errLabelAngle = (phi2Theory + phi2Actual) / 2;
+            ctx.fillText('φErr', circle2X + Math.cos(errLabelAngle) * circleR * 0.65, circleY - Math.sin(errLabelAngle) * circleR * 0.65);
+            
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#3498db';
+            ctx.textAlign = 'left';
+            ctx.fillText('--- 理论相位 φ₁ + ΩΔt', circle2X - 60, circleY + circleR + 30);
+            ctx.fillStyle = '#27ae60';
+            ctx.fillText('— 实际相位 φ₂', circle2X - 60, circleY + circleR + 45);
+            
+            ctx.fillStyle = '#f7fafc';
+            ctx.fillRect(width/2 - 140, circleY - 30, 280, 60);
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(width/2 - 140, circleY - 30, 280, 60);
+            
+            ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = '#5a67d8';
+            ctx.textAlign = 'center';
+            ctx.fillText('实际频率计算', width/2, circleY - 10);
+            ctx.font = '13px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText('ω = Ω + φErr / Rₐ', width/2, circleY + 15);
+            
+            requestAnimationFrame(animatePhaseVocoder);
+        }
+
+        // ==================== 重新设计的工作流程动画 ====================
+        function animateWorkflow() {
+            const canvas = document.getElementById('workflowCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            workflowFrame++;
+            const cycleTime = 420;
+            const animT = (workflowFrame % cycleTime) / cycleTime;
+            const currentStep = Math.floor(animT * 7);
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 流程框配置
+            const boxW = 110, boxH = 70;
+            const startX = 60, topY = 60;
+            const gapX = 30;
+            
+            const steps = [
+                { label: '输入信号', icon: '🎵', desc: 'x[n]' },
+                { label: '分帧', icon: '📊', desc: 'N点/帧' },
+                { label: '加窗', icon: '🔲', desc: '汉明窗' },
+                { label: 'FFT', icon: '📈', desc: '频谱' },
+                { label: '修改频谱', icon: '🔧', desc: 'PV/插值', highlight: true },
+                { label: 'IFFT', icon: '📉', desc: '时域帧' },
+                { label: 'OLA重建', icon: '🔗', desc: '输出' }
+            ];
+            
+            // 绘制连接线
+            for (let i = 0; i < steps.length - 1; i++) {
+                const x1 = startX + i * (boxW + gapX) + boxW;
+                const x2 = startX + (i + 1) * (boxW + gapX);
+                const y = topY + boxH / 2;
+                
+                const isActive = i < currentStep;
+                ctx.strokeStyle = isActive ? '#667eea' : '#ddd';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x1, y);
+                ctx.lineTo(x2, y);
+                ctx.stroke();
+                
+                // 箭头
+                ctx.fillStyle = isActive ? '#667eea' : '#ddd';
+                ctx.beginPath();
+                ctx.moveTo(x2 - 8, y - 6);
+                ctx.lineTo(x2, y);
+                ctx.lineTo(x2 - 8, y + 6);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // 绘制步骤框
+            steps.forEach((step, idx) => {
+                const x = startX + idx * (boxW + gapX);
+                const y = topY;
+                const isCurrent = idx === currentStep;
+                const isPast = idx < currentStep;
+                
+                // 背景
+                if (step.highlight) {
+                    ctx.fillStyle = isCurrent ? '#48bb78' : (isPast ? '#c6f6d5' : '#f0fff4');
+                } else {
+                    ctx.fillStyle = isCurrent ? '#667eea' : (isPast ? '#e8ecf4' : 'white');
+                }
+                
+                // 阴影
+                if (isCurrent) {
+                    ctx.shadowColor = step.highlight ? 'rgba(72, 187, 120, 0.4)' : 'rgba(102, 126, 234, 0.4)';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetY = 5;
+                }
+                
+                // 圆角矩形
+                ctx.beginPath();
+                ctx.roundRect(x, y, boxW, boxH, 10);
+                ctx.fill();
+                
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+                
+                // 边框
+                ctx.strokeStyle = step.highlight ? '#48bb78' : (isCurrent ? '#5a67d8' : (isPast ? '#667eea' : '#ddd'));
+                ctx.lineWidth = isCurrent ? 3 : 2;
+                ctx.stroke();
+                
+                // 图标
+                ctx.font = '22px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(step.icon, x + boxW/2, y + 28);
+                
+                // 标签
+                ctx.font = isCurrent ? 'bold 12px Microsoft YaHei' : '11px Microsoft YaHei';
+                ctx.fillStyle = isCurrent ? 'white' : '#333';
+                ctx.fillText(step.label, x + boxW/2, y + 50);
+                
+                // 描述
+                ctx.font = '10px Arial';
+                ctx.fillStyle = isCurrent ? 'rgba(255,255,255,0.8)' : '#999';
+                ctx.fillText(step.desc, x + boxW/2, y + 65);
+            });
+            
+            // 步骤编号
+            steps.forEach((step, idx) => {
+                const x = startX + idx * (boxW + gapX) + boxW/2;
+                const y = topY - 15;
+                const isCurrent = idx === currentStep;
+                const isPast = idx < currentStep;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 12, 0, Math.PI * 2);
+                ctx.fillStyle = isCurrent ? '#667eea' : (isPast ? '#a3bffa' : '#e2e8f0');
+                ctx.fill();
+                
+                ctx.font = 'bold 11px Arial';
+                ctx.fillStyle = isCurrent || isPast ? 'white' : '#666';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(idx + 1, x, y);
+                ctx.textBaseline = 'alphabetic';
+            });
+            
+            // 底部信息框
+            const infoY = topY + boxH + 60;
+            ctx.fillStyle = '#f0f4ff';
+            ctx.beginPath();
+            ctx.roundRect(60, infoY, width - 120, 180, 12);
+            ctx.fill();
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 当前步骤详情
+            const stepInfo = [
+                { title: '信号输入', desc: '读取音频文件，获取采样率Fs和信号数据x[n]', formula: '' },
+                { title: '分帧处理', desc: '将信号分成重叠的短帧', formula: '帧长N，帧移Ra，重叠率 = (N-Ra)/N' },
+                { title: '加窗处理', desc: '对每帧乘以汉明窗，减少频谱泄漏', formula: 'w[n] = 0.54 - 0.46cos(2πn/N)' },
+                { title: 'FFT分析', desc: '对每帧进行FFT，得到频谱矩阵', formula: 'X[k] = |X[k]|e^(jφ[k])' },
+                { title: '修改频谱', desc: '使用频域插值或相位声码器修改', formula: 'φout = φout + ω·Rs （相位声码器）' },
+                { title: 'IFFT反变换', desc: '对修改后的频谱进行IFFT', formula: 'x[n] = IFFT(X\'[k])' },
+                { title: 'OLA重建', desc: '加窗后按帧移叠加重建', formula: 'y[n] = Σ w[n]·x_frame[n]' }
+            ];
+            
+            const info = stepInfo[currentStep];
+            
+            ctx.font = 'bold 18px Microsoft YaHei';
+            ctx.fillStyle = '#5a67d8';
+            ctx.textAlign = 'left';
+            ctx.fillText(`步骤 ${currentStep + 1}: ${info.title}`, 90, infoY + 35);
+            
+            ctx.font = '14px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.fillText(info.desc, 90, infoY + 65);
+            
+            if (info.formula) {
+                ctx.fillStyle = '#f7fafc';
+                ctx.beginPath();
+                ctx.roundRect(90, infoY + 85, width - 200, 40, 8);
+                ctx.fill();
+                ctx.strokeStyle = '#9f7aea';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.font = '14px Consolas, Monaco, monospace';
+                ctx.fillStyle = '#5a67d8';
+                ctx.fillText(info.formula, 110, infoY + 112);
+            }
+            
+            // 进度条
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.roundRect(90, infoY + 145, width - 200, 8, 4);
+            ctx.fill();
+            
+            ctx.fillStyle = '#667eea';
+            ctx.beginPath();
+            ctx.roundRect(90, infoY + 145, (width - 200) * ((currentStep + 1) / 7), 8, 4);
+            ctx.fill();
+            
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'right';
+            ctx.fillText(`${currentStep + 1} / 7`, width - 110, infoY + 155);
+            
+            requestAnimationFrame(animateWorkflow);
+        }
+
+        // ==================== 分帧动画 ====================
+        function animateFraming() {
+            const canvas = document.getElementById('framingCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width, height = canvas.height;
+            
+            framingFrame++;
+            const animT = (framingFrame % 180) / 180;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height);
+            
+            const leftX = 50;
+            
+            // 原始信号分帧
+            ctx.font = 'bold 14px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'left';
+            ctx.fillText('原始信号分帧（帧长N，帧移Ra = 25%N，75%重叠）', leftX, 25);
+            
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let i = 0; i < 700; i++) {
+                const t = (i / 700) * 15 * Math.PI;
+                const py = 85 + Math.sin(t + animT * 2) * 30;
+                if (i === 0) ctx.moveTo(leftX + i, py);
+                else ctx.lineTo(leftX + i, py);
+            }
+            ctx.stroke();
+            
+            const frameN = 140, hopSize = 35;
+            for (let f = 0; f < 5; f++) {
+                const frameX = leftX + f * hopSize;
+                
+                if (f > 0) {
+                    ctx.fillStyle = 'rgba(102, 126, 234, 0.2)';
+                    ctx.fillRect(frameX, 45, frameN - hopSize, 80);
+                }
+                
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(frameX, 45, frameN, 80);
+                
+                ctx.fillStyle = '#667eea';
+                ctx.font = '11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`帧${f+1}`, frameX + frameN/2, 135);
+            }
+            
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(leftX, 145);
+            ctx.lineTo(leftX + hopSize, 145);
+            ctx.stroke();
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText('Ra', leftX + hopSize/2, 157);
+            
+            ctx.beginPath();
+            ctx.moveTo(leftX, 165);
+            ctx.lineTo(leftX + frameN, 165);
+            ctx.stroke();
+            ctx.fillText('N', leftX + frameN/2, 177);
+            
+            // 拉伸
+            ctx.font = 'bold 13px Microsoft YaHei';
+            ctx.fillStyle = '#27ae60';
+            ctx.textAlign = 'left';
+            ctx.fillText('拉伸：输出帧移 Rs > Ra', leftX, 205);
+            
+            const stretchHop = 55;
+            for (let f = 0; f < 4; f++) {
+                const frameX = leftX + f * stretchHop;
+                
+                if (f > 0) {
+                    ctx.fillStyle = 'rgba(39, 174, 96, 0.15)';
+                    ctx.fillRect(frameX, 220, frameN - stretchHop, 60);
+                }
+                
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(frameX, 220, frameN, 60);
+            }
+            
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(leftX, 290);
+            ctx.lineTo(leftX + stretchHop, 290);
+            ctx.stroke();
+            ctx.fillStyle = '#27ae60';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Rs > Ra', leftX + stretchHop/2, 302);
+            
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('→ 信号变长，播放变慢', leftX + 280, 255);
+            
+            // 压缩
+            const rightSection = leftX + 450;
+            ctx.font = 'bold 13px Microsoft YaHei';
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillText('压缩：输出帧移 Rs < Ra', rightSection, 205);
+            
+            const compressHop = 20;
+            for (let f = 0; f < 6; f++) {
+                const frameX = rightSection + f * compressHop;
+                
+                if (f > 0) {
+                    ctx.fillStyle = 'rgba(231, 76, 60, 0.15)';
+                    ctx.fillRect(frameX, 220, frameN - compressHop, 60);
+                }
+                
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(frameX, 220, frameN, 60);
+            }
+            
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(rightSection, 290);
+            ctx.lineTo(rightSection + compressHop, 290);
+            ctx.stroke();
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Rs < Ra', rightSection + compressHop/2, 302);
+            
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('→ 信号变短，播放变快', rightSection + 180, 255);
+            
+            // 底部说明
+            ctx.fillStyle = '#f7fafc';
+            ctx.fillRect(leftX, height - 70, width - leftX * 2, 55);
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(leftX, height - 70, width - leftX * 2, 55);
+            
+            ctx.font = '13px Microsoft YaHei';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText('💡 变速因子 α = Rs / Ra    (α > 1 拉伸减速，α < 1 压缩加速)', width/2, height - 40);
+            
+            requestAnimationFrame(animateFraming);
+        }
+
+        // ==================== 页面加载初始化 ====================
+        window.addEventListener('load', function() {
+            drawDiscontinuityStatic();
+            drawSpectrum();
+            drawFreqInterpolation();
+            drawWindowing();
+            drawFusion();
+            animatePhaseVocoder();
+            animateWorkflow();
+            animateFraming();
+        });
+    </script>
+</body>
+</html>

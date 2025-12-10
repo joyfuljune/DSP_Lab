@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP 项目2 说明 - 音频变速实验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f6f8fa;
+            color: #24292e;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #d1d5da;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 45px;
+        }
+
+        /* 返回按钮 */
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background-color: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #5a67d8;
+        }
+
+        /* 标题样式 */
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            color: #667eea;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e1e4e8;
+            color: #5a67d8;
+        }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #764ba2;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* 段落 */
+        p {
+            margin-bottom: 16px;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 代码块样式 */
+        pre {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        code {
+            background-color: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+            color: #667eea;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            border: 1px solid #e1e4e8;
+        }
+
+        th, td {
+            padding: 10px 15px;
+            text-align: left;
+            border: 1px solid #e1e4e8;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-weight: 600;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        /* 引用块 */
+        blockquote {
+            padding: 10px 20px;
+            margin: 0 0 16px 0;
+            border-left: 4px solid #667eea;
+            background-color: #f6f8fa;
+            color: #586069;
+        }
+
+        /* 分隔线 */
+        hr {
+            height: 2px;
+            background-color: #e1e4e8;
+            border: none;
+            margin: 30px 0;
+        }
+
+        /* 检查清单样式 */
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        /* 信息框样式 */
+        .info-box {
+            background-color: #f0f4ff;
+            border: 1px solid #c8d4ff;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .warning-box {
+            background-color: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-left: 4px solid #f56565;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .success-box {
+            background-color: #f0fff4;
+            border: 1px solid #c6f6d5;
+            border-left: 4px solid #48bb78;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .tip-box {
+            background-color: #fffaf0;
+            border: 1px solid #feebc8;
+            border-left: 4px solid #ed8936;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        /* 文件树样式 */
+        .file-tree {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 14px;
+        }
+
+        /* 流程图样式 */
+        .flow-chart {
+            background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .flow-chart pre {
+            background: transparent;
+            border: none;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* 流程步骤 */
+        .flow-steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            color: #667eea;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* 页脚 */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e4e8;
+            text-align: center;
+            color: #6a737d;
+            font-size: 14px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+
+            pre {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+
+            .flow-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        /* 强调文本 */
+        strong {
+            font-weight: 600;
+            color: #24292e;
+        }
+
+        /* 链接样式 */
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .tag-basic {
+            background-color: #c6f6d5;
+            color: #276749;
+        }
+
+        .tag-advanced {
+            background-color: #fed7d7;
+            color: #c53030;
+        }
+
+        /* 对比表格 */
+        .comparison-table th:first-child {
+            width: 25%;
+        }
+
+        /* 图示容器 */
+        .diagram-container {
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .diagram-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        /* SVG 流程图样式 */
+        .svg-flow {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 980px; margin: 0 auto 20px;">
+        <a href="../index.html" class="back-button">← 返回实验主页</a>
+    </div>
+
+    <div class="container">
+        <h1>🎵 DSP 项目2 说明 - 音频变速实验</h1>
+        <p style="color: #764ba2; font-size: 1.1em; margin-bottom: 30px;">基于相位声码器的时间拉伸 (Phase Vocoder Time Stretching)</p>
+
+        <h2>📂 项目文件清单</h2>
+        <p>项目2提供实验文件如下：</p>
+        
+        <div class="file-tree">
+<pre>📁 项目文件夹
+├── 📁 audio/
+│   └── 🎵 orig.wav
+├── 📄 README.MD
+├── 📝 ex0_synthesize_all.m        <span style="color: #48bb78;">← 主函数(无需修改)</span>
+├── 📝 ex1_frame_signal.m          <span style="color: #667eea;">← 信号分帧</span>
+├── 📝 ex2_window_signal.m         <span style="color: #667eea;">← 加窗处理</span>
+├── 📝 ex3_compute_spectrum.m      <span style="color: #667eea;">← 频谱计算</span>
+├── 📝 ex4_modify_STFT.m           <span style="color: #48bb78;">← 频域插值法(基础)</span>
+├── 📝 ex5_reconstruct_signal.m    <span style="color: #667eea;">← 信号重建</span>
+├── 📝 ex6_Phase_Vocoder.m         <span style="color: #ed8936;">← 相位声码器(进阶)</span>
+├── 🔒 test_project2.p             <span style="color: #f56565;">← 加密测试文件</span>
+└── 📋 音频变速实验手册.html</pre>
+        </div>
+
+        <h3>文件说明</h3>
+        <ul>
+            <li><strong>ex0</strong>：主函数，<strong>无需修改</strong>，在完成 ex1-ex5（或ex6）后执行</li>
+            <li><strong>ex1-ex5</strong>：基础任务，文件中以 <code>?</code> 标记的地方需用合适的代码替换</li>
+            <li><strong>ex6</strong>：<span class="tag tag-advanced">进阶</span> 相位声码器方法，可选完成</li>
+            <li><strong>test_project2.p</strong>：加密文件，无法打开，运行该文件可检查代码是否正确</li>
+        </ul>
+
+
+
+        <hr>
+
+        <h2>🔄 项目流程</h2>
+
+        <h3>1️⃣ 阅读实验手册</h3>
+        <ul>
+            <li>阅读实验手册《<strong>音频变速实验 - 基于相位声码器的时间拉伸</strong>》</li>
+            <li>重点理解：STFT、时频对偶、频域插值、相位声码器原理</li>
+        </ul>
+
+        <h3>2️⃣ 设置MATLAB环境</h3>
+        <ul>
+            <li>修改 MATLAB <strong>当前文件夹路径</strong>为所有实验文件所在路径</li>
+            <li>确保 <code>audio</code> 文件夹与 <code>.m</code> 文件在同一目录</li>
+        </ul>
+
+        <h3>3️⃣ 完成代码编写</h3>
+        <div class="success-box">
+            <strong>基础任务：</strong>完成 ex1 - ex5，实现基于<strong>频域插值</strong>的音频变速
+        </div>
+        <div class="tip-box">
+            <strong>进阶任务：</strong>完成 ex6，实现<strong>相位声码器</strong>方法（可选）
+        </div>
+
+        <h3>4️⃣ 使用测试文件检查</h3>
+
+        <h4>a) 运行测试程序</h4>
+        <ul>
+            <li>在 MATLAB 中<strong>右键单击</strong> <code>test_project2.p</code> 文件</li>
+            <li>选择"<strong>运行</strong>"</li>
+        </ul>
+
+        <h4>b) 检查各个模块</h4>
+        <ul>
+            <li>输入 <strong>1-5</strong> 检查基础模块（ex1-ex5）</li>
+            <li>输入 <strong>6</strong> 检查进阶模块（ex6 相位声码器）</li>
+        </ul>
+
+        <h4>c) 查看结果</h4>
+        <ul>
+            <li>程序显示<strong>正确</strong>或<strong>错误</strong></li>
+            <li>如果出错，根据提示进行修改</li>
+        </ul>
+
+        <h3>5️⃣ 完成所有代码后提交实验</h3>
+
+        <h4>a) 生成加密成绩</h4>
+        <ul>
+            <li>运行 <code>test_project2.p</code> 文件</li>
+            <li>键入 <strong>0</strong> 后按回车键</li>
+            <li>分别输入<strong>学号</strong>和<strong>姓名</strong></li>
+            <li>程序将生成 <strong>128 位加密成绩</strong></li>
+        </ul>
+
+        <h4>b) 压缩文件</h4>
+        <ul>
+            <li>将所有文件压缩为 <strong>zip 文件</strong></li>
+            <li>重命名为：<strong>【学号_姓名】</strong>（例如：<code>20230001_张三.zip</code>）</li>
+        </ul>
+
+        <h4>c) 提交到学习通</h4>
+        <ul>
+            <li>提交 zip 文件作为<strong>附件</strong></li>
+            <li>在"<strong>答案</strong>"中填写<strong>加密成绩</strong></li>
+        </ul>
+
+
+
+        <hr>
+
+        <h2>⚠️ 项目备注</h2>
+
+        <div class="warning-box">
+            <h3>📌 重要提醒</h3>
+            
+            <ol>
+                <li><strong>截止时间</strong>
+                    <ul>
+                        <li>学习通成绩提交截止<strong>本次实验课结束</strong></li>
+                        <li>所有内容当堂完成，<strong>不可延期</strong></li>
+                    </ul>
+                </li>
+                <li><strong>分组要求</strong>
+                    <ul>
+                        <li>分组完成，每组<strong>不超过 6 人</strong></li>
+                    </ul>
+                </li>
+                <li><strong>独立提交</strong>
+                    <ul>
+                        <li>在学习通提交成绩需要<strong>独立完成</strong></li>
+                        <li>成绩按<strong>人次</strong>给分</li>
+                    </ul>
+                </li>
+                <li><strong>模块独立批改</strong>
+                    <ul>
+                        <li><code>test_project2.p</code> 对于每个 ex 的批改是<strong>独立的</strong></li>
+                        <li>如果有无法完成的部分<strong>可以跳过</strong></li>
+                        <li>ex6（相位声码器）为<strong>进阶任务</strong>，可选完成</li>
+                    </ul>
+                </li>
+                <li><strong>音频文件说明</strong>
+                    <ul>
+                        <li>项目中 <code>audio</code> 文件夹下提供了测试音频</li>
+                        <li>完成代码后可修改 <code>ex0_synthesize_all.m</code> 尝试其他音频</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h2>📚 实验模块说明</h2>
+
+        <h3>📌 ex0_synthesize_all.m - 主函数</h3>
+        <blockquote>
+            <strong>功能</strong>：调用所有子函数完成完整的音频变速流程（无需修改）
+        </blockquote>
+
+        <p><strong>参数设置</strong></p>
+        <ul>
+            <li><code>Lwin = 1024</code> - 帧长（窗函数大小）</li>
+            <li><code>Ra = 256</code> - 分析帧移</li>
+            <li><code>factor = 1.5</code> - 拉伸因子（>1 拉伸，<1 压缩）</li>
+            <li><code>method = 'interp'</code> - 方法选择（'interp' 或 'pv'）</li>
+        </ul>
+
+        <hr>
+
+        <h3>1️⃣ ex1_frame_signal - 信号分帧</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function frames = ex1_frame_signal(x, Lwin, Ra)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>将输入音频信号分成若干重叠的帧。每帧长度为Lwin，相邻帧之间的起始位置相差Ra（帧移）。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>x</code></td>
+                    <td>向量</td>
+                    <td>输入音频信号</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>帧长（如1024）</td>
+                </tr>
+                <tr>
+                    <td><code>Ra</code></td>
+                    <td>整数</td>
+                    <td>帧移（如256）</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>frames</code></td>
+                    <td>矩阵</td>
+                    <td>分帧后的信号 [Lwin × numFrames]</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 关键公式：</strong>
+            <ul>
+                <li>帧数 = floor((信号长度 - Lwin) / Ra) + 1</li>
+                <li>第n帧起始位置 = (n-1) × Ra + 1</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h3>2️⃣ ex2_window_signal - 加窗处理</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function windowed = ex2_window_signal(frames, Lwin)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对分帧后的信号施加Hann窗，减少频谱泄露。窗函数使帧边界平滑过渡到零。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>frames</code></td>
+                    <td>矩阵</td>
+                    <td>分帧后的信号</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>帧长</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>windowed</code></td>
+                    <td>矩阵</td>
+                    <td>加窗后的帧 [Lwin × numFrames]</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 提示：</strong>使用 <code>hann(Lwin)</code> 生成Hann窗，与每帧逐点相乘（点乘 <code>.*</code>）
+        </div>
+
+        <hr>
+
+        <h3>3️⃣ ex3_compute_spectrum - 频谱计算</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function spectrum = ex3_compute_spectrum(windowed)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对每一帧加窗后的信号进行FFT，得到复数频谱矩阵。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>windowed</code></td>
+                    <td>矩阵</td>
+                    <td>加窗后的帧</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>spectrum</code></td>
+                    <td>复数矩阵</td>
+                    <td>FFT频谱 [Lwin × numFrames]</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 提示：</strong>使用 <code>fft()</code> 对每列进行傅里叶变换
+        </div>
+
+        <hr>
+
+        <h3>4️⃣ ex4_modify_STFT - 频域插值法 <span class="tag tag-basic">基础</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function newSpectrum = ex4_modify_STFT(spectrum, factor)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>使用频域插值法修改频谱，实现时间拉伸。通过对帧进行插值改变帧数。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>spectrum</code></td>
+                    <td>复数矩阵</td>
+                    <td>原始频谱</td>
+                </tr>
+                <tr>
+                    <td><code>factor</code></td>
+                    <td>标量</td>
+                    <td>拉伸因子</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>newSpectrum</code></td>
+                    <td>复数矩阵</td>
+                    <td>插值后的频谱</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 关键步骤：</strong>
+            <ol>
+                <li>计算新帧数 = floor(原帧数 × factor)</li>
+                <li>使用 <code>interp1()</code> 对每个频率bin进行插值</li>
+                <li>重建时使用<strong>原始帧移Ra</strong></li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h3>5️⃣ ex5_reconstruct_signal - 信号重建</h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function y = ex5_reconstruct_signal(spectrum, Lwin, Rs)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>使用OLA（Overlap-Add）方法重建时域信号。对每帧频谱进行IFFT，加窗后按帧移叠加。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>spectrum</code></td>
+                    <td>复数矩阵</td>
+                    <td>修改后的频谱</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>帧长</td>
+                </tr>
+                <tr>
+                    <td><code>Rs</code></td>
+                    <td>整数</td>
+                    <td>合成帧移</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>y</code></td>
+                    <td>向量</td>
+                    <td>重建的时域信号</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 关键步骤：</strong>
+            <ol>
+                <li>输出长度 = (帧数-1) × Rs + Lwin</li>
+                <li>对每帧：IFFT → 加窗(Hamming) → 叠加到输出</li>
+                <li>使用 <code>ifft(..., 'symmetric')</code> 确保输出为实数</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h3>6️⃣ ex6_Phase_Vocoder - 相位声码器 <span class="tag tag-advanced">进阶</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function newSpectrum = ex6_Phase_Vocoder(spectrum, Ra, Rs, Lwin)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>使用相位声码器方法修改频谱。保持幅度不变，通过相位调整实现帧间连续。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>spectrum</code></td>
+                    <td>复数矩阵</td>
+                    <td>原始频谱</td>
+                </tr>
+                <tr>
+                    <td><code>Ra</code></td>
+                    <td>整数</td>
+                    <td>分析帧移</td>
+                </tr>
+                <tr>
+                    <td><code>Rs</code></td>
+                    <td>整数</td>
+                    <td>合成帧移</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>帧长</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>newSpectrum</code></td>
+                    <td>复数矩阵</td>
+                    <td>相位调整后的频谱</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-box">
+            <strong>🔬 相位声码器核心公式：</strong>
+            <ol>
+                <li>理论角频率：Ω(k) = 2πk / Lwin</li>
+                <li>相位差：Δφ = φ_current - φ_prev - Ω × Ra</li>
+                <li>相位展开：Δφ_wrapped = mod(Δφ + π, 2π) - π</li>
+                <li>频率偏移：Δω = Δφ_wrapped / Ra</li>
+                <li>真实频率：ω_true = Ω + Δω</li>
+                <li>输出相位累积：φ_out = φ_out + ω_true × Rs</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h2>✅ 检查清单</h2>
+
+        <p>在提交前，请确认：</p>
+
+        <ul class="checklist">
+            <li>所有 ex1-ex5 文件中的 <code>?</code> 都已替换为正确代码</li>
+            <li>运行 <code>test_project2.p</code> 输入1-5全部通过</li>
+            <li>（可选）ex6 相位声码器代码完成并通过测试</li>
+            <li>运行 <code>ex0_synthesize_all.m</code> 能够正常执行</li>
+            <li>压缩文件命名为【学号_姓名.zip】</li>
+            <li>zip文件中包含所有必需文件</li>
+            <li>已获得128位加密成绩</li>
+            <li>已在学习通提交zip文件和加密成绩</li>
+        </ul>
+
+        <hr>
+
+        <h2>📞 常见问题</h2>
+
+        <div class="info-box">
+            <p><strong>Q1: 频域插值法和相位声码器有什么区别？</strong></p>
+            <p><strong>A:</strong></p>
+            <ul>
+                <li><strong>频域插值法</strong>：通过 interp1 对帧进行插值，改变帧数，重建时使用原始帧移Ra</li>
+                <li><strong>相位声码器</strong>：保持幅度不变，只调整相位，重建时使用新帧移Rs</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q2: 为什么要使用 ifft(..., 'symmetric')？</strong></p>
+            <p><strong>A:</strong> 这个选项告诉MATLAB输入满足共轭对称性，输出应该是纯实数。这避免了由于数值误差产生的小虚部。</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q3: 相位展开公式 mod(Δφ+π, 2π)-π 是什么意思？</strong></p>
+            <p><strong>A:</strong> 相位具有2π周期性，这个公式将任意相位差归一化到 [-π, π] 范围内，避免相位跳变。</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q4: 如何调试代码？</strong></p>
+            <p><strong>A:</strong> 使用以下调试方法：</p>
+
+            <p><strong>1. 检查维度</strong></p>
+            <pre><code>% 分帧后应该是 [Lwin × numFrames]
+size(frames)
+
+% 频谱矩阵应该是复数
+whos spectrum</code></pre>
+
+            <p><strong>2. 可视化调试</strong></p>
+            <pre><code>% 查看频谱幅度
+imagesc(abs(spectrum));
+colorbar;
+title('STFT幅度谱');
+
+% 对比原始和重建波形
+figure;
+subplot(2,1,1); plot(x(1:5000)); title('原始');
+subplot(2,1,2); plot(y(1:5000)); title('重建');</code></pre>
+
+            <p><strong>3. 听音频结果</strong></p>
+            <pre><code>% 播放原始音频
+sound(x, fs);
+
+% 播放变速后音频
+sound(y, fs);</code></pre>
+        </div>
+
+        <hr>
+
+        <h2>🎯 学习目标</h2>
+
+        <p>通过本实验，你将掌握：</p>
+
+        <ol>
+            <li><strong>STFT</strong>（短时傅里叶变换）的原理和实现</li>
+            <li><strong>时频对偶关系</strong>的理解</li>
+            <li><strong>频域插值法</strong>实现音频变速</li>
+            <li><strong>相位声码器</strong>的核心原理（进阶）</li>
+            <li><strong>OLA</strong>（重叠相加）信号重建方法</li>
+            <li><strong>音高保持</strong>的时间拉伸技术</li>
+        </ol>
+
+        <hr>
+
+        <div style="text-align: center; font-size: 24px; margin: 30px 0;">
+            <strong>祝实验顺利！</strong> 🎵🎉
+        </div>
+
+        <footer>
+            <p><strong>南京工业大学浦江学院 | 计算机与通信工程专业 | 通信工程 | DSP课程实践</strong></p>
+            <p style="margin-top: 10px; color: #999;">音频变速实验 - 基于相位声码器的时间拉伸</p>
+        </footer>
+    </div>
+</body>
+</html>
