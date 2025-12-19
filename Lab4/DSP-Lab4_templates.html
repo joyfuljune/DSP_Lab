@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DSP Lab 4 实验模板</title>
+    <style>
+        body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .control-panel {
+            position: sticky; top: 0; z-index: 100;
+            background: white; padding: 15px; margin-bottom: 20px;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .control-btn {
+            background: #2d57a4; color: white; border: none; padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;
+        }
+        .control-btn:hover { background: #1e3a6e; }
+        .control-btn.secondary { background: #6c757d; }
+
+        .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        
+        .file-header { 
+            background: #2d57a4; color: white; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; user-select: none;
+        }
+        .file-header:hover { background: #3b6bbd; }
+        
+        .file-title { font-weight: bold; display: flex; align-items: center; }
+        .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
+        .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
+        
+        .file-content { display: block; }
+        .file-block.collapsed .file-content { display: none; }
+
+        .copy-btn { background: #5ca353; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .copy-btn:hover { background: #4a8842; }
+
+        pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        
+        .comment { color: #228b22; font-style: italic; }
+        .todo-tag { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; font-size: 0.9em; margin-right: 5px; }
+
+        .info-banner { background: #e7f3ff; border-left: 4px solid #2d57a4; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .warning-banner { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2 style="margin:0; color:#2d57a4;">📝 DSP Lab 4 - 学生实验模板</h2>
+            <div>
+                <button class="control-btn" onclick="expandAll()">全部展开</button>
+                <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <strong>📌 编程规范说明：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>代码中已预定义了关键变量（如 <code>N_butt = [];</code>），<strong>请勿修改变量名</strong>。</li>
+                <li>请在 <code>% TODO</code> 注释指引下编写代码，将计算结果赋值给对应的变量。</li>
+                <li>每个脚本末尾包含<strong>自检代码</strong>，运行脚本时若看到红字警告，说明变量未正确赋值。</li>
+            </ul>
+        </div>
+        
+        <div class="warning-banner">
+            <strong>⚠️ 提交文件列表：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li>exercise1_butterworth.m</li>
+                <li>exercise2_chebyshev.m</li>
+                <li>exercise3_elliptic.m</li>
+                <li>exercise4_analysis.m (思考题)</li>
+            </ul>
+        </div>
+
+        <!-- Exercise 1 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise1_butterworth.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code1">%% 练习一：Butterworth 数字低通滤波器设计
+% 文件名: exercise1_butterworth.m
+% 学号：______  姓名：______
+
+%% 设计指标
+Fs = 80000;     <span class="comment">% 采样频率 80 kHz</span>
+Fp = 4000;      <span class="comment">% 通带边界 4 kHz</span>
+Fst = 20000;    <span class="comment">% 阻带边界 20 kHz</span>
+Rp = 0.5;       <span class="comment">% 通带最大衰减 0.5 dB</span>
+Rs = 45;        <span class="comment">% 阻带最小衰减 45 dB</span>
+
+%% Step 1: 频率归一化
+<span class="comment">% <span class="todo-tag">TODO</span> 归一化到Nyquist频率</span>
+Wp = [];
+Ws = [];
+
+%% Step 2: 确定滤波器阶次
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 buttord 函数</span>
+N_butt = [];
+Wn_butt = [];
+
+fprintf('Butterworth滤波器: N = %d, Wn = %.6f\n', N_butt, Wn_butt);
+
+%% Step 3: 设计数字滤波器
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 butter 函数</span>
+num_d = [];
+den_d = [];
+
+%% Step 4: 计算频率响应
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 freqz 函数</span>
+H_butt = [];
+f = [];
+
+%% Step 5: 绘图
+figure('Name', 'Butterworth滤波器');
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制幅度响应和相位响应</span>
+
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  ========================================
+vars_chk = {'N_butt', 'Wn_butt', 'num_d', 'den_d', 'H_butt'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空：%s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习一变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 2 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise2_chebyshev.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2">%% 练习二：Chebyshev I 型数字低通滤波器设计
+% 文件名: exercise2_chebyshev.m
+% 学号：______  姓名：______
+
+%% 设计指标 (与练习一相同)
+Fs = 80000; Fp = 4000; Fst = 20000; Rp = 0.5; Rs = 45;
+
+%% Step 1: 频率归一化
+<span class="comment">% <span class="todo-tag">TODO</span> 归一化到Nyquist频率</span>
+Wp = [];
+Ws = [];
+
+%% Step 2: 确定滤波器阶次
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 cheb1ord 函数</span>
+N_cheb = [];
+Wn_cheb = [];
+
+fprintf('Chebyshev I 滤波器: N = %d, Wn = %.6f\n', N_cheb, Wn_cheb);
+
+%% Step 3: 设计数字滤波器
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 cheby1 函数</span>
+num_d_cheb = [];
+den_d_cheb = [];
+
+%% Step 4: 计算频率响应
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 freqz 函数</span>
+H_cheb = [];
+f = [];
+
+%% Step 5: 绘图
+figure('Name', 'Chebyshev I 滤波器');
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制幅度响应和相位响应</span>
+
+
+%% Step 6: 与Butterworth对比
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制对比图，比较阶数差异</span>
+
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  ========================================
+vars_chk = {'N_cheb', 'Wn_cheb', 'num_d_cheb', 'den_d_cheb', 'H_cheb'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空：%s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习二变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 3 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise3_elliptic.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code3">%% 练习三：Elliptic (Cauer) 数字低通滤波器设计
+% 文件名: exercise3_elliptic.m
+% 学号：______  姓名：______
+
+%% 设计指标 (与练习一、二相同)
+Fs = 80000; Fp = 4000; Fst = 20000; Rp = 0.5; Rs = 45;
+
+%% Step 1: 频率归一化
+<span class="comment">% <span class="todo-tag">TODO</span> 归一化到Nyquist频率</span>
+Wp = [];
+Ws = [];
+
+%% Step 2: 确定滤波器阶次
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 ellipord 函数</span>
+N_ellip = [];
+Wn_ellip = [];
+
+fprintf('Elliptic 滤波器: N = %d, Wn = %.6f\n', N_ellip, Wn_ellip);
+
+%% Step 3: 设计数字滤波器
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 ellip 函数</span>
+num_d_ellip = [];
+den_d_ellip = [];
+
+%% Step 4: 计算频率响应
+<span class="comment">% <span class="todo-tag">TODO</span> 使用 freqz 函数</span>
+H_ellip = [];
+f = [];
+
+%% Step 5: 绘图
+figure('Name', 'Elliptic 滤波器');
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制幅度响应和相位响应</span>
+
+
+%% Step 6: 三种滤波器综合对比
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制三种滤波器对比图，输出阶数对比</span>
+
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  ========================================
+vars_chk = {'N_ellip', 'Wn_ellip', 'num_d_ellip', 'den_d_ellip', 'H_ellip'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空：%s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习三变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 4 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 exercise4_analysis.m
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code4">%% 练习四：分析与思考题
+% 文件名: exercise4_analysis.m
+% 学号：______  姓名：______
+
+%% 思考题 A1: 音频处理系统中的滤波器选择
+fprintf('========== A1: 音频处理系统 ==========\n\n');
+
+fprintf('场景: 设计一个音频均衡器的低通滤波器\n\n');
+
+<span class="comment">% <span class="todo-tag">TODO</span> 填写推荐的滤波器类型及理由</span>
+fprintf('推荐选择: ______ 滤波器\n\n');
+fprintf('理由:\n');
+fprintf('1. ______\n');
+fprintf('2. ______\n');
+fprintf('3. ______\n\n');
+
+%% 思考题 A2: 通信系统中的滤波器选择
+fprintf('========== A2: 通信系统 ==========\n\n');
+
+fprintf('场景: 设计一个多路复用系统的信道选择滤波器\n\n');
+
+<span class="comment">% <span class="todo-tag">TODO</span> 填写推荐的滤波器类型及理由</span>
+fprintf('推荐选择: ______ 滤波器\n\n');
+fprintf('理由:\n');
+fprintf('1. ______\n');
+fprintf('2. ______\n');
+fprintf('3. ______\n\n');
+
+%% 思考题 A3: 实时系统的滤波器设计考量
+fprintf('========== A3: 实时系统 ==========\n\n');
+
+fprintf('场景: 嵌入式系统实时信号处理\n\n');
+
+<span class="comment">% <span class="todo-tag">TODO</span> 分析关键考量因素</span>
+fprintf('关键考量因素:\n\n');
+fprintf('1. ______\n');
+fprintf('2. ______\n');
+fprintf('3. ______\n');
+fprintf('4. ______\n\n');
+
+fprintf('实际建议:\n');
+fprintf('______\n\n');
+</pre>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        function toggleBlock(header) { header.parentElement.classList.toggle('collapsed'); }
+        function expandAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.remove('collapsed')); }
+        function collapseAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.add('collapsed')); }
+        function copyCode(event, id) {
+            event.stopPropagation();
+            const el = document.createElement('textarea');
+            el.value = document.getElementById(id).innerText;
+            document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            const btn = event.target; 
+            btn.textContent = '✓ 已复制'; 
+            btn.style.background = '#28a745';
+            setTimeout(() => { 
+                btn.textContent = '复制代码'; 
+                btn.style.background = '#5ca353'; 
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

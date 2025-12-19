@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 4 - IIR滤波器设计 (2025年修订版)</title>
+    
+    <!-- MathJax for mathematical formulas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            CommonHTML: { scale: 110 },
+            "HTML-CSS": { scale: 110 }
+        });
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            line-height: 1.8;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 50%, #5ca353 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            border-bottom: 5px solid #7dadff;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-top: 10px;
+        }
+
+        header .institution {
+            font-size: 0.95em;
+            margin-top: 15px;
+            opacity: 0.9;
+            border-top: 2px solid rgba(255,255,255,0.3);
+            padding-top: 15px;
+        }
+
+        nav {
+            background: #f5f7fa;
+            padding: 20px 40px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 3px solid #7dadff;
+        }
+
+        nav a {
+            color: #2d57a4;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s;
+            font-size: 0.95em;
+            font-weight: 500;
+            background: white;
+            border: 2px solid #7dadff;
+        }
+
+        nav a:hover {
+            background: #7dadff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(125, 173, 255, 0.4);
+        }
+
+        .content { padding: 50px; }
+
+        section {
+            margin-bottom: 60px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #2d57a4;
+            font-size: 2em;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #7dadff;
+            font-weight: bold;
+        }
+
+        h3 {
+            color: #608de0;
+            font-size: 1.6em;
+            margin: 30px 0 20px 0;
+            font-weight: bold;
+        }
+
+        h4 {
+            color: #2d57a4;
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+            line-height: 1.9;
+        }
+        
+        code {
+            background-color: #e8eef8;
+            color: #2d57a4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95em;
+        }
+        
+        .question-item h4 {
+            color: #608de0;
+            font-size: 1.2em;
+            margin-top: 20px;
+            border-left: 4px solid #7dadff;
+            padding-left: 10px;
+        }
+        
+        .analysis-box {
+            background: #fff8e1;
+            border-left: 5px solid #fbc02d;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .analysis-box h4 {
+            color: #c77700;
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 5px solid #608de0;
+            padding: 18px 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .formula-box p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+            border-left: 5px solid #5ca353;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #ffebee 0%, #fff5f7 100%);
+            border-left: 5px solid #912d32;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .prereq-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f0f7ff 100%);
+            border-left: 5px solid #1976d2;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .prereq-box h4 {
+            color: #1565c0;
+            margin-top: 0;
+        }
+        
+        .case-study-box {
+            background: linear-gradient(135deg, #fce4ec 0%, #fff5f7 100%);
+            border: 2px solid #ec407a;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(236, 64, 122, 0.15);
+        }
+        
+        .case-study-box h4 {
+            color: #c2185b;
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+
+        .code-block {
+            background: #2b2b2b;
+            color: #d4d4d4;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.7;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid #608de0;
+        }
+        
+        .code-block code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .code-block::before {
+            content: 'MATLAB';
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            color: #7dadff;
+            font-size: 0.85em;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+
+        .code-line { display: block; }
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-function { color: #dcdcaa; }
+        .code-string { color: #ce9178; }
+        .code-number { color: #b5cea8; }
+
+        .exercise-box {
+            background: linear-gradient(135deg, #f0f7ff 0%, #f5f9ff 100%);
+            border: 3px solid #7dadff;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 3px 15px rgba(125, 173, 255, 0.2);
+        }
+
+        .exercise-box h3 { color: #2d57a4; margin-top: 0; margin-bottom: 25px; }
+        
+        .plot-container {
+            background: #fdfdfd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e0e6f0;
+            text-align: center;
+        }
+        
+        .figure-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .figure-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .figure-caption {
+            margin-top: 15px;
+            color: #666;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+        
+        svg { max-width: 100%; height: auto; }
+
+        .plot-container h4 { margin-top: 0; margin-bottom: 15px; text-align: center; color: #2d57a4; }
+        .plot-container svg { max-width: 100%; height: auto; }
+
+        .question-item { margin: 20px 0; padding-left: 15px; }
+        .question-number {
+            display: inline-block; background: #608de0; color: white;
+            padding: 4px 12px; border-radius: 15px; font-weight: bold;
+            margin-right: 8px; font-size: 0.9em; min-width: 30px; text-align: center;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border: 3px dashed #5ca353;
+            border-radius: 15px; padding: 30px; margin: 30px 0; text-align: center;
+        }
+
+        .canvas-container {
+            background: white; border-radius: 10px; padding: 15px; margin: 20px 0;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1); border: 2px solid #7dadff; display: inline-block;
+        }
+
+        canvas { max-width: 100%; height: auto; border: 1px solid #e0e0e0; border-radius: 8px; }
+
+        .control-panel { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; margin: 20px 0; gap: 30px; }
+        .control-group { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        label { font-weight: bold; color: #2d57a4; font-size: 0.95em; }
+        input[type="range"] { width: 200px; accent-color: #608de0; }
+        select {
+            padding: 10px; border-radius: 5px; border: 2px solid #ddd;
+            font-size: 14px; font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: white; cursor: pointer;
+        }
+
+        button {
+            background: linear-gradient(135deg, #608de0 0%, #7dadff 100%); color: white; border: none;
+            padding: 12px 25px; border-radius: 25px; cursor: pointer; font-size: 1em;
+            font-weight: bold; transition: all 0.3s; box-shadow: 0 3px 10px rgba(96, 141, 224, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(96, 141, 224, 0.5);
+        }
+
+        footer {
+            background: linear-gradient(135deg, #2d57a4 0%, #113a85 100%); color: white;
+            text-align: center; padding: 30px; font-size: 0.95em;
+        }
+        
+        footer p { margin: 5px 0; }
+
+        .badge {
+            display: inline-block; padding: 6px 14px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold; margin-right: 10px;
+        }
+        .badge-theory { background: #608de0; color: white; }
+        .badge-practice { background: #5ca353; color: white; }
+        .badge-review { background: #9c27b0; color: white; }
+        strong { color: #2d57a4; font-weight: 600; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover { background: #f5f7fa; }
+        tr:last-child td { border-bottom: none; }
+        
+        ul, ol {
+            margin: 20px 0 20px 30px;
+            line-height: 2;
+        }
+
+        li { margin-bottom: 10px; }
+        
+        .appendix-section {
+            background: linear-gradient(135deg, #f3e5f5 0%, #faf5fc 100%);
+            border: 2px solid #9c27b0;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+        
+        .appendix-section h3 {
+            color: #7b1fa2;
+        }
+        
+        .comparison-highlight {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .comparison-card {
+            flex: 1;
+            min-width: 280px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid #608de0;
+        }
+        
+        .comparison-card.iim { border-top-color: #f57c00; }
+        .comparison-card.blt { border-top-color: #2e7d32; }
+        
+        .comparison-card h5 {
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+        }
+        
+        @media (max-width: 768px) {
+            .content { padding: 30px 20px; }
+            input[type="range"] { width: 100%; }
+            .canvas-container { width: 100%; }
+        }
+
+        .mjx-chtml { font-size: 115% !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Lab 4 - IIR滤波器设计</h1>
+            <div class="subtitle">数字信号处理实验 | 2025年修订版</div>
+            <div class="institution">南京工业大学浦江学院 计算机与通信工程学院 | 通信工程专业</div>
+        </header>
+
+        <nav>
+            <a href="#objective">实验目的</a>
+            <a href="#review">知识衔接</a>
+            <a href="#theory">模拟滤波器</a>
+            <a href="#demo">交互演示</a>
+            <a href="#example">示例讲解</a>
+            <a href="#exercise1">练习一</a>
+            <a href="#exercise2">练习二</a>
+            <a href="#exercise3">练习三</a>
+            <a href="#exercise4">练习四</a>
+            <a href="#appendix">附录</a>
+        </nav>
+
+        <div class="content">
+            <!-- 实验目的 -->
+            <section id="objective">
+                <h2><span class="badge badge-theory">理论</span>实验目的</h2>
+                
+                <div class="case-study-box">
+                    <h4>🎵 生活场景：为什么需要学习模拟滤波器？</h4>
+                    <p>想象你正在开发一款音乐App的均衡器功能。用户滑动一个滑块，就能增强低音或高音。你在课堂上学到了<strong>脉冲响应不变法(IIM)</strong>和<strong>双线性变换法(BLT)</strong>可以设计IIR数字滤波器，但是……</p>
+                    <ul>
+                        <li><strong>问题来了</strong>：这两种方法的输入都是一个"模拟滤波器 $H_a(s)$"，可是这个模拟滤波器从哪里来？</li>
+                        <li><strong>课堂回顾</strong>：课堂讲过 $s = \frac{2}{T}\frac{z-1}{z+1}$ (BLT) 或 $h[n] = Th_a(nT)$ (IIM)，但 $H_a(s)$ 的设计公式太复杂了</li>
+                        <li><strong>本实验目标</strong>：学会使用MATLAB快速设计模拟滤波器，完成IIR设计的"最后一块拼图"</li>
+                    </ul>
+                </div>
+                
+                <p>在本实验中，我们将<strong>补充课堂未详细展开的模拟滤波器设计</strong>，并使用MATLAB完成完整的IIR滤波器设计流程。通过本实验，你将：</p>
+                <ul>
+                    <li><strong>理解为什么要"借用"模拟滤波器</strong>：直接设计数字IIR滤波器需要解非线性方程，而模拟滤波器已有百年成熟理论</li>
+                    <li><strong>掌握三种经典模拟滤波器的特性</strong>：Butterworth（最平坦）、Chebyshev（等波纹）、Elliptic（最高效）</li>
+                    <li><strong>学会使用MATLAB函数设计模拟原型</strong>：<code>buttord</code>、<code>butter</code>、<code>cheby1</code>、<code>ellip</code>等</li>
+                    <li><strong>熟练应用双线性变换</strong>：将课堂学到的BLT公式用<code>bilinear</code>函数实现</li>
+                    <li><strong>深入理解频率预翘曲</strong>：这是课堂公式背后的物理意义</li>
+                </ul>
+            </section>
+
+            <!-- 知识衔接：复习IIM和BLT -->
+            <section id="review">
+                <h2><span class="badge badge-review">复习</span>知识衔接：从课堂到实验</h2>
+                
+                <h3>2.1 你已经学会的知识</h3>
+                <div class="prereq-box">
+                    <h4>📚 课堂知识回顾</h4>
+                    <p>在理论课上，你已经学习了两种将模拟滤波器转换为数字滤波器的方法：</p>
+                    
+                    <div class="comparison-highlight">
+                        <div class="comparison-card iim">
+                            <h5 style="color: #e65100;">脉冲响应不变法 (IIM)</h5>
+                            <p><strong>核心思想</strong>：让数字滤波器的脉冲响应等于模拟滤波器脉冲响应的采样值</p>
+                            <div class="formula-box" style="margin: 10px 0;">
+                                $$h[n] = T \cdot h_a(nT)$$
+                            </div>
+                            <p><strong>优点</strong>：时域特性保持良好</p>
+                            <p><strong>缺点</strong>：<span style="color: #d32f2f;">有频率混叠问题</span></p>
+                        </div>
+                        
+                        <div class="comparison-card blt">
+                            <h5 style="color: #2e7d32;">双线性变换法 (BLT)</h5>
+                            <p><strong>核心思想</strong>：用代数变换将s平面映射到z平面</p>
+                            <div class="formula-box" style="margin: 10px 0;">
+                                $$s = \frac{2}{T} \cdot \frac{z-1}{z+1}$$
+                            </div>
+                            <p><strong>优点</strong>：<span style="color: #2e7d32;">无频率混叠</span></p>
+                            <p><strong>缺点</strong>：有频率翘曲（需预翘曲补偿）</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>2.2 你需要补充的知识</h3>
+                <div class="warning-box">
+                    <h4>❓ 缺失的一环：模拟滤波器 $H_a(s)$ 从哪里来？</h4>
+                    <p>课堂上，直接给出了模拟滤波器的传递函数，例如：</p>
+                    <div class="formula-box">
+                        $$H_a(s) = \frac{1}{s^2 + 1.414s + 1} \quad \text{（2阶Butterworth低通）}$$
+                    </div>
+                    <p>但实际工程中，我们需要根据<strong>设计指标</strong>（通带、阻带、衰减要求）来<strong>自动计算</strong>这个 $H_a(s)$。</p>
+                    <p><strong>问题</strong>：手工推导 Butterworth/Chebyshev/Elliptic 滤波器的传递函数需要：</p>
+                    <ul>
+                        <li>复杂的极点分布计算（涉及复数运算）</li>
+                        <li>切比雪夫多项式或椭圆函数的求解</li>
+                        <li>大量的代数运算，容易出错</li>
+                    </ul>
+                    <p><strong>解决方案</strong>：使用MATLAB的 <code>butter</code>、<code>cheby1</code>、<code>ellip</code> 函数自动完成！</p>
+                </div>
+                
+                <h3>2.3 本实验的完整流程</h3>
+                <div class="figure-container">
+                    <svg width="900" height="280" viewBox="0 0 900 280">
+                        <title>IIR滤波器设计完整流程</title>
+                        <rect width="900" height="280" fill="#fafafa"/>
+                        
+                        <!-- 标题 -->
+                        <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2d57a4">
+                            IIR滤波器设计完整流程（课堂 + 本实验）
+                        </text>
+                        
+                        <!-- 流程图 -->
+                        <g transform="translate(30, 60)">
+                            <!-- 步骤1 -->
+                            <rect x="0" y="40" width="130" height="90" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+                            <text x="65" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#1565c0">Step 1</text>
+                            <text x="65" y="90" text-anchor="middle" font-size="12" fill="#333">设计指标</text>
+                            <text x="65" y="108" text-anchor="middle" font-size="11" fill="#666">Fp, Fst, Rp, Rs</text>
+                            
+                            <!-- 箭头1 -->
+                            <path d="M 130 85 L 160 85" stroke="#608de0" stroke-width="2" marker-end="url(#arrowblue)"/>
+                            
+                            <!-- 步骤2 (本实验重点) -->
+                            <rect x="160" y="20" width="160" height="130" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="3"/>
+                            <text x="240" y="45" text-anchor="middle" font-size="11" fill="#e65100" font-weight="bold">⭐ 本实验重点</text>
+                            <text x="240" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#e65100">Step 2: 模拟原型</text>
+                            <text x="240" y="92" text-anchor="middle" font-size="11" fill="#333">• 预翘曲频率</text>
+                            <text x="240" y="110" text-anchor="middle" font-size="11" fill="#333">• 计算阶次N</text>
+                            <text x="240" y="128" text-anchor="middle" font-size="11" fill="#333">• 设计Ha(s)</text>
+                            
+                            <!-- 箭头2 -->
+                            <path d="M 320 85 L 350 85" stroke="#608de0" stroke-width="2" marker-end="url(#arrowblue)"/>
+                            
+                            <!-- 步骤3 (课堂已学) -->
+                            <rect x="350" y="40" width="150" height="90" rx="10" fill="#e8f5e9" stroke="#43a047" stroke-width="2"/>
+                            <text x="425" y="60" text-anchor="middle" font-size="11" fill="#2e7d32" font-weight="bold">课堂已学 ✓</text>
+                            <text x="425" y="82" text-anchor="middle" font-size="13" font-weight="bold" fill="#2e7d32">Step 3: BLT</text>
+                            <text x="425" y="105" text-anchor="middle" font-size="11" fill="#333">s → z 变换</text>
+                            <text x="425" y="120" text-anchor="middle" font-size="10" fill="#666">bilinear()</text>
+                            
+                            <!-- 箭头3 -->
+                            <path d="M 500 85 L 530 85" stroke="#608de0" stroke-width="2" marker-end="url(#arrowblue)"/>
+                            
+                            <!-- 步骤4 -->
+                            <rect x="530" y="40" width="130" height="90" rx="10" fill="#f3e5f5" stroke="#8e24aa" stroke-width="2"/>
+                            <text x="595" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b1fa2">Step 4</text>
+                            <text x="595" y="90" text-anchor="middle" font-size="12" fill="#333">数字滤波器</text>
+                            <text x="595" y="108" text-anchor="middle" font-size="11" fill="#666">H(z)</text>
+                            
+                            <!-- 箭头4 -->
+                            <path d="M 660 85 L 690 85" stroke="#608de0" stroke-width="2" marker-end="url(#arrowblue)"/>
+                            
+                            <!-- 步骤5 -->
+                            <rect x="690" y="40" width="130" height="90" rx="10" fill="#e0f7fa" stroke="#00acc1" stroke-width="2"/>
+                            <text x="755" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#00838f">Step 5</text>
+                            <text x="755" y="90" text-anchor="middle" font-size="12" fill="#333">验证与分析</text>
+                            <text x="755" y="108" text-anchor="middle" font-size="11" fill="#666">freqz(), filter()</text>
+                        </g>
+                        
+                        <!-- 箭头标记定义 -->
+                        <defs>
+                            <marker id="arrowblue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#608de0"/>
+                            </marker>
+                        </defs>
+                        
+                        <!-- 底部说明 -->
+                        <g transform="translate(50, 210)">
+                            <rect x="0" y="0" width="800" height="50" rx="8" fill="#f5f5f5" stroke="#ddd"/>
+                            <text x="400" y="20" text-anchor="middle" font-size="13" fill="#333">
+                                <tspan font-weight="bold" fill="#e65100">本实验核心任务：</tspan>
+                                学会使用 MATLAB 函数（buttord, butter, cheby1, ellip）自动设计模拟原型滤波器
+                            </text>
+                            <text x="400" y="40" text-anchor="middle" font-size="12" fill="#666">
+                                这是课堂理论知识的实践补充，解决"模拟滤波器从哪里来"的问题
+                            </text>
+                        </g>
+                    </svg>
+                    <p class="figure-caption">图1: IIR滤波器设计完整流程（橙色框为本实验重点）</p>
+                </div>
+            </section>
+
+            <!-- 模拟滤波器理论 -->
+            <section id="theory">
+                <h2><span class="badge badge-theory">理论</span>经典模拟滤波器</h2>
+                
+                <h3>3.1 为什么要"借用"模拟滤波器？</h3>
+                
+                <div class="case-study-box">
+                    <h4>📻 历史背景：站在巨人的肩膀上</h4>
+                    <p>在数字信号处理诞生之前的100多年里，电气工程师们已经发展出了成熟的<strong>模拟滤波器理论</strong>：</p>
+                    <ul>
+                        <li><strong>1930年</strong>：Stephen Butterworth 发表最大平坦滤波器理论</li>
+                        <li><strong>1931年</strong>：Pafnuty Chebyshev 的等波纹逼近理论被应用于滤波器</li>
+                        <li><strong>1958年</strong>：Wilhelm Cauer 完善了椭圆滤波器理论</li>
+                    </ul>
+                    <p>这些理论经过几十年的打磨，已经有了<strong>完整的设计公式和查表法</strong>。当我们需要设计数字滤波器时，最聪明的做法就是：</p>
+                    <ol>
+                        <li>先用成熟的理论设计一个满足指标的<strong>模拟滤波器</strong></li>
+                        <li>再用IIM或BLT方法<strong>转换</strong>成数字滤波器</li>
+                    </ol>
+                    <p>这就是"借用"策略——借用前人的智慧成果！</p>
+                </div>
+                
+                <h3>3.2 三种经典滤波器的特性对比</h3>
+                
+                <div class="tip-box">
+                    <h4>🎯 用生活场景理解三种滤波器</h4>
+                    <p>假设你在设计一个<strong>声音过滤系统</strong>，要阻挡高频噪声，保留人声：</p>
+                    
+                    <p><strong>🔵 Butterworth（巴特沃斯）- "追求自然的完美主义者"</strong></p>
+                    <ul>
+                        <li>就像高档音响追求"原汁原味"，通带内绝对平坦，不会改变任何保留的频率成分</li>
+                        <li>代价：过渡带较宽，"分界"不够干脆，可能漏过一些不想要的频率</li>
+                        <li>适用：<strong>音频处理</strong>（人耳对幅度变化敏感）、医疗信号处理</li>
+                    </ul>
+                    
+                    <p><strong>🟢 Chebyshev I（切比雪夫I型）- "务实的效率追求者"</strong></p>
+                    <ul>
+                        <li>允许通带有轻微波动（可控制在0.5dB以内），换来更陡峭的过渡</li>
+                        <li>就像接受"略有瑕疵但性价比更高"的产品</li>
+                        <li>适用：<strong>通信系统</strong>（数字调制对幅度波动不敏感）</li>
+                    </ul>
+                    
+                    <p><strong>🔴 Elliptic（椭圆）- "极致效率的工程师"</strong></p>
+                    <ul>
+                        <li>通带和阻带都允许波动，换来最窄的过渡带和最低的阶数</li>
+                        <li>同样指标，阶数可能只有Butterworth的一半！</li>
+                        <li>适用：<strong>嵌入式/实时系统</strong>（计算资源有限，需要最低复杂度）</li>
+                    </ul>
+                </div>
+                
+                <h4>特性对比表</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>滤波器类型</th>
+                            <th>通带特性</th>
+                            <th>阻带特性</th>
+                            <th>过渡带</th>
+                            <th>阶数效率</th>
+                            <th>典型应用</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong style="color:#2d57a4;">Butterworth</strong></td>
+                            <td>最大平坦 ✓</td>
+                            <td>单调下降</td>
+                            <td>最宽</td>
+                            <td>最低</td>
+                            <td>音频、医疗</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color:#5ca353;">Chebyshev I</strong></td>
+                            <td>等波纹</td>
+                            <td>单调下降</td>
+                            <td>较窄</td>
+                            <td>中等</td>
+                            <td>通信、雷达</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color:#D46A6A;">Elliptic</strong></td>
+                            <td>等波纹</td>
+                            <td>等波纹</td>
+                            <td>最窄 ✓</td>
+                            <td>最高 ✓</td>
+                            <td>嵌入式、实时</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>3.3 幅度响应数学表达式</h3>
+                
+                <h4>Butterworth 滤波器</h4>
+                <div class="formula-box">
+                    $$|H_a(j\Omega)|^2 = \frac{1}{1 + (\Omega/\Omega_c)^{2N}}$$
+                    <p>特点：$\Omega=0$ 处前 $2N-1$ 阶导数为零 → "最大平坦"</p>
+                </div>
+
+                <h4>Chebyshev I 型滤波器</h4>
+                <div class="formula-box">
+                    $$|H_a(j\Omega)|^2 = \frac{1}{1 + \epsilon^2 T_N^2(\Omega/\Omega_p)}$$
+                    <p>其中 $T_N(x)$ 是N阶切比雪夫多项式，$\epsilon$ 控制通带波纹幅度</p>
+                </div>
+
+                <h4>Elliptic 滤波器</h4>
+                <div class="formula-box">
+                    $$|H_a(j\Omega)|^2 = \frac{1}{1 + \epsilon^2 R_N^2(\Omega/\Omega_p)}$$
+                    <p>其中 $R_N(x)$ 是N阶椭圆有理函数（雅可比椭圆函数）</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>💡 为什么不用手算这些公式？</h4>
+                    <p>以Butterworth为例，要从幅度响应推导传递函数 $H_a(s)$，需要：</p>
+                    <ol>
+                        <li>计算极点位置：$p_k = \Omega_c \cdot e^{j\frac{\pi}{2N}(2k+N-1)}$，$k=1,2,...,N$</li>
+                        <li>选择左半平面的极点（保证稳定）</li>
+                        <li>构造传递函数：$H_a(s) = \frac{\Omega_c^N}{\prod_{k}(s-p_k)}$</li>
+                    </ol>
+                    <p>Chebyshev和Elliptic的计算更加复杂，涉及双曲函数和椭圆积分。</p>
+                    <p><strong>结论</strong>：在实验中，我们使用MATLAB的 <code>butter</code>、<code>cheby1</code>、<code>ellip</code> 函数自动完成这些计算！</p>
+                </div>
+                
+                <div class="figure-container">
+                    <svg width="800" height="380" viewBox="0 0 800 380">
+                        <title>三种滤波器幅度响应对比</title>
+                        <rect width="800" height="380" fill="#fafafa"/>
+                        
+                        <!-- 标题 -->
+                        <text x="400" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2d57a4">
+                            三种IIR滤波器幅度响应对比（相同设计指标）
+                        </text>
+                        
+                        <!-- 坐标轴 -->
+                        <g transform="translate(80, 320)">
+                            <line x1="0" y1="0" x2="680" y2="0" stroke="#333" stroke-width="2.5"/>
+                            <line x1="0" y1="0" x2="0" y2="-250" stroke="#333" stroke-width="2.5"/>
+                            
+                            <!-- 频率轴标记 -->
+                            <text x="340" y="35" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">频率 Ω</text>
+                            <text x="200" y="20" text-anchor="middle" font-size="14" fill="#5ca353" font-weight="bold">Ωp (通带)</text>
+                            <text x="350" y="20" text-anchor="middle" font-size="14" fill="#D46A6A" font-weight="bold">Ωs (阻带)</text>
+                            <line x1="200" y1="8" x2="200" y2="-8" stroke="#5ca353" stroke-width="2.5"/>
+                            <line x1="350" y1="8" x2="350" y2="-8" stroke="#D46A6A" stroke-width="2.5"/>
+                            
+                            <!-- 幅度轴标记 -->
+                            <text x="-50" y="-125" text-anchor="middle" font-size="14" font-weight="bold" fill="#333" transform="rotate(-90, -50, -125)">
+                                幅度 |H(jΩ)| (dB)
+                            </text>
+                            <text x="-15" y="-230" text-anchor="end" font-size="12" fill="#333">0</text>
+                            <text x="-15" y="-10" text-anchor="end" font-size="12" fill="#666">-Rs</text>
+                            <line x1="-8" y1="-230" x2="8" y2="-230" stroke="#333" stroke-width="2"/>
+                            
+                            <!-- 通带阻带参考区域 -->
+                            <rect x="0" y="-250" width="200" height="30" fill="#e8f5e9" opacity="0.5"/>
+                            <rect x="350" y="-30" width="330" height="30" fill="#ffebee" opacity="0.5"/>
+                            <text x="100" y="-258" text-anchor="middle" font-size="11" fill="#5ca353">通带区域</text>
+                            <text x="515" y="-38" text-anchor="middle" font-size="11" fill="#D46A6A">阻带区域</text>
+                            
+                            <!-- Butterworth 响应 (蓝色) -->
+                            <path d="M 0,-230 Q 150,-230 200,-210 Q 275,-120 350,-50 Q 450,-20 680,-10" 
+                                  fill="none" stroke="#2d57a4" stroke-width="3.5" opacity="0.9"/>
+                            
+                            <!-- Chebyshev I 响应 (绿色，通带波纹) -->
+                            <path d="M 0,-230 L 25,-220 L 50,-230 L 75,-222 L 100,-230 L 125,-224 L 150,-230 L 175,-226 L 200,-200 Q 260,-80 350,-35 Q 450,-15 680,-8" 
+                                  fill="none" stroke="#5ca353" stroke-width="3.5" opacity="0.9"/>
+                            
+                            <!-- Elliptic 响应 (红色，通带阻带都有波纹) -->
+                            <path d="M 0,-230 L 25,-220 L 50,-230 L 75,-222 L 100,-230 L 125,-224 L 150,-230 L 175,-228 L 200,-180 Q 240,-40 280,-25 L 310,-32 L 340,-25 L 370,-30 L 400,-25 Q 540,-25 680,-25" 
+                                  fill="none" stroke="#D46A6A" stroke-width="3.5" opacity="0.9"/>
+                        </g>
+                        
+                        <!-- 图例 -->
+                        <g transform="translate(580, 70)">
+                            <rect x="0" y="0" width="180" height="120" fill="white" stroke="#ddd" stroke-width="2" rx="8"/>
+                            <text x="90" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">滤波器对比</text>
+                            
+                            <line x1="15" y1="45" x2="55" y2="45" stroke="#2d57a4" stroke-width="3.5"/>
+                            <text x="65" y="50" font-size="12" font-weight="bold" fill="#2d57a4">Butterworth</text>
+                            
+                            <line x1="15" y1="70" x2="55" y2="70" stroke="#5ca353" stroke-width="3.5"/>
+                            <text x="65" y="75" font-size="12" font-weight="bold" fill="#5ca353">Chebyshev I</text>
+                            
+                            <line x1="15" y1="95" x2="55" y2="95" stroke="#D46A6A" stroke-width="3.5"/>
+                            <text x="65" y="100" font-size="12" font-weight="bold" fill="#D46A6A">Elliptic</text>
+                        </g>
+                        
+                        <!-- 注解 -->
+                        <g transform="translate(100, 120)">
+                            <text x="0" y="0" font-size="11" fill="#666">← 过渡带：Elliptic最窄</text>
+                        </g>
+                    </svg>
+                    <p class="figure-caption">图2: 三种经典IIR滤波器的幅度响应对比</p>
+                </div>
+                
+                <h3>3.4 MATLAB设计函数速查</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>步骤</th>
+                            <th>Butterworth</th>
+                            <th>Chebyshev I</th>
+                            <th>Elliptic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>计算阶次</strong></td>
+                            <td><code>[N,Wn] = buttord(Wp,Ws,Rp,Rs,'s')</code></td>
+                            <td><code>[N,Wn] = cheb1ord(Wp,Ws,Rp,Rs,'s')</code></td>
+                            <td><code>[N,Wn] = ellipord(Wp,Ws,Rp,Rs,'s')</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>设计模拟原型</strong></td>
+                            <td><code>[num,den] = butter(N,Wn,'s')</code></td>
+                            <td><code>[num,den] = cheby1(N,Rp,Wn,'s')</code></td>
+                            <td><code>[num,den] = ellip(N,Rp,Rs,Wn,'s')</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>双线性变换</strong></td>
+                            <td colspan="3"><code>[numd,dend] = bilinear(num,den,Fs)</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>频率响应</strong></td>
+                            <td colspan="3"><code>[H,w] = freqz(numd,dend,N)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="tip-box">
+                    <h4>📌 函数参数说明</h4>
+                    <ul>
+                        <li><code>Wp</code>, <code>Ws</code>: 预翘曲后的通带/阻带边界频率 (rad/s)</li>
+                        <li><code>Rp</code>: 通带最大衰减 (dB)，如 0.5 表示通带内最多衰减 0.5dB</li>
+                        <li><code>Rs</code>: 阻带最小衰减 (dB)，如 45 表示阻带至少衰减 45dB</li>
+                        <li><code>'s'</code>: 表示设计<strong>模拟</strong>滤波器（s域），这是关键参数！</li>
+                        <li><code>Fs</code>: 采样频率 (Hz)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 频率预翘曲详解 -->
+            <section id="prewarping">
+                <h2><span class="badge badge-theory">理论</span>频率预翘曲：BLT的关键补充</h2>
+                
+                <h3>4.1 问题的由来</h3>
+                <p>在课堂上学习BLT时，你可能注意到了一个映射关系：</p>
+                
+                <div class="formula-box">
+                    $$\omega = 2\arctan\left(\frac{\Omega T}{2}\right)$$
+                    <p>这意味着：模拟频率 $\Omega$ 和数字频率 $\omega$ <strong>不是线性关系</strong>！</p>
+                </div>
+                
+                <div class="case-study-box">
+                    <h4>🗺️ 用地图投影理解频率翘曲</h4>
+                    <p>想象你要把一个球面（地球）展开成一个平面地图：</p>
+                    <ul>
+                        <li><strong>靠近赤道</strong>的区域（低频）：变形较小，比较准确</li>
+                        <li><strong>靠近极点</strong>的区域（高频）：被严重拉伸或压缩</li>
+                        <li><strong>极点本身</strong>（$\omega = \pi$）：整个无限的高频区域被压缩到一个点！</li>
+                    </ul>
+                    <p>BLT的频率映射就像这种投影：低频区域近似线性，高频区域严重"翘曲"。</p>
+                </div>
+                
+                <h3>4.2 预翘曲的解决方案</h3>
+                <p>既然BLT会导致频率失真，我们就在设计模拟滤波器<strong>之前</strong>，先"反向变形"一下频率：</p>
+                
+                <div class="formula-box">
+                    <p><strong>预翘曲公式：</strong></p>
+                    $$\Omega_{prewarped} = \frac{2}{T}\tan\left(\frac{\omega}{2}\right) = 2F_s \cdot \tan\left(\frac{\pi F}{F_s}\right)$$
+                    <p>其中：$F$ 是目标数字频率 (Hz)，$F_s$ 是采样频率 (Hz)</p>
+                </div>
+                
+                <div class="tip-box">
+                    <h4>✅ MATLAB 中的预翘曲实现</h4>
+                    <div class="code-block"><code><span class="code-line"><span class="code-comment">% 设计指标（数字域）</span></span>
+<span class="code-line">Fs = 80000;           <span class="code-comment">% 采样频率 (Hz)</span></span>
+<span class="code-line">Fp = 4000;            <span class="code-comment">% 通带边界 (Hz)</span></span>
+<span class="code-line">Fst = 20000;          <span class="code-comment">% 阻带边界 (Hz)</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% Step 1: 转换为数字角频率</span></span>
+<span class="code-line">wp = 2*pi*Fp/Fs;      <span class="code-comment">% 通带数字角频率 (rad/sample)</span></span>
+<span class="code-line">ws = 2*pi*Fst/Fs;     <span class="code-comment">% 阻带数字角频率 (rad/sample)</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% Step 2: 预翘曲 → 模拟角频率</span></span>
+<span class="code-line">Omega_p = (2*Fs) * tan(wp/2);  <span class="code-comment">% 通带模拟角频率 (rad/s)</span></span>
+<span class="code-line">Omega_s = (2*Fs) * tan(ws/2);  <span class="code-comment">% 阻带模拟角频率 (rad/s)</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 现在可以用 Omega_p 和 Omega_s 设计模拟滤波器了！</span></span></code></div>
+                </div>
+                
+                <div class="figure-container">
+                    <svg width="800" height="350" viewBox="0 0 800 350">
+                        <title>频率翘曲与预翘曲</title>
+                        <rect width="800" height="350" fill="#fafafa"/>
+                        
+                        <!-- 标题 -->
+                        <text x="400" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2d57a4">
+                            双线性变换的频率翘曲与预翘曲补偿
+                        </text>
+                        
+                        <!-- 左图：没有预翘曲 -->
+                        <g transform="translate(80, 80)">
+                            <text x="130" y="-10" text-anchor="middle" font-size="14" fill="#D46A6A" font-weight="bold">
+                                ❌ 没有预翘曲
+                            </text>
+                            <rect x="0" y="0" width="260" height="200" fill="white" stroke="#ddd" stroke-width="2" rx="5"/>
+                            
+                            <!-- 坐标轴 -->
+                            <line x1="30" y1="170" x2="240" y2="170" stroke="#333" stroke-width="2"/>
+                            <line x1="30" y1="170" x2="30" y2="30" stroke="#333" stroke-width="2"/>
+                            
+                            <!-- 理想线性映射 (虚线) -->
+                            <line x1="30" y1="170" x2="240" y2="30" stroke="#5ca353" stroke-width="2" stroke-dasharray="5,3" opacity="0.6"/>
+                            
+                            <!-- 实际BLT映射 (arctan曲线) -->
+                            <path d="M 30,170 Q 80,120 130,75 Q 180,45 240,32" fill="none" stroke="#D46A6A" stroke-width="3"/>
+                            
+                            <!-- 标记目标频率点 -->
+                            <circle cx="100" cy="100" r="5" fill="#2d57a4"/>
+                            <line x1="100" y1="100" x2="100" y2="170" stroke="#2d57a4" stroke-width="1" stroke-dasharray="3,2"/>
+                            <text x="100" y="185" text-anchor="middle" font-size="10" fill="#2d57a4">设计频率</text>
+                            
+                            <circle cx="100" cy="130" r="5" fill="#D46A6A"/>
+                            <text x="115" y="135" font-size="10" fill="#D46A6A">实际位置↓</text>
+                            
+                            <text x="135" y="195" text-anchor="middle" font-size="12" fill="#333">Ω (模拟)</text>
+                            <text x="15" y="100" font-size="11" fill="#333" transform="rotate(-90,15,100)">ω (数字)</text>
+                        </g>
+                        
+                        <!-- 右图：有预翘曲 -->
+                        <g transform="translate(440, 80)">
+                            <text x="130" y="-10" text-anchor="middle" font-size="14" fill="#5ca353" font-weight="bold">
+                                ✅ 使用预翘曲
+                            </text>
+                            <rect x="0" y="0" width="260" height="200" fill="white" stroke="#ddd" stroke-width="2" rx="5"/>
+                            
+                            <!-- 坐标轴 -->
+                            <line x1="30" y1="170" x2="240" y2="170" stroke="#333" stroke-width="2"/>
+                            <line x1="30" y1="170" x2="30" y2="30" stroke="#333" stroke-width="2"/>
+                            
+                            <!-- 实际BLT映射 -->
+                            <path d="M 30,170 Q 80,120 130,75 Q 180,45 240,32" fill="none" stroke="#666" stroke-width="2" opacity="0.5"/>
+                            
+                            <!-- 预翘曲后的设计点 -->
+                            <circle cx="130" cy="75" r="5" fill="#5ca353"/>
+                            <line x1="130" y1="75" x2="130" y2="170" stroke="#5ca353" stroke-width="1" stroke-dasharray="3,2"/>
+                            <text x="130" y="185" text-anchor="middle" font-size="10" fill="#5ca353">预翘曲后</text>
+                            
+                            <!-- 最终正确的数字频率 -->
+                            <line x1="30" y1="100" x2="130" y2="100" stroke="#5ca353" stroke-width="1" stroke-dasharray="3,2"/>
+                            <circle cx="30" cy="100" r="5" fill="#5ca353"/>
+                            <text x="60" y="90" font-size="10" fill="#5ca353">目标频率 ✓</text>
+                            
+                            <text x="135" y="195" text-anchor="middle" font-size="12" fill="#333">Ω (模拟)</text>
+                            <text x="15" y="100" font-size="11" fill="#333" transform="rotate(-90,15,100)">ω (数字)</text>
+                        </g>
+                        
+                        <!-- 底部说明 -->
+                        <g transform="translate(50, 310)">
+                            <text x="350" y="0" text-anchor="middle" font-size="13" fill="#333">
+                                <tspan font-weight="bold">预翘曲原理：</tspan>
+                                先把目标频率"反向变形"，经过BLT的"正向变形"后，恰好回到正确位置
+                            </text>
+                        </g>
+                    </svg>
+                    <p class="figure-caption">图3: 频率翘曲问题及预翘曲解决方案</p>
+                </div>
+            </section>
+
+            <!-- 交互演示 -->
+            <section id="demo">
+                <h2><span class="badge badge-practice">实践</span>交互演示：IIR滤波器频率响应</h2>
+                
+                <div class="interactive-demo">
+                    <h3 style="color: #2d57a4; margin-top: 0;">🎛️ 交互式滤波器设计演示</h3>
+                    <p>调整下面的参数，观察不同IIR滤波器的频率响应特性：</p>
+                    
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <label>滤波器类型:</label>
+                            <select id="filterType">
+                                <option value="butterworth">Butterworth (最平坦)</option>
+                                <option value="chebyshev1">Chebyshev I (等波纹通带)</option>
+                                <option value="elliptic">Elliptic (最高效)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>滤波器阶数 N: <span id="orderValue">4</span></label>
+                            <input type="range" id="filterOrder" min="2" max="10" value="4">
+                        </div>
+                        <div class="control-group">
+                            <label>归一化截止频率: <span id="cutoffValue">0.30</span>π</label>
+                            <input type="range" id="cutoffFreq" min="0.1" max="0.9" step="0.01" value="0.3">
+                        </div>
+                        <div class="control-group">
+                            <label>通带波纹 (dB): <span id="rippleValue">1.0</span></label>
+                            <input type="range" id="passRipple" min="0.1" max="3" step="0.1" value="1">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 20px;">
+                        <div class="canvas-container">
+                            <h4>幅度响应</h4>
+                            <canvas id="magnitudeCanvas" width="400" height="300"></canvas>
+                        </div>
+                        <div class="canvas-container">
+                            <h4>相位响应</h4>
+                            <canvas id="phaseCanvas" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                        <span id="infoText" style="font-size: 1em; line-height: 1.8;"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 示例讲解 -->
+            <section id="example">
+                <h2><span class="badge badge-practice">实践</span>示例讲解</h2>
+                
+                <div class="exercise-box">
+                    <h3>完整示例：Butterworth 数字低通滤波器设计</h3>
+                    <p><strong>设计要求：</strong></p>
+                    <ul>
+                        <li>采样频率：$F_s = 80$ kHz</li>
+                        <li>通带边界：$F_p = 4$ kHz，最大衰减 $R_p = 0.5$ dB</li>
+                        <li>阻带边界：$F_{st} = 20$ kHz，最小衰减 $R_s = 45$ dB</li>
+                    </ul>
+                </div>
+
+                <div class="code-block"><code><span class="code-line"><span class="code-comment">%% 完整示例：Butterworth 数字低通滤波器设计</span></span>
+<span class="code-line"><span class="code-comment">% 这个示例展示了从设计指标到最终数字滤波器的完整流程</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">%% Step 1: 定义设计指标（数字域）</span></span>
+<span class="code-line">Fs = 80000;           <span class="code-comment">% 采样频率 (Hz)</span></span>
+<span class="code-line">Fp = 4000;            <span class="code-comment">% 通带边界频率 (Hz)</span></span>
+<span class="code-line">Fst = 20000;          <span class="code-comment">% 阻带边界频率 (Hz)</span></span>
+<span class="code-line">Rp = 0.5;             <span class="code-comment">% 通带最大衰减 (dB)</span></span>
+<span class="code-line">Rs = 45;              <span class="code-comment">% 阻带最小衰减 (dB)</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">%% Step 2: 频率预翘曲（课堂BLT公式的实践应用）</span></span>
+<span class="code-line"><span class="code-comment">% 将数字频率转换为模拟频率，补偿双线性变换的频率畸变</span></span>
+<span class="code-line">wp = 2*pi*Fp/Fs;                  <span class="code-comment">% 通带数字角频率 (rad/sample)</span></span>
+<span class="code-line">ws = 2*pi*Fst/Fs;                 <span class="code-comment">% 阻带数字角频率 (rad/sample)</span></span>
+<span class="code-line">Omega_p = (2*Fs) * tan(wp/2);     <span class="code-comment">% 预翘曲后的通带模拟角频率 (rad/s)</span></span>
+<span class="code-line">Omega_s = (2*Fs) * tan(ws/2);     <span class="code-comment">% 预翘曲后的阻带模拟角频率 (rad/s)</span></span>
+<span class="code-line"></span>
+<span class="code-line">fprintf(<span class="code-string">'预翘曲结果:\n'</span>);</span>
+<span class="code-line">fprintf(<span class="code-string">'  Omega_p = %.2f rad/s (原始: %.2f)\n'</span>, Omega_p, 2*pi*Fp);</span>
+<span class="code-line">fprintf(<span class="code-string">'  Omega_s = %.2f rad/s (原始: %.2f)\n'</span>, Omega_s, 2*pi*Fst);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">%% Step 3: 计算滤波器阶次（本实验核心 - 模拟滤波器设计）</span></span>
+<span class="code-line">[N, Wn] = buttord(Omega_p, Omega_s, Rp, Rs, <span class="code-string">'s'</span>);</span>
+<span class="code-line">fprintf(<span class="code-string">'滤波器阶次: N = %d\n'</span>, N);</span>
+<span class="code-line">fprintf(<span class="code-string">'截止频率: Wn = %.2f rad/s\n'</span>, Wn);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">%% Step 4: 设计模拟原型滤波器</span></span>
+<span class="code-line">[num_a, den_a] = butter(N, Wn, <span class="code-string">'s'</span>);  <span class="code-comment">% 's' 表示模拟滤波器</span></span>
+<span class="code-line">fprintf(<span class="code-string">'模拟滤波器 Ha(s) 设计完成\n'</span>);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">%% Step 5: 双线性变换（课堂已学的BLT）</span></span>
+<span class="code-line">[num_d, den_d] = bilinear(num_a, den_a, Fs);</span>
+<span class="code-line">fprintf(<span class="code-string">'数字滤波器 H(z) 设计完成\n'</span>);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">%% Step 6: 验证与分析</span></span>
+<span class="code-line">[H, w] = freqz(num_d, den_d, 2048);</span>
+<span class="code-line">f = w * Fs / (2*pi);  <span class="code-comment">% 转换为Hz</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 绘制幅度响应</span></span>
+<span class="code-line">figure(<span class="code-string">'Position'</span>, [100, 100, 900, 400]);</span>
+<span class="code-line">plot(f, 20*log10(abs(H)), <span class="code-string">'b-'</span>, <span class="code-string">'LineWidth'</span>, 2);</span>
+<span class="code-line"><span class="code-keyword">hold</span> on;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 标记设计指标</span></span>
+<span class="code-line">plot([Fp Fp], [-80 5], <span class="code-string">'g--'</span>, <span class="code-string">'LineWidth'</span>, 1.5);  <span class="code-comment">% 通带边界</span></span>
+<span class="code-line">plot([Fst Fst], [-80 5], <span class="code-string">'r--'</span>, <span class="code-string">'LineWidth'</span>, 1.5); <span class="code-comment">% 阻带边界</span></span>
+<span class="code-line">plot([0 Fp], [-Rp -Rp], <span class="code-string">'g:'</span>, <span class="code-string">'LineWidth'</span>, 1.5);   <span class="code-comment">% 通带衰减限</span></span>
+<span class="code-line">plot([Fst Fs/2], [-Rs -Rs], <span class="code-string">'r:'</span>, <span class="code-string">'LineWidth'</span>, 1.5); <span class="code-comment">% 阻带衰减限</span></span>
+<span class="code-line"></span>
+<span class="code-line">grid on;</span>
+<span class="code-line">xlabel(<span class="code-string">'频率 (Hz)'</span>);</span>
+<span class="code-line">ylabel(<span class="code-string">'幅度 (dB)'</span>);</span>
+<span class="code-line">title(sprintf(<span class="code-string">'Butterworth 低通滤波器 (N=%d)'</span>, N));</span>
+<span class="code-line">legend(<span class="code-string">'幅度响应'</span>, <span class="code-string">'通带边界'</span>, <span class="code-string">'阻带边界'</span>, <span class="code-string">'Location'</span>, <span class="code-string">'southwest'</span>);</span>
+<span class="code-line">xlim([0 Fs/2]);</span>
+<span class="code-line">ylim([-80 5]);</span></code></div>
+
+                <div class="analysis-box">
+                    <h4>🔍 代码解析：对应课堂知识</h4>
+                    <table>
+                        <tr>
+                            <th>代码步骤</th>
+                            <th>对应课堂知识</th>
+                            <th>说明</th>
+                        </tr>
+                        <tr>
+                            <td>Step 2: 预翘曲</td>
+                            <td>BLT的频率映射 $\omega = 2\arctan(\Omega T/2)$</td>
+                            <td>反向使用映射公式，补偿畸变</td>
+                        </tr>
+                        <tr>
+                            <td>Step 3-4: 模拟滤波器</td>
+                            <td><span style="color:#e65100;">本实验新学内容</span></td>
+                            <td>使用MATLAB自动设计 $H_a(s)$</td>
+                        </tr>
+                        <tr>
+                            <td>Step 5: bilinear</td>
+                            <td>BLT公式 $s = \frac{2}{T}\frac{z-1}{z+1}$</td>
+                            <td>MATLAB自动完成变换</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 练习一 -->
+            <section id="exercise1">
+                <h2><span class="badge badge-practice">实践</span>练习一：Butterworth 数字低通滤波器设计</h2>
+                <div class="exercise-box">
+                    <h3>任务</h3>
+                    <div class="question-item">
+                        <h4>任务描述</h4>
+                        <p>设计一个Butterworth数字低通滤波器，满足以下要求：</p>
+                        <ul>
+                            <li>采样频率：$F_s = 80$ kHz</li>
+                            <li>通带边界：$F_p = 4$ kHz，最大衰减 $R_p = 0.5$ dB</li>
+                            <li>阻带边界：$F_{st} = 20$ kHz，最小衰减 $R_s = 45$ dB</li>
+                            <li>使用双线性变换方法</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="analysis-box">
+                        <h4>任务要求</h4>
+                        <ol>
+                            <li>按照示例的6个步骤完成设计</li>
+                            <li>计算并输出滤波器阶次 $N$ 和截止频率 $W_n$</li>
+                            <li>绘制幅度响应图，标记通带边界、阻带边界和设计指标线</li>
+                            <li>验证设计结果是否满足指标要求</li>
+                        </ol>
+                    </div>
+                    
+                    <h4>预期结果</h4>
+                    <p>滤波器阶次 N = 4，通带平坦（最大衰减 < 0.5dB），阻带衰减 > 45dB</p>
+                </div>
+            </section>
+
+            <!-- 练习二 -->
+            <section id="exercise2">
+                <h2><span class="badge badge-practice">实践</span>练习二：Chebyshev I 型数字低通滤波器设计</h2>
+                <div class="exercise-box">
+                    <h3>任务</h3>
+                    <div class="question-item">
+                        <h4>任务描述</h4>
+                        <p>使用与练习1<strong>相同的设计指标</strong>，设计一个Chebyshev I型数字低通滤波器：</p>
+                        <ul>
+                            <li>采样频率：$F_s = 80$ kHz</li>
+                            <li>通带边界：$F_p = 4$ kHz，最大衰减 $R_p = 0.5$ dB</li>
+                            <li>阻带边界：$F_{st} = 20$ kHz，最小衰减 $R_s = 45$ dB</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="analysis-box">
+                        <h4>任务要求</h4>
+                        <ol>
+                            <li>使用 <code>cheb1ord</code> 和 <code>cheby1</code> 函数</li>
+                            <li>注意：<code>cheby1</code> 需要额外的 $R_p$ 参数</li>
+                            <li>绘制幅度响应并与练习1对比</li>
+                            <li><strong>回答以下问题：</strong>
+                                <ul>
+                                    <li>Q1: 阶数是否比Butterworth更低？低多少？</li>
+                                    <li>Q2: 通带是否有波纹？波纹幅度大约是多少dB？</li>
+                                    <li>Q3: 过渡带是否更陡峭？</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习三 -->
+            <section id="exercise3">
+                <h2><span class="badge badge-practice">实践</span>练习三：Elliptic 数字低通滤波器设计</h2>
+                <div class="exercise-box">
+                    <h3>任务</h3>
+                    <div class="question-item">
+                        <h4>任务描述</h4>
+                        <p>继续使用相同的设计指标，设计一个Elliptic（椭圆）数字低通滤波器。</p>
+                    </div>
+                    
+                    <div class="analysis-box">
+                        <h4>任务要求</h4>
+                        <ol>
+                            <li>使用 <code>ellipord</code> 和 <code>ellip</code> 函数</li>
+                            <li>注意：<code>ellip</code> 需要同时指定 $R_p$ 和 $R_s$ 参数</li>
+                            <li>
+    <strong>制作综合对比表格：</strong>
+    <p style="font-size: 0.9em; color: #666; margin: 5px 0 10px 0;">
+        📌 根据练习1-3的<strong>实验结果</strong>填写下表（使用相同的设计指标）
+    </p>
+                                <table style="width: 100%; margin-top: 10px;">
+                                    <thead>
+                                        <tr>
+                                            <th>特性</th>
+                                            <th>Butterworth</th>
+                                            <th>Chebyshev I</th>
+                                            <th>Elliptic</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>滤波器阶数 N</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                        </tr>
+                                        <tr>
+                                            <td>通带特性</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                        </tr>
+                                        <tr>
+                                            <td>阻带特性</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                        </tr>
+                                        <tr>
+                                            <td>过渡带宽度</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                            <td>?</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习四 -->
+            <section id="exercise4">
+                <h2><span class="badge badge-practice">实践</span>练习四：实际应用中的滤波器选择</h2>
+                <div class="exercise-box">
+                    <h3>任务 (思考题)</h3>
+                    <div class="question-item">
+                        <h4>场景1：音频均衡器设计</h4>
+                        <p>你正在为一款音乐播放App设计均衡器。采样率44.1 kHz，需要一个低通滤波器消除20 kHz以上噪声。</p>
+                        <ul>
+                            <li>Q1: 你会选择哪种滤波器？为什么？</li>
+                            <li>Q2: 通带波纹对音质有什么影响？</li>
+                            <li>Q3: 相位失真对音质有什么影响？如何减轻？</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="question-item">
+                        <h4>场景2：通信信道选择</h4>
+                        <p>需要从多个相邻信道中选出900-910 kHz的目标信道，抑制相邻信道干扰。</p>
+                        <ul>
+                            <li>Q1: 这种场景更适合哪种滤波器？</li>
+                            <li>Q2: 如果Butterworth需要12阶，Elliptic只需6阶，你如何选择？</li>
+                            <li>Q3: 设计带通滤波器需要哪些MATLAB函数？</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="question-item">
+                        <h4>场景3：嵌入式实时处理</h4>
+                        <p>在手机芯片上实现实时语音滤波，计算资源有限。</p>
+                        <ul>
+                            <li>Q1: 滤波器阶数与计算复杂度的关系是什么？</li>
+                            <li>Q2: 阶数从12降到6意味着什么？（计算量、功耗、延迟）</li>
+                            <li>Q3: 如何在实时性和滤波效果之间权衡？</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>实验报告要求</h3>
+                <div class="warning-box">
+                    <h4>📝 报告内容</h4>
+                    <ol>
+                        <li><strong>实验目的和原理</strong>：说明本实验如何补充课堂知识</li>
+                        <li><strong>设计过程</strong>：详细记录每个练习的设计步骤和MATLAB代码</li>
+                        <li><strong>结果与分析</strong>：三种滤波器的对比表格、频率响应图</li>
+                        <li><strong>思考题回答</strong>：对练习4的问题给出分析</li>
+                        <li><strong>结论</strong>：总结不同应用场景下如何选择滤波器</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- 附录：脉冲响应不变法 -->
+            <section id="appendix">
+                <h2><span class="badge badge-review">附录</span>脉冲响应不变法（IIM）补充说明</h2>
+                
+                <div class="appendix-section">
+                    <h3>A.1 为什么本实验主要使用BLT而非IIM？</h3>
+                    
+                    <p>在课堂上，你学习了两种将模拟滤波器转换为数字滤波器的方法。本实验选择<strong>双线性变换法(BLT)</strong>作为主要方法，原因如下：</p>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>比较项</th>
+                                <th>脉冲响应不变法 (IIM)</th>
+                                <th>双线性变换法 (BLT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>频率混叠</strong></td>
+                                <td style="color:#D46A6A;">❌ 有混叠问题（高频分量会折叠到低频）</td>
+                                <td style="color:#5ca353;">✅ 无混叠（整个模拟频率轴映射到 $-\pi$ ~ $\pi$）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>频率映射</strong></td>
+                                <td style="color:#5ca353;">✅ 线性映射 $\omega = \Omega T$</td>
+                                <td style="color:#f57c00;">⚠️ 非线性映射（需要预翘曲补偿）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>适用滤波器类型</strong></td>
+                                <td style="color:#D46A6A;">❌ 仅低通、带通（高通和带阻有问题）</td>
+                                <td style="color:#5ca353;">✅ 所有类型（低通、高通、带通、带阻）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>时域特性保持</strong></td>
+                                <td style="color:#5ca353;">✅ 脉冲响应完全对应</td>
+                                <td style="color:#f57c00;">⚠️ 脉冲响应有差异</td>
+                            </tr>
+                            <tr>
+                                <td><strong>工程应用</strong></td>
+                                <td>较少使用</td>
+                                <td><strong>主流方法</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3>A.2 IIM的核心原理回顾</h3>
+                    
+                    <div class="formula-box">
+                        <p><strong>基本思想：</strong>让数字滤波器的脉冲响应等于模拟滤波器脉冲响应的采样值</p>
+                        $$h[n] = T \cdot h_a(nT)$$
+                        <p>其中 $T = 1/F_s$ 是采样周期</p>
+                    </div>
+                    
+                    <div class="formula-box">
+                        <p><strong>频域映射：</strong></p>
+                        $$H(e^{j\omega}) = \sum_{k=-\infty}^{\infty} H_a\left(j\frac{\omega - 2\pi k}{T}\right)$$
+                        <p>这个求和表明：模拟滤波器的频率响应会以 $2\pi/T$ 为周期产生<strong>混叠</strong></p>
+                    </div>
+                    
+                    <h3>A.3 IIM的频率混叠问题图示</h3>
+                    
+                    <div class="figure-container">
+                        <svg width="800" height="300" viewBox="0 0 800 300">
+                            <rect width="800" height="300" fill="#fafafa"/>
+                            
+                            <text x="400" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#2d57a4">
+                                脉冲响应不变法的频率混叠问题
+                            </text>
+                            
+                            <!-- 左图：模拟滤波器 -->
+                            <g transform="translate(50, 60)">
+                                <text x="150" y="0" text-anchor="middle" font-size="13" fill="#333" font-weight="bold">原始模拟滤波器 Ha(jΩ)</text>
+                                <rect x="0" y="10" width="300" height="100" fill="white" stroke="#ddd" stroke-width="1"/>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="#333" stroke-width="1.5"/>
+                                <line x1="150" y1="100" x2="150" y2="20" stroke="#333" stroke-width="1.5"/>
+                                
+                                <!-- 低通响应 -->
+                                <path d="M 20,100 L 20,30 L 100,30 Q 120,30 130,60 Q 140,90 150,100" fill="none" stroke="#2d57a4" stroke-width="2.5"/>
+                                <path d="M 150,100 Q 160,90 170,60 Q 180,30 200,30 L 280,30" fill="none" stroke="#2d57a4" stroke-width="2.5" opacity="0.3"/>
+                                
+                                <text x="150" y="120" text-anchor="middle" font-size="11" fill="#666">Ω</text>
+                            </g>
+                            
+                            <!-- 右图：采样后（有混叠） -->
+                            <g transform="translate(420, 60)">
+                                <text x="150" y="0" text-anchor="middle" font-size="13" fill="#333" font-weight="bold">IIM转换后 H(ejω) - 有混叠!</text>
+                                <rect x="0" y="10" width="300" height="100" fill="white" stroke="#ddd" stroke-width="1"/>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="#333" stroke-width="1.5"/>
+                                <line x1="150" y1="100" x2="150" y2="20" stroke="#333" stroke-width="1.5"/>
+                                
+                                <!-- 主瓣 -->
+                                <path d="M 100,100 L 100,35 Q 110,30 130,30 Q 145,30 150,50" fill="none" stroke="#2d57a4" stroke-width="2.5"/>
+                                <path d="M 150,50 Q 155,30 170,30 Q 190,30 200,35 L 200,100" fill="none" stroke="#2d57a4" stroke-width="2.5"/>
+                                
+                                <!-- 混叠部分（用红色标记） -->
+                                <path d="M 20,100 L 20,70 Q 40,50 60,50 Q 80,50 100,70" fill="none" stroke="#D46A6A" stroke-width="2.5" stroke-dasharray="5,3"/>
+                                <path d="M 200,70 Q 220,50 240,50 Q 260,50 280,70 L 280,100" fill="none" stroke="#D46A6A" stroke-width="2.5" stroke-dasharray="5,3"/>
+                                
+                                <text x="150" y="120" text-anchor="middle" font-size="11" fill="#666">ω</text>
+                                <text x="50" y="55" text-anchor="middle" font-size="10" fill="#D46A6A" font-weight="bold">混叠!</text>
+                                <text x="250" y="55" text-anchor="middle" font-size="10" fill="#D46A6A" font-weight="bold">混叠!</text>
+                            </g>
+                            
+                            <!-- 箭头 -->
+                            <path d="M 360 110 L 400 110" stroke="#608de0" stroke-width="2" marker-end="url(#arrowblue2)"/>
+                            <text x="380" y="100" text-anchor="middle" font-size="11" fill="#608de0">IIM</text>
+                            
+                            <defs>
+                                <marker id="arrowblue2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                    <polygon points="0 0, 10 3, 0 6" fill="#608de0"/>
+                                </marker>
+                            </defs>
+                            
+                            <!-- 说明 -->
+                            <g transform="translate(50, 200)">
+                                <rect x="0" y="0" width="700" height="80" rx="8" fill="#ffebee" stroke="#D46A6A"/>
+                                <text x="350" y="25" text-anchor="middle" font-size="13" fill="#c62828" font-weight="bold">
+                                    ⚠️ IIM的致命缺陷：频率混叠
+                                </text>
+                                <text x="350" y="50" text-anchor="middle" font-size="12" fill="#333">
+                                    当模拟滤波器的带宽超过 Fs/2 时，高频分量会"折叠"到低频区域，造成失真
+                                </text>
+                                <text x="350" y="70" text-anchor="middle" font-size="12" fill="#333">
+                                    因此 IIM 只适用于带限的低通/带通滤波器，且需要足够高的采样率
+                                </text>
+                            </g>
+                        </svg>
+                        <p class="figure-caption">图A1: IIM的频率混叠问题示意图</p>
+                    </div>
+                    
+                    <h3>A.4 MATLAB中的IIM实现</h3>
+                    
+                    <div class="tip-box">
+                        <h4>📝 MATLAB函数：impinvar</h4>
+                        <p>虽然本实验不要求使用IIM，但如果你想尝试，MATLAB提供了 <code>impinvar</code> 函数：</p>
+                        <div class="code-block"><code><span class="code-line"><span class="code-comment">% 使用脉冲响应不变法（仅供参考，本实验不要求）</span></span>
+<span class="code-line">[num_d_iim, den_d_iim] = impinvar(num_a, den_a, Fs);</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">% 对比 BLT 方法</span></span>
+<span class="code-line">[num_d_blt, den_d_blt] = bilinear(num_a, den_a, Fs);</span></code></div>
+                    </div>
+                    
+                    <h3>A.5 何时考虑使用IIM？</h3>
+                    
+                    <div class="analysis-box">
+                        <h4>🤔 IIM的适用场景</h4>
+                        <p>虽然BLT是主流方法，但在某些特殊情况下IIM可能有优势：</p>
+                        <ul>
+                            <li><strong>需要精确的时域响应</strong>：例如模拟某个特定的模拟系统</li>
+                            <li><strong>低通滤波器 + 高采样率</strong>：混叠可忽略不计</li>
+                            <li><strong>线性频率映射更重要</strong>：不希望频率翘曲影响设计</li>
+                        </ul>
+                        <p>但在大多数工程应用中，BLT因其无混叠和通用性而更受欢迎。</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 南京工业大学浦江学院 计算机与通信工程学院</p>
+            <p>通信工程专业 | 数字信号处理课程实验</p>
+        </footer>
+    </div>
+
+    <script>
+        // 交互演示脚本
+        const magnitudeCanvas = document.getElementById('magnitudeCanvas');
+        const phaseCanvas = document.getElementById('phaseCanvas');
+        const magCtx = magnitudeCanvas.getContext('2d');
+        const phaseCtx = phaseCanvas.getContext('2d');
+
+        const filterTypeSelect = document.getElementById('filterType');
+        const filterOrderSlider = document.getElementById('filterOrder');
+        const cutoffFreqSlider = document.getElementById('cutoffFreq');
+        const passRippleSlider = document.getElementById('passRipple');
+        
+        const orderValueDisplay = document.getElementById('orderValue');
+        const cutoffValueDisplay = document.getElementById('cutoffValue');
+        const rippleValueDisplay = document.getElementById('rippleValue');
+        const infoText = document.getElementById('infoText');
+
+        function updateDisplayValues() {
+            orderValueDisplay.textContent = filterOrderSlider.value;
+            cutoffValueDisplay.textContent = parseFloat(cutoffFreqSlider.value).toFixed(2);
+            rippleValueDisplay.textContent = parseFloat(passRippleSlider.value).toFixed(1);
+        }
+
+        function drawMagnitudeResponse(type, order, cutoff, ripple) {
+            const width = magnitudeCanvas.width;
+            const height = magnitudeCanvas.height;
+            const padding = 50;
+            
+            magCtx.clearRect(0, 0, width, height);
+            
+            magCtx.fillStyle = '#FFFFFF';
+            magCtx.fillRect(0, 0, width, height);
+            
+            // 绘制网格
+            magCtx.strokeStyle = '#e0e0e0';
+            magCtx.lineWidth = 0.5;
+            for(let i = 1; i <= 4; i++) {
+                const y = padding + (height - 2*padding) * i / 4;
+                magCtx.beginPath();
+                magCtx.moveTo(padding, y);
+                magCtx.lineTo(width - padding, y);
+                magCtx.stroke();
+            }
+            for(let i = 1; i <= 4; i++) {
+                const x = padding + (width - 2*padding) * i / 4;
+                magCtx.beginPath();
+                magCtx.moveTo(x, padding);
+                magCtx.lineTo(x, height - padding);
+                magCtx.stroke();
+            }
+            
+            // 绘制坐标轴
+            magCtx.strokeStyle = '#333';
+            magCtx.lineWidth = 2;
+            magCtx.beginPath();
+            magCtx.moveTo(padding, height - padding);
+            magCtx.lineTo(width - padding, height - padding);
+            magCtx.moveTo(padding, height - padding);
+            magCtx.lineTo(padding, padding);
+            magCtx.stroke();
+            
+            // 标签
+            magCtx.fillStyle = '#333';
+            magCtx.font = 'bold 13px Arial';
+            magCtx.textAlign = 'center';
+            magCtx.fillText('ω/π', width / 2, height - padding + 35);
+            magCtx.save();
+            magCtx.translate(15, height/2);
+            magCtx.rotate(-Math.PI/2);
+            magCtx.fillText('幅度 (dB)', 0, 0);
+            magCtx.restore();
+            
+            // 刻度
+            magCtx.font = '11px Arial';
+            for(let i = 0; i <= 4; i++) {
+                const x = padding + (width - 2*padding) * i / 4;
+                magCtx.fillText((i/4 * 2).toFixed(1), x, height - padding + 20);
+            }
+            
+            for(let i = 0; i <= 4; i++) {
+                const y = height - padding - (height - 2*padding) * i / 4;
+                magCtx.textAlign = 'right';
+                magCtx.fillText((-20*i).toString(), padding - 10, y + 5);
+            }
+            
+            // 标记截止频率
+            const cutoffX = padding + (width - 2*padding) * cutoff / 2;
+            magCtx.strokeStyle = '#D46A6A';
+            magCtx.lineWidth = 2;
+            magCtx.setLineDash([5, 5]);
+            magCtx.beginPath();
+            magCtx.moveTo(cutoffX, padding);
+            magCtx.lineTo(cutoffX, height - padding);
+            magCtx.stroke();
+            magCtx.setLineDash([]);
+            
+            magCtx.fillStyle = '#D46A6A';
+            magCtx.font = 'bold 11px Arial';
+            magCtx.textAlign = 'center';
+            magCtx.fillText('ωc', cutoffX, padding - 10);
+            
+            // 绘制频率响应
+            const numPoints = 500;
+            const gradient = magCtx.createLinearGradient(padding, 0, width - padding, 0);
+            
+            if(type === 'butterworth') {
+                gradient.addColorStop(0, '#2d57a4');
+                gradient.addColorStop(cutoff, '#608de0');
+                gradient.addColorStop(1, '#7dadff');
+            } else if(type === 'chebyshev1') {
+                gradient.addColorStop(0, '#2e7d32');
+                gradient.addColorStop(cutoff, '#5ca353');
+                gradient.addColorStop(1, '#81c784');
+            } else {
+                gradient.addColorStop(0, '#912d32');
+                gradient.addColorStop(cutoff, '#D46A6A');
+                gradient.addColorStop(1, '#ef9a9a');
+            }
+            
+            magCtx.strokeStyle = gradient;
+            magCtx.lineWidth = 3;
+            magCtx.beginPath();
+            
+            for(let i = 0; i < numPoints; i++) {
+                const w = Math.PI * i / numPoints;
+                let H;
+                
+                if(type === 'butterworth') {
+                    H = 1 / Math.sqrt(1 + Math.pow(Math.tan(w/2) / Math.tan(cutoff * Math.PI/2), 2*order));
+                } else if(type === 'chebyshev1') {
+                    const epsilon = Math.sqrt(Math.pow(10, ripple/10) - 1);
+                    const x = Math.tan(w/2) / Math.tan(cutoff * Math.PI/2);
+                    let Tn;
+                    if(Math.abs(x) <= 1) {
+                        Tn = Math.cos(order * Math.acos(x));
+                    } else {
+                        Tn = Math.cosh(order * Math.acosh(x));
+                    }
+                    H = 1 / Math.sqrt(1 + epsilon*epsilon * Tn*Tn);
+                } else {
+                    const epsilon = Math.sqrt(Math.pow(10, ripple/10) - 1);
+                    const x = Math.tan(w/2) / Math.tan(cutoff * Math.PI/2);
+                    let approx;
+                    if(Math.abs(x) <= 1) {
+                        approx = Math.cos(order * Math.acos(x)) * (1 + 0.2*Math.sin(order*x*3));
+                    } else {
+                        approx = Math.cosh(order * Math.acosh(x));
+                    }
+                    H = 1 / Math.sqrt(1 + epsilon*epsilon * approx*approx);
+                }
+                
+                const H_dB = 20 * Math.log10(H);
+                const H_clamped = Math.max(H_dB, -80);
+                
+                const x = padding + (width - 2*padding) * w / Math.PI;
+                const y = height - padding - (height - 2*padding) * (H_clamped + 80) / 80;
+                
+                if(i === 0) {
+                    magCtx.moveTo(x, y);
+                } else {
+                    magCtx.lineTo(x, y);
+                }
+            }
+            magCtx.stroke();
+        }
+
+        function drawPhaseResponse(type, order, cutoff, ripple) {
+            const width = phaseCanvas.width;
+            const height = phaseCanvas.height;
+            const padding = 50;
+            
+            phaseCtx.clearRect(0, 0, width, height);
+            
+            phaseCtx.fillStyle = '#FFFFFF';
+            phaseCtx.fillRect(0, 0, width, height);
+            
+            // 绘制网格
+            phaseCtx.strokeStyle = '#e0e0e0';
+            phaseCtx.lineWidth = 0.5;
+            for(let i = 1; i <= 4; i++) {
+                const y = padding + (height - 2*padding) * i / 4;
+                phaseCtx.beginPath();
+                phaseCtx.moveTo(padding, y);
+                phaseCtx.lineTo(width - padding, y);
+                phaseCtx.stroke();
+            }
+            for(let i = 1; i <= 4; i++) {
+                const x = padding + (width - 2*padding) * i / 4;
+                phaseCtx.beginPath();
+                phaseCtx.moveTo(x, padding);
+                phaseCtx.lineTo(x, height - padding);
+                phaseCtx.stroke();
+            }
+            
+            // 绘制坐标轴
+            phaseCtx.strokeStyle = '#333';
+            phaseCtx.lineWidth = 2;
+            phaseCtx.beginPath();
+            phaseCtx.moveTo(padding, height - padding);
+            phaseCtx.lineTo(width - padding, height - padding);
+            phaseCtx.moveTo(padding, padding);
+            phaseCtx.lineTo(padding, height - padding);
+            phaseCtx.stroke();
+            
+            const centerY = padding + (height - 2*padding) / 2;
+            
+            // 标签
+            phaseCtx.fillStyle = '#333';
+            phaseCtx.font = 'bold 13px Arial';
+            phaseCtx.textAlign = 'center';
+            phaseCtx.fillText('ω/π', width / 2, height - padding + 35);
+            phaseCtx.save();
+            phaseCtx.translate(15, height/2);
+            phaseCtx.rotate(-Math.PI/2);
+            phaseCtx.fillText('相位 (度)', 0, 0);
+            phaseCtx.restore();
+            
+            // 刻度
+            phaseCtx.font = '11px Arial';
+            for(let i = 0; i <= 4; i++) {
+                const x = padding + (width - 2*padding) * i / 4;
+                phaseCtx.fillText((i/4 * 2).toFixed(1), x, height - padding + 20);
+            }
+            
+            for(let i = 0; i <= 4; i++) {
+                const y = height - padding - (height - 2*padding) * i / 4;
+                phaseCtx.textAlign = 'right';
+                phaseCtx.fillText((-90*i).toString() + '°', padding - 10, y + 5);
+            }
+            
+            // 绘制相位响应
+            const numPoints = 500;
+            const gradient = phaseCtx.createLinearGradient(padding, 0, width - padding, 0);
+            gradient.addColorStop(0, '#608de0');
+            gradient.addColorStop(0.5, '#7dadff');
+            gradient.addColorStop(1, '#9ec5ff');
+            
+            phaseCtx.strokeStyle = gradient;
+            phaseCtx.lineWidth = 3;
+            phaseCtx.beginPath();
+            
+            for(let i = 0; i < numPoints; i++) {
+                const w = Math.PI * i / numPoints;
+                const phase = -order * w * 180 / Math.PI * 0.8; 
+                const phase_clamped = Math.max(phase, -360);
+                
+                const x = padding + (width - 2*padding) * w / Math.PI;
+                const y = padding + (height - 2*padding) * (1 - (phase_clamped + 360) / 360);
+                
+                if(i === 0) {
+                    phaseCtx.moveTo(x, padding);
+                } else {
+                    phaseCtx.lineTo(x, y);
+                }
+            }
+            phaseCtx.stroke();
+        }
+
+        function updateInfo(type, order) {
+            const typeNames = {
+                'butterworth': 'Butterworth (巴特沃斯)',
+                'chebyshev1': 'Chebyshev I (切比雪夫I型)',
+                'elliptic': 'Elliptic (椭圆)'
+            };
+            
+            const characteristics = {
+                'butterworth': '通带最平坦，无波纹；阻带单调下降；过渡带较宽；相位响应最接近线性。<strong>适合音频处理</strong>。',
+                'chebyshev1': '通带有等波纹，阻带单调下降；过渡带较窄；阶数比Butterworth低30-40%。<strong>适合通信系统</strong>。',
+                'elliptic': '通带和阻带都有等波纹；过渡带最窄，阶数最低；相位非线性最大。<strong>适合嵌入式/实时系统</strong>。'
+            };
+            
+            const colors = {
+                'butterworth': '#2d57a4',
+                'chebyshev1': '#5ca353',
+                'elliptic': '#D46A6A'
+            };
+            
+            infoText.innerHTML = `
+                <span style="color: ${colors[type]}; font-weight: bold; font-size: 1.1em;">${typeNames[type]}</span><br>
+                <strong>阶数：</strong>N = ${order}<br>
+                <strong>特性：</strong>${characteristics[type]}
+            `;
+        }
+
+        function updateDemo() {
+            const type = filterTypeSelect.value;
+            const order = parseInt(filterOrderSlider.value);
+            const cutoff = parseFloat(cutoffFreqSlider.value);
+            const ripple = parseFloat(passRippleSlider.value);
+            
+            updateDisplayValues();
+            drawMagnitudeResponse(type, order, cutoff, ripple);
+            drawPhaseResponse(type, order, cutoff, ripple);
+            updateInfo(type, order);
+        }
+
+        filterTypeSelect.addEventListener('change', updateDemo);
+        filterOrderSlider.addEventListener('input', updateDemo);
+        cutoffFreqSlider.addEventListener('input', updateDemo);
+        passRippleSlider.addEventListener('input', updateDemo);
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', updateDemo);
+    </script>
+</body>
+</html>
