@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 3 - FIR滤波器设计 (修订版)</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: { inlineMath: [['$','$']], displayMath: [['$$','$$']], processEscapes: true },
+            CommonHTML: { scale: 110 }, "HTML-CSS": { scale: 110 }
+        });
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; line-height: 1.8; color: #2c3e50; background: linear-gradient(135deg, #608de0 0%, #7dadff 50%, #5ca353 100%); padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.25); overflow: hidden; }
+        header { background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%); color: white; padding: 50px 40px; text-align: center; border-bottom: 5px solid #7dadff; }
+        header h1 { font-size: 2.5em; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        header .subtitle { font-size: 1.1em; opacity: 0.95; margin-top: 10px; }
+        header .institution { font-size: 0.95em; margin-top: 15px; opacity: 0.9; border-top: 2px solid rgba(255,255,255,0.3); padding-top: 15px; }
+        nav { background: #f5f7fa; padding: 20px 40px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; border-bottom: 3px solid #7dadff; }
+        nav a { color: #2d57a4; text-decoration: none; padding: 10px 20px; border-radius: 25px; font-size: 0.95em; font-weight: 500; background: white; border: 2px solid #7dadff; transition: all 0.3s; }
+        nav a:hover { background: #7dadff; color: white; transform: translateY(-2px); }
+        .content { padding: 50px; }
+        section { margin-bottom: 60px; }
+        h2 { color: #2d57a4; font-size: 2em; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 4px solid #7dadff; }
+        h3 { color: #608de0; font-size: 1.6em; margin: 30px 0 20px 0; }
+        h4 { color: #2d57a4; font-size: 1.3em; margin: 25px 0 15px 0; }
+        p { margin-bottom: 15px; text-align: justify; line-height: 1.9; }
+        code { background-color: #e8eef8; color: #2d57a4; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; font-size: 0.95em; }
+        .tip-box { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); border-left: 5px solid #5ca353; padding: 18px; margin: 20px 0; border-radius: 8px; }
+        .warning-box { background: linear-gradient(135deg, #ffebee 0%, #fff5f7 100%); border-left: 5px solid #912d32; padding: 18px; margin: 20px 0; border-radius: 8px; }
+        .analysis-box { background: #fff8e1; border-left: 5px solid #fbc02d; padding: 20px; margin: 25px 0; border-radius: 8px; }
+        .analysis-box h4 { color: #c77700; margin-top: 0; }
+        .formula-box { background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-left: 5px solid #608de0; padding: 18px 25px; margin: 15px 0; border-radius: 8px; }
+        .exercise-box { background: linear-gradient(135deg, #f0f7ff 0%, #f5f9ff 100%); border: 3px solid #7dadff; border-radius: 12px; padding: 30px; margin: 30px 0; }
+        .exercise-box h3 { color: #2d57a4; margin-top: 0; margin-bottom: 25px; }
+        .question-item { margin: 20px 0; padding-left: 15px; }
+        .question-item h4 { color: #608de0; font-size: 1.2em; margin-top: 20px; border-left: 4px solid #7dadff; padding-left: 10px; }
+        .code-block { background: #2b2b2b; color: #d4d4d4; padding: 25px; border-radius: 10px; margin: 25px 0; overflow-x: auto; font-family: Consolas, monospace; line-height: 1.7; position: relative; border: 2px solid #608de0; }
+        .code-block::before { content: 'MATLAB'; position: absolute; top: 8px; right: 15px; color: #7dadff; font-size: 0.85em; font-weight: bold; }
+        .code-block code { background: none; color: inherit; padding: 0; }
+        .code-line { display: block; }
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-number { color: #b5cea8; }
+        .plot-container { background: #fdfdfd; border-radius: 10px; padding: 20px; margin: 25px 0; box-shadow: 0 3px 12px rgba(0,0,0,0.1); border: 1px solid #e0e6f0; text-align: center; }
+        .plot-container h4 { margin-top: 0; margin-bottom: 15px; text-align: center; color: #2d57a4; }
+        ul, ol { margin-left: 30px; margin-bottom: 20px; }
+        li { margin-bottom: 10px; line-height: 1.8; }
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+        th { background: linear-gradient(135deg, #2d57a4 0%, #608de0 100%); color: white; padding: 15px; text-align: left; }
+        td { padding: 12px 15px; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f5f7fa; }
+        .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: bold; margin-right: 10px; }
+        .badge-theory { background: #608de0; color: white; }
+        .badge-practice { background: #5ca353; color: white; }
+        strong { color: #2d57a4; font-weight: 600; }
+        footer { background: linear-gradient(135deg, #2d57a4 0%, #113a85 100%); color: white; text-align: center; padding: 30px; }
+        .data-box { background: linear-gradient(135deg, #e3f2fd 0%, #f3f8ff 100%); border-left: 5px solid #2196f3; padding: 18px; margin: 20px 0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>实验三 - FIR滤波器设计</h1>
+            <div class="subtitle">数字信号处理 | 窗函数法与线性相位滤波器</div>
+            <div class="institution">南京工业大学浦江学院 | 计算机与通信工程学院 | 通信工程专业 | DSP课程实验</div>
+        </header>
+
+        <nav>
+            <a href="#objective">实验目的</a>
+            <a href="#theory">理论基础</a>
+            <a href="#exercise1">练习一</a>
+            <a href="#exercise2">练习二</a>
+            <a href="#exercise3">练习三</a>
+            <a href="#exercise4">练习四</a>
+        </nav>
+
+        <div class="content">
+            <!-- 实验目的 -->
+            <section id="objective">
+                <h2><span class="badge badge-theory">理论</span>实验目的</h2>
+                <ul>
+                    <li>理解 FIR 滤波器的基本原理和特性</li>
+                    <li>掌握<strong>线性相位</strong>滤波器的设计方法和四种类型</li>
+                    <li>学习<strong>窗函数法</strong>设计 FIR 滤波器</li>
+                    <li>使用 MATLAB 函数（<code>fir1</code>、<code>freqz</code>等）进行滤波器设计和分析</li>
+                    <li>应用 FIR 滤波器进行实际信号处理（语音信号滤波）</li>
+                </ul>
+                
+                <div class="data-box">
+                    <strong>📂 实验数据文件：</strong>
+                    <ul style="margin-top: 10px;">
+                        <li><code>phdist.mat</code> - 包含三组滤波器系数 (a1,b1,a2,b2,a3,b3) 和加噪语音 (xnoise)</li>
+                        <li><code>orig.mat</code> - 包含原始语音信号 (x) 和采样率 (Fs=8000Hz)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 理论基础 -->
+            <section id="theory">
+                <h2><span class="badge badge-theory">理论</span>理论基础</h2>
+                
+                <h3>1. FIR滤波器基本原理</h3>
+                <p>FIR滤波器的差分方程为：</p>
+                <div class="formula-box">
+                    $$y[n] = \sum_{k=0}^{M} b_k \cdot x[n-k] = b_0 x[n] + b_1 x[n-1] + \cdots + b_M x[n-M]$$
+                </div>
+                <p>其中 $M$ 是滤波器阶数，$N = M+1$ 是滤波器长度（系数个数）。</p>
+
+                <h3>2. 线性相位条件</h3>
+                <p>线性相位FIR滤波器的相位响应为 $\phi(\omega) = -\tau \omega$，其中 $\tau = M/2$ 是群延迟（常数）。实现线性相位需要脉冲响应满足对称性：</p>
+                <table>
+                    <tr><th>类型</th><th>N</th><th>M</th><th>对称性</th><th>$H(e^{j\omega})$ 在 $\omega=0$</th><th>$H(e^{j\omega})$ 在 $\omega=\pi$</th></tr>
+                    <tr><td>Type I</td><td>奇数</td><td>偶数</td><td>$h[n]=h[M-n]$</td><td>任意</td><td>任意</td></tr>
+                    <tr><td>Type II</td><td>偶数</td><td>奇数</td><td>$h[n]=h[M-n]$</td><td>任意</td><td><strong>= 0</strong></td></tr>
+                    <tr><td>Type III</td><td>奇数</td><td>偶数</td><td>$h[n]=-h[M-n]$</td><td><strong>= 0</strong></td><td><strong>= 0</strong></td></tr>
+                    <tr><td>Type IV</td><td>偶数</td><td>奇数</td><td>$h[n]=-h[M-n]$</td><td><strong>= 0</strong></td><td>任意</td></tr>
+                </table>
+
+                <h3>3. 窗函数法设计步骤</h3>
+                <ol>
+                    <li>确定理想滤波器的频率响应 $H_d(e^{j\omega})$</li>
+                    <li>计算理想脉冲响应 $h_d[n]$（通常是无限长的非因果序列）</li>
+                    <li>选择窗函数 $w[n]$ 并确定长度 $N$</li>
+                    <li>计算实际脉冲响应 $h[n] = h_d[n] \cdot w[n]$</li>
+                </ol>
+
+                <h3>4. 常用窗函数特性</h3>
+                <table>
+                    <tr><th>窗函数</th><th>MATLAB函数</th><th>主瓣宽度</th><th>旁瓣衰减</th><th>过渡带</th></tr>
+                    <tr><td>矩形窗</td><td><code>rectwin(N)</code></td><td>$4\pi/N$</td><td>-13 dB</td><td>最窄</td></tr>
+                    <tr><td>汉宁窗</td><td><code>hann(N)</code></td><td>$8\pi/N$</td><td>-32 dB</td><td>中等</td></tr>
+                    <tr><td>汉明窗</td><td><code>hamming(N)</code></td><td>$8\pi/N$</td><td>-43 dB</td><td>中等</td></tr>
+                    <tr><td>布莱克曼窗</td><td><code>blackman(N)</code></td><td>$12\pi/N$</td><td>-58 dB</td><td>最宽</td></tr>
+                    <tr><td>凯泽窗</td><td><code>kaiser(N,β)</code></td><td>可调</td><td>可调</td><td>可调</td></tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>⚠️ 窗函数选择准则</strong>
+                    <ul>
+                        <li>过渡带窄 → 选择汉宁窗或汉明窗</li>
+                        <li>阻带衰减 > 50 dB → 选择布莱克曼窗</li>
+                        <li>灵活调节 → 使用凯泽窗</li>
+                        <li><strong>避免使用矩形窗</strong>（振铃效应严重）</li>
+                    </ul>
+                </div>
+            </section>
+            <!-- 练习一 -->
+            <section id="exercise1">
+                <h2><span class="badge badge-practice">实践</span>练习一：汉明窗FIR低通滤波器设计与信号滤波</h2>
+                <div class="exercise-box">
+                    <h3>任务</h3>
+                    <p>设计一个 31 阶（N=32）的汉明窗 FIR 低通滤波器，截止频率 $\omega_c = \pi/4$，并对双频信号进行滤波。</p>
+                    
+                    <div class="question-item">
+                        <h4>任务一：设计滤波器</h4>
+                        <p>使用 <code>fir1(M, Wn)</code> 函数设计滤波器，其中 $M=31$，$Wn = \omega_c/\pi = 0.25$。</p>
+                        <div class="code-block"><code>
+<span class="code-line">M = <span class="code-number">31</span>;                 <span class="code-comment">% 滤波器阶数</span></span>
+<span class="code-line">Wn = <span class="code-number">0.25</span>;              <span class="code-comment">% 归一化截止频率</span></span>
+<span class="code-line">h = <span class="code-keyword">fir1</span>(M, Wn);        <span class="code-comment">% 设计汉明窗FIR滤波器</span></span>
+                        </code></div>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务二：分析频率响应</h4>
+                        <p>使用 <code>freqz</code> 计算 1024 点频率响应，绘制幅度响应（dB）和相位响应。</p>
+                        <ul>
+                            <li>观察通带平坦性和阻带衰减</li>
+                            <li>验证相位是否为线性（斜率 $= -M/2 = -15.5$）</li>
+                        </ul>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务三：双音信号滤波</h4>
+                        <p>生成输入信号 $x[n] = \cos(\omega_1 n) + \cos(\omega_2 n)$，其中 $\omega_1 = \pi/3$（阻带），$\omega_2 = \pi/6$（通带），$n = 0, 1, \ldots, 127$。</p>
+                        <ol>
+                            <li>使用 <code>y = conv(h, x)</code> 进行滤波</li>
+                            <li>计算 x 和 y 的 1024 点 FFT</li>
+                            <li>绘制频谱对比图，验证哪个频率成分被滤除</li>
+                        </ol>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h4>📊 思考题</h4>
+                        <ul>
+                            <li>$\omega_1 = \pi/3 > \omega_c = \pi/4$，位于阻带，应被滤除</li>
+                            <li>$\omega_2 = \pi/6 < \omega_c = \pi/4$，位于通带，应保留</li>
+                            <li>如果要保留 $\omega_1$ 而滤除 $\omega_2$，应该设计什么类型的滤波器？</li>
+                        </ul>
+                    </div>
+
+                    <h4>预期图像</h4>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+                        <div class="plot-container" style="width: 48%;">
+                            <h4>幅度响应 (dB)</h4>
+                            <svg width="400" height="250" viewBox="0 0 400 250">
+                                <rect width="400" height="250" fill="#fdfdfd"/>
+                                <g transform="translate(50, 210)">
+                                    <line x1="0" y1="0" x2="320" y2="0" stroke="#333" stroke-width="2"/>
+                                    <line x1="0" y1="0" x2="0" y2="-180" stroke="#333" stroke-width="2"/>
+                                    <text x="330" y="5" font-size="12">ω/π</text>
+                                    <text x="-10" y="-180" font-size="12" text-anchor="end">dB</text>
+                                    <path d="M 0,-5 Q 40,-4 80,-5 L 80,-5 Q 100,-20 120,-80 Q 140,-150 160,-170 L 320,-170" stroke="#2d57a4" stroke-width="2.5" fill="none"/>
+                                    <line x1="80" y1="0" x2="80" y2="-180" stroke="#D46A6A" stroke-width="1.5" stroke-dasharray="5,3"/>
+                                    <text x="80" y="15" font-size="10" text-anchor="middle">0.25</text>
+                                    <text x="0" y="15" font-size="10">0</text>
+                                    <text x="320" y="15" font-size="10">1</text>
+                                    <text x="-5" y="0" font-size="10" text-anchor="end">0</text>
+                                    <text x="-5" y="-85" font-size="10" text-anchor="end">-40</text>
+                                    <text x="-5" y="-170" font-size="10" text-anchor="end">-80</text>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="plot-container" style="width: 48%;">
+                            <h4>滤波后频谱</h4>
+                            <svg width="400" height="250" viewBox="0 0 400 250">
+                                <rect width="400" height="250" fill="#fdfdfd"/>
+                                <g transform="translate(50, 210)">
+                                    <line x1="0" y1="0" x2="320" y2="0" stroke="#333" stroke-width="2"/>
+                                    <line x1="0" y1="0" x2="0" y2="-180" stroke="#333" stroke-width="2"/>
+                                    <text x="330" y="5" font-size="12">ω/π</text>
+                                    <text x="-10" y="-180" font-size="12" text-anchor="end">|Y|</text>
+                                    <line x1="53" y1="0" x2="53" y2="-160" stroke="#5ca353" stroke-width="3"/>
+                                    <circle cx="53" cy="-160" r="4" fill="#5ca353"/>
+                                    <text x="53" y="-170" font-size="10" text-anchor="middle" fill="#5ca353">ω₂=π/6 保留</text>
+                                    <line x1="107" y1="0" x2="107" y2="-10" stroke="#D46A6A" stroke-width="2" stroke-dasharray="3,2"/>
+                                    <text x="107" y="-20" font-size="10" text-anchor="middle" fill="#D46A6A">ω₁=π/3 滤除</text>
+                                    <line x1="80" y1="0" x2="80" y2="10" stroke="#856404" stroke-width="2"/>
+                                    <text x="80" y="25" font-size="9" text-anchor="middle" fill="#856404">ωc</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习二 -->
+            <section id="exercise2">
+                <h2><span class="badge badge-practice">实践</span>练习二：语音信号滤波综合实验</h2>
+                <div class="exercise-box">
+                    <h3>背景</h3>
+                    <p>本题旨在检验你对 FIR 滤波器设计和应用的综合理解。我们将对实际语音信号进行滤波处理，并分析滤波器的幅度和相位特性对语音质量的影响。</p>
+                    
+                    <div class="tip-box">
+                        <strong>💡 知识提示：</strong>在语音信号处理中，相位失真往往比幅度失真更容易被人耳察觉。这就是为什么在语音处理应用中，线性相位FIR滤波器往往比非线性相位IIR滤波器更受青睐。
+                    </div>
+
+                    <p><strong>实验数据：</strong>给定 <code>phdist.mat</code> 文件，包含三组滤波器系数（<code>a1, a2, a3, b1, b2, b3</code>）和一个加噪语音信号 <code>xnoise</code>。另有 <code>orig.mat</code> 文件包含原始语音信号 <code>x</code> 和采样率 <code>Fs</code>。</p>
+
+                    <div class="question-item">
+                        <h4>任务一：幅度响应对比</h4>
+                        <p>使用 <code>freqz</code> 计算三个滤波器的 1024 点频率响应，在同一张图上绘制幅度谱（dB）。</p>
+                        <p><strong>思考：</strong>从幅度特性角度，哪两个滤波器可能得到相似的滤波结果？</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务二：相位响应对比</h4>
+                        <p>在同一张图上绘制三个滤波器的相位响应。使用 <code>unwrap(angle(H))</code> 避免相位折叠。</p>
+                        <p><strong>思考：</strong>从相位特性角度，哪两个滤波器可能得到相似的滤波结果？</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务三：主观听觉测试</h4>
+                        <p>用三个滤波器分别对原始语音 <code>x</code> 进行滤波，使用 <code>soundsc</code> 播放并对比：</p>
+                        <ul>
+                            <li>语音内容是否仍然可理解？</li>
+                            <li>哪两个滤波后的语音听起来最相似？</li>
+                            <li>这个结果与任务一和任务二的分析是否一致？</li>
+                        </ul>
+                        <div class="code-block"><code>
+<span class="code-line">y1 = <span class="code-keyword">filter</span>(b1, a1, x);   <span class="code-comment">% 滤波器1</span></span>
+<span class="code-line">y2 = <span class="code-keyword">filter</span>(b2, a2, x);   <span class="code-comment">% 滤波器2</span></span>
+<span class="code-line">y3 = <span class="code-keyword">filter</span>(b3, a3, x);   <span class="code-comment">% 滤波器3</span></span>
+<span class="code-line"><span class="code-keyword">soundsc</span>(y1, Fs);         <span class="code-comment">% 播放滤波后语音</span></span>
+                        </code></div>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务四：噪声分析与去噪</h4>
+                        <p>播放 <code>xnoise</code>，对比原始信号 <code>x</code>。对两者分别做 8192 点 FFT，绘制频谱。</p>
+                        <ul>
+                            <li>你能从频谱中识别出噪声的特征吗？</li>
+                            <li>用三个滤波器分别对 <code>xnoise</code> 去噪，哪个滤波器效果最好？</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="analysis-box">
+                        <h4>📊 综合思考题</h4>
+                        <ol>
+                            <li>滤波器的<strong>幅度特性</strong>和<strong>相位特性</strong>哪个对语音质量更重要？为什么？</li>
+                            <li>如果两个滤波器的幅度响应完全相同，但相位响应不同，滤波后的语音会有什么差别？</li>
+                            <li>为什么线性相位在语音处理中如此重要？举例说明。</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+            <!-- 练习三 -->
+            <section id="exercise3">
+                <h2><span class="badge badge-practice">实践</span>练习三：窗函数长度对滤波器性能的影响</h2>
+                <div class="exercise-box">
+                    <h3>任务</h3>
+                    <p>分析窗函数长度对矩形窗频谱和FIR滤波器性能的影响。</p>
+
+                    <div class="question-item">
+                        <h4>任务一：矩形窗频谱分析</h4>
+                        <p>生成两种长度的矩形窗（$N_1=31$, $N_2=121$），计算 4096 点 FFT 频谱并对比。</p>
+                        <ul>
+                            <li>验证主瓣宽度公式：$\Delta\omega = 4\pi/N$</li>
+                            <li>观察第一旁瓣相对主瓣的衰减（应为 -13.3 dB，与 N 无关）</li>
+                        </ul>
+                        <div class="formula-box">
+                            <p><strong>矩形窗的频谱（Dirichlet核）：</strong></p>
+                            $$W(e^{j\omega}) = \frac{\sin(\omega N/2)}{\sin(\omega/2)}$$
+                        </div>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务二：FIR滤波器性能对比</h4>
+                        <p>设计两种阶数的汉明窗FIR低通滤波器（$M_1=30$, $M_2=120$），截止频率 $\omega_c=0.4\pi$。</p>
+                        <ol>
+                            <li>绘制幅度响应对比图</li>
+                            <li>测量过渡带宽度（-3dB 到 -40dB）</li>
+                            <li>验证过渡带宽度比值是否接近阶数比值（4:1）</li>
+                        </ol>
+                        <div class="tip-box">
+                            <strong>💡 理论预测：</strong>汉明窗的过渡带宽度约为 $8\pi/N$，阶数增加4倍，过渡带宽度应减小为原来的1/4。
+                        </div>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务三：计算复杂度分析</h4>
+                        <p>假设采样率 $F_s = 48000$ Hz，CPU时钟 $f_{cpu} = 100$ MHz。分析实时处理能力：</p>
+                        <ul>
+                            <li>每样本需要的 MAC（乘累加）操作数：$M+1$</li>
+                            <li>采样周期：$T_s = 1/F_s$</li>
+                            <li>CPU利用率：$(M+1) \cdot T_{clk} / T_s$</li>
+                            <li>判断两种阶数的滤波器是否能实时处理</li>
+                        </ul>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h4>📊 设计权衡总结</h4>
+                        <table>
+                            <tr><th>阶数增加的优势</th><th>阶数增加的代价</th></tr>
+                            <tr><td>过渡带更窄</td><td>计算量增加</td></tr>
+                            <tr><td>更接近理想滤波器</td><td>群延迟增加</td></tr>
+                            <tr><td>通带更平坦</td><td>存储需求增加</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习四 -->
+            <section id="exercise4">
+                <h2><span class="badge badge-practice">实践</span>练习四：窗函数性能对比与优化设计</h2>
+                <div class="exercise-box">
+                    <div class="question-item">
+                        <h4>任务一：不同窗函数对比实验</h4>
+                        <p>设计 4 个 31 阶低通滤波器，截止频率 $\omega_c = 0.4\pi$，分别使用矩形窗、汉宁窗、汉明窗和布莱克曼窗。</p>
+                        <ol>
+                            <li>在同一图上绘制所有滤波器的幅度响应（dB）</li>
+                            <li>测量并记录各窗函数的阻带衰减</li>
+                            <li>观察过渡带宽度的差异</li>
+                        </ol>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务二：凯泽窗的参数优化</h4>
+                        <p>凯泽窗通过 $\beta$ 参数在过渡带宽度和阻带衰减之间权衡。使用 $\beta = 3, 5, 7, 9$ 设计滤波器，观察性能变化。</p>
+                        <div class="code-block"><code>
+<span class="code-line"><span class="code-keyword">for</span> beta = [<span class="code-number">3</span>, <span class="code-number">5</span>, <span class="code-number">7</span>, <span class="code-number">9</span>]</span>
+<span class="code-line">    h = <span class="code-keyword">fir1</span>(<span class="code-number">31</span>, <span class="code-number">0.4</span>, <span class="code-keyword">kaiser</span>(<span class="code-number">32</span>, beta));</span>
+<span class="code-line">    [H, w] = <span class="code-keyword">freqz</span>(h, <span class="code-number">1</span>, <span class="code-number">1024</span>);</span>
+<span class="code-line">    <span class="code-keyword">plot</span>(w/pi, <span class="code-number">20</span>*<span class="code-keyword">log10</span>(<span class="code-keyword">abs</span>(H))); <span class="code-keyword">hold</span> on;</span>
+<span class="code-line"><span class="code-keyword">end</span></span>
+                        </code></div>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务三：滤波器阶数的影响</h4>
+                        <p>固定使用汉明窗，改变滤波器阶数 $M = 15, 31, 63, 127$，观察频率响应变化。</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h4>任务四：实际应用设计挑战</h4>
+                        <p><strong>设计要求：</strong></p>
+                        <ul>
+                            <li>通带边界：$\omega_p = 0.3\pi$</li>
+                            <li>阻带边界：$\omega_s = 0.5\pi$</li>
+                            <li>通带波纹：$\delta_p \leq 0.01$（约 0.086 dB）</li>
+                            <li>阻带衰减：$\delta_s \leq 0.001$（约 -60 dB）</li>
+                        </ul>
+                        <p><strong>设计步骤：</strong></p>
+                        <ol>
+                            <li>根据阻带衰减要求选择合适的窗函数（提示：需要 -60 dB，应选布莱克曼窗）</li>
+                            <li>估算阶数：$N \approx \frac{A_s - 8}{2.285 \Delta\omega}$</li>
+                            <li>设计滤波器并验证是否满足规格</li>
+                        </ol>
+                    </div>
+
+                    <h4>预期图像</h4>
+                    <div class="plot-container">
+                        <h4>不同窗函数的幅度响应对比</h4>
+                        <svg width="700" height="350" viewBox="0 0 700 350">
+                            <rect width="700" height="350" fill="#fdfdfd"/>
+                            <g transform="translate(70, 300)">
+                                <line x1="0" y1="0" x2="580" y2="0" stroke="#333" stroke-width="2"/>
+                                <line x1="0" y1="0" x2="0" y2="-260" stroke="#333" stroke-width="2"/>
+                                <text x="590" y="5" font-size="12">ω/π</text>
+                                <text x="-10" y="-260" font-size="12" text-anchor="end">dB</text>
+                                
+                                <path d="M 0,-5 L 180,-5 Q 200,-20 220,-60 L 580,-60" stroke="#D46A6A" stroke-width="2" stroke-dasharray="5,3" fill="none"/>
+                                <path d="M 0,-5 L 170,-5 Q 200,-40 230,-130 L 580,-130" stroke="#FFA500" stroke-width="2" fill="none"/>
+                                <path d="M 0,-5 L 170,-5 Q 200,-50 230,-175 L 580,-175" stroke="#2d57a4" stroke-width="2.5" fill="none"/>
+                                <path d="M 0,-5 L 160,-5 Q 200,-70 240,-230 L 580,-230" stroke="#5ca353" stroke-width="2" fill="none"/>
+                                
+                                <text x="0" y="15" font-size="10">0</text>
+                                <text x="232" y="15" font-size="10">0.4</text>
+                                <text x="580" y="15" font-size="10">1</text>
+                                <text x="-5" y="0" font-size="10" text-anchor="end">0</text>
+                                <text x="-5" y="-60" font-size="10" text-anchor="end">-20</text>
+                                <text x="-5" y="-130" font-size="10" text-anchor="end">-43</text>
+                                <text x="-5" y="-175" font-size="10" text-anchor="end">-58</text>
+                                
+                                <g transform="translate(400, -220)">
+                                    <line x1="0" y1="0" x2="20" y2="0" stroke="#D46A6A" stroke-width="2" stroke-dasharray="5,3"/>
+                                    <text x="25" y="4" font-size="11">矩形窗 (-13dB)</text>
+                                    <line x1="0" y1="18" x2="20" y2="18" stroke="#FFA500" stroke-width="2"/>
+                                    <text x="25" y="22" font-size="11">汉宁窗 (-32dB)</text>
+                                    <line x1="0" y1="36" x2="20" y2="36" stroke="#2d57a4" stroke-width="2.5"/>
+                                    <text x="25" y="40" font-size="11" font-weight="bold">汉明窗 (-43dB)</text>
+                                    <line x1="0" y1="54" x2="20" y2="54" stroke="#5ca353" stroke-width="2"/>
+                                    <text x="25" y="58" font-size="11">布莱克曼 (-58dB)</text>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h4>📊 综合分析</h4>
+                        <ol>
+                            <li>在实际应用中，如何根据设计要求选择合适的窗函数？</li>
+                            <li>如果要求阻带衰减至少 -60 dB，应该选择哪种窗函数？</li>
+                            <li>如果计算资源有限但又需要较好的阻带衰减，应该如何权衡？</li>
+                            <li>线性相位特性在什么应用场景下最重要？</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 南京工业大学浦江学院 计算机与通信工程学院</p>
+            <p>数字信号处理课程 | Digital Signal Processing Laboratory Experiments</p>
+        </footer>
+    </div>
+</body>
+</html>

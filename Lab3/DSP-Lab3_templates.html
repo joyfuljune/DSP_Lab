@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DSP Lab 3 实验模板 (修订版)</title>
+    <style>
+        body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .control-panel { position: sticky; top: 0; z-index: 100; background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .control-btn { background: #2d57a4; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .control-btn:hover { background: #1e3a6e; }
+        .control-btn.secondary { background: #6c757d; }
+        .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        .file-header { background: #2d57a4; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .file-header:hover { background: #3b6bbd; }
+        .file-title { font-weight: bold; display: flex; align-items: center; }
+        .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
+        .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
+        .file-content { display: block; }
+        .file-block.collapsed .file-content { display: none; }
+        .copy-btn { background: #5ca353; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .copy-btn:hover { background: #4a8842; }
+        pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        .comment { color: #228b22; font-style: italic; }
+        .todo-tag { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; font-size: 0.9em; margin-right: 5px; }
+        .info-banner { background: #e7f3ff; border-left: 4px solid #2d57a4; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .warning-banner { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .data-banner { background: #e8f5e9; border-left: 4px solid #5ca353; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2 style="margin:0; color:#2d57a4;">📝 DSP Lab 3 - 学生实验模板</h2>
+            <div>
+                <button class="control-btn" onclick="expandAll()">全部展开</button>
+                <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <strong>📌 编程规范说明：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>代码中已预定义了关键变量（如 <code>h = [];</code>），<strong>请勿修改变量名</strong>。</li>
+                <li>请在 <code>% TODO</code> 注释指引下编写代码。</li>
+                <li>每个脚本末尾包含<strong>自检代码</strong>，运行脚本时若看到红字警告，说明变量未正确赋值。</li>
+            </ul>
+        </div>
+
+        <div class="data-banner">
+            <strong>📂 实验数据文件：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li><code>phdist.mat</code> - 包含三组滤波器系数和加噪语音</li>
+                <li><code>orig.mat</code> - 包含原始语音信号和采样率</li>
+            </ul>
+        </div>
+        
+        <div class="warning-banner">
+            <strong>⚠️ 提交文件列表：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li>exercise1_fir_design.m</li>
+                <li>exercise2_speech_filtering.m</li>
+                <li>exercise3_window_length.m</li>
+                <li>exercise4_window_comparison</li>
+            </ul>
+        </div>
+
+
+        <!-- Exercise 1 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 exercise1_fir_design.m</span>
+                <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code1">%% 练习一：汉明窗FIR低通滤波器设计与信号滤波
+% 文件名: exercise1_fir_design.m
+% 学号：______  姓名：______
+
+%% 设计参数
+M = 31;                 <span class="comment">% 滤波器阶数</span>
+N = M + 1;              <span class="comment">% 滤波器长度</span>
+omega_c = pi / 4;       <span class="comment">% 截止角频率</span>
+Wn = omega_c / pi;      <span class="comment">% 归一化截止频率</span>
+
+n_signal = 0:127;       <span class="comment">% 信号长度</span>
+omega1 = pi / 3;        <span class="comment">% 阻带测试频率</span>
+omega2 = pi / 6;        <span class="comment">% 通带测试频率</span>
+
+%% 任务一：设计滤波器
+<span class="comment">% <span class="todo-tag">TODO</span> 使用fir1设计汉明窗FIR低通滤波器</span>
+h = [];
+
+%% 任务二：频率响应分析
+Nfft = 1024;
+<span class="comment">% <span class="todo-tag">TODO</span> 计算频率响应</span>
+H = [];
+w = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制幅度响应(dB)和相位响应</span>
+figure('Name', '任务二: 频率响应');
+
+
+%% 任务三：双音信号滤波
+<span class="comment">% <span class="todo-tag">TODO</span> 生成测试信号 x[n] = cos(ω1*n) + cos(ω2*n)</span>
+x = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 使用conv滤波</span>
+y = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 计算FFT并绘制频谱对比</span>
+Nfft_sig = 1024;
+X_fft = [];
+Y_fft = [];
+
+figure('Name', '任务三: 信号滤波');
+
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  ========================================
+vars_chk = {'h', 'H', 'y', 'X_fft', 'Y_fft'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空：%s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习一变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 2 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 exercise2_speech_filtering.m</span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2">%% 练习二：语音信号滤波综合实验
+% 文件名: exercise2_speech_filtering.m
+% 学号：______  姓名：______
+
+%% 数据加载
+load('phdist.mat');     <span class="comment">% a1,b1,a2,b2,a3,b3,xnoise</span>
+load('orig.mat');       <span class="comment">% x, Fs</span>
+
+<span class="comment">% 如果数据文件中没有Fs，设置默认值；确保为double类型</span>
+if ~exist('Fs', 'var'), Fs = 8000; end
+Fs = double(Fs);
+
+fprintf('采样率: Fs = %d Hz\n', Fs);
+
+%% 任务一：幅度响应对比
+Nfft = 1024;
+<span class="comment">% <span class="todo-tag">TODO</span> 计算三个滤波器的频率响应</span>
+H1 = [];
+H2 = [];
+H3 = [];
+w = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制幅度响应对比图(dB)</span>
+figure('Name', '任务一: 幅度响应');
+
+
+%% 任务二：相位响应对比
+<span class="comment">% <span class="todo-tag">TODO</span> 计算相位响应 (使用unwrap)</span>
+H1_phase = [];
+H2_phase = [];
+H3_phase = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制相位响应对比图</span>
+figure('Name', '任务二: 相位响应');
+
+
+%% 任务三：主观听觉测试
+<span class="comment">% <span class="todo-tag">TODO</span> 对原始语音x滤波</span>
+y1 = [];
+y2 = [];
+y3 = [];
+
+<span class="comment">% 取消注释播放:</span>
+<span class="comment">% soundsc(y1, Fs); pause(length(y1)/Fs+0.5);</span>
+
+%% 任务四：噪声分析与去噪
+<span class="comment">% <span class="todo-tag">TODO</span> 对xnoise去噪</span>
+yn1 = [];
+yn2 = [];
+yn3 = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制频谱对比</span>
+figure('Name', '任务四: 去噪效果');
+
+
+%% ========================================
+%  🔍 提交前自检 (请勿修改以下代码)
+%  ========================================
+vars_chk = {'H1', 'H2', 'H3', 'y1', 'y2', 'y3', 'yn1', 'yn2', 'yn3'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空：%s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习二变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 3 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 exercise3_window_length.m</span>
+                <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code3">%% 练习三：窗函数长度对滤波器性能的影响
+% 文件名: exercise3_window_length.m
+% 学号：______  姓名：______
+
+%% 参数定义
+N1 = 31;  N2 = 121;     <span class="comment">% 窗长度</span>
+M1 = 30;  M2 = 120;     <span class="comment">% 滤波器阶数</span>
+Wn = 0.4;               <span class="comment">% 截止频率</span>
+Fs = 48000;             <span class="comment">% 采样率</span>
+f_cpu = 100e6;          <span class="comment">% CPU时钟</span>
+
+%% 任务一：矩形窗频谱分析
+<span class="comment">% <span class="todo-tag">TODO</span> 生成矩形窗</span>
+w1 = [];
+w2 = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 计算4096点FFT</span>
+Nfft = 4096;
+W1 = [];
+W2 = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制频谱对比</span>
+figure('Name', '任务一: 矩形窗频谱');
+
+
+%% 任务二：FIR滤波器性能对比
+<span class="comment">% <span class="todo-tag">TODO</span> 设计汉明窗FIR滤波器</span>
+h1 = [];
+h2 = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 计算频率响应</span>
+H1 = [];
+H2 = [];
+H1_dB = [];
+H2_dB = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制幅度响应对比</span>
+figure('Name', '任务二: FIR性能对比');
+
+
+%% 任务三：计算复杂度分析
+<span class="comment">% <span class="todo-tag">TODO</span> 计算MAC操作数和CPU利用率</span>
+mac1 = [];
+mac2 = [];
+util1 = [];
+util2 = [];
+
+fprintf('M=%d: %dMAC, %.2f%%利用率\n', M1, mac1, util1);
+fprintf('M=%d: %dMAC, %.2f%%利用率\n', M2, mac2, util2);
+
+%% ========================================
+%  🔍 提交前自检
+%  ========================================
+vars_chk = {'W1', 'W2', 'h1', 'h2', 'H1_dB', 'H2_dB', 'mac1', 'mac2'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空：%s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习三变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+
+        <!-- Exercise 4 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 exercise4_window_comparison.m</span>
+                <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code4">%% 练习四：窗函数性能对比与优化设计
+% 文件名: exercise4_window_comparison.m
+% 学号：______  姓名：______
+
+%% 参数定义
+M = 31;  N = M + 1;
+Wn = 0.4;
+Nfft = 4096;
+
+%% 任务一：四种窗函数对比
+<span class="comment">% <span class="todo-tag">TODO</span> 设计四种窗函数的滤波器</span>
+h_rect = [];
+h_hann = [];
+h_hamm = [];
+h_black = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 测量阻带衰减</span>
+atten_rect = [];
+atten_hann = [];
+atten_hamm = [];
+atten_black = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 绘制对比图</span>
+figure('Name', '任务一: 窗函数对比');
+
+
+%% 任务二：凯泽窗参数优化
+<span class="comment">% <span class="todo-tag">TODO</span> β=3,5,7,9的凯泽窗对比</span>
+figure('Name', '任务二: 凯泽窗');
+
+
+%% 任务三：阶数影响
+<span class="comment">% <span class="todo-tag">TODO</span> M=15,31,63,127的汉明窗对比</span>
+figure('Name', '任务三: 阶数影响');
+
+
+%% 任务四：设计挑战
+<span class="comment">% 规格: ωp=0.3π, ωs=0.5π, 阻带≥60dB</span>
+<span class="comment">% <span class="todo-tag">TODO</span> 设计满足规格的滤波器</span>
+M_design = [];
+h_design = [];
+
+<span class="comment">% <span class="todo-tag">TODO</span> 验证设计</span>
+figure('Name', '任务四: 设计验证');
+
+
+%% ========================================
+%  🔍 提交前自检
+%  ========================================
+vars_chk = {'h_rect', 'h_hann', 'h_hamm', 'h_black', 'h_design'};
+miss = {};
+for i = 1:length(vars_chk)
+    if ~exist(vars_chk{i}, 'var') || isempty(eval(vars_chk{i}))
+        miss{end+1} = vars_chk{i};
+    end
+end
+if ~isempty(miss)
+    fprintf(2, '❌ 错误：以下变量未赋值或为空：%s\n', strjoin(miss, ', '));
+else
+    fprintf('✅ 练习四变量检查通过。\n');
+end
+</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleBlock(header) { header.parentElement.classList.toggle('collapsed'); }
+        function expandAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.remove('collapsed')); }
+        function collapseAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.add('collapsed')); }
+        function copyCode(event, id) {
+            event.stopPropagation();
+            const el = document.createElement('textarea');
+            el.value = document.getElementById(id).innerText;
+            document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            const btn = event.target; 
+            btn.textContent = '✓ 已复制'; btn.style.background = '#28a745';
+            setTimeout(() => { btn.textContent = '复制代码'; btn.style.background = '#5ca353'; }, 2000);
+        }
+    </script>
+</body>
+</html>
