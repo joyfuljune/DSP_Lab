@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DSP 项目3 - 音频变调实验代码模板</title>
+    <style>
+        body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .control-panel {
+            position: sticky; top: 0; z-index: 100;
+            background: white; padding: 15px; margin-bottom: 20px;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .control-btn {
+            background: #e74c3c; color: white; border: none; padding: 8px 16px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;
+        }
+        .control-btn:hover { background: #c0392b; }
+        .control-btn.secondary { background: #8e44ad; }
+
+        .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        
+        .file-header { 
+            background: linear-gradient(135deg, #e74c3c 0%, #8e44ad 100%); 
+            color: white; padding: 15px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; user-select: none;
+        }
+        .file-header:hover { opacity: 0.9; }
+        .file-header.completed { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
+        .file-header.helper { background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%); }
+        
+        .file-title { font-weight: bold; display: flex; align-items: center; }
+        .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
+        .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
+        
+        .file-content { display: block; }
+        .file-block.collapsed .file-content { display: none; }
+
+        .copy-btn { background: #48bb78; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .copy-btn:hover { background: #38a169; }
+
+        pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        
+        .keyword { color: #0000ff; font-weight: bold; }
+        .comment { color: #228b22; font-style: italic; }
+        .string { color: #a020f0; }
+        .number { color: #ff0000; }
+        .todo { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; }
+        
+        .info-banner { background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%); border-left: 4px solid #e74c3c; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .warning-banner { background: linear-gradient(135deg, #fff3cd 0%, #fffdf7 100%); border-left: 4px solid #ed8936; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .success-banner { background: linear-gradient(135deg, #f0fff4 0%, #f7fafc 100%); border-left: 4px solid #48bb78; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .test-banner { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 3px; color: #e74c3c; font-size: 0.95em; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 10px; }
+        .tag-required { background: #fed7d7; color: #c53030; }
+        .tag-completed { background: #c6f6d5; color: #276749; }
+        .tag-helper { background: #e2e8f0; color: #4a5568; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2 style="margin:0; color:#e74c3c;">🎵 DSP 项目3 - 音频变调实验代码模板</h2>
+            <div>
+                <button class="control-btn" onclick="expandAll()">全部展开</button>
+                <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <strong>📌 项目说明：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>本项目实现基于<strong>相位声码器（Phase Vocoder）</strong>的音频变调技术</li>
+                <li>代码中 <code>?</code> 标记处需要填写合适的代码</li>
+                <li><code>ex1</code> 和 <code>ex4</code> 已完成，<strong>无需修改</strong></li>
+                <li><code>stft_custom</code> 和 <code>istft_custom</code> 是辅助函数，无需修改</li>
+                <li>完成后使用 <code>test_Project3.p</code> 进行自动检查</li>
+            </ul>
+        </div>
+
+        <div class="warning-banner">
+            <strong>⚠️ 提交清单：</strong>
+            <ul style="margin:5px 0 0 20px; padding:0;">
+                <li>ex0_all.m（主函数）<span class="tag tag-required">需修改</span></li>
+                <li>ex2_process_method1.m（方法一变调）<span class="tag tag-required">需修改</span></li>
+                <li>ex2_process_method2.m（方法二变调）<span class="tag tag-required">需修改</span></li>
+                <li>ex3_formant.m（共振峰修正）<span class="tag tag-required">需修改</span></li>
+                <li>ex5_reformation.m（插值重建）<span class="tag tag-required">需修改</span></li>
+            </ul>
+        </div>
+
+        <div class="success-banner">
+            <strong>✅ 实验流程：</strong>
+            <ol style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
+                <li>阅读实验手册《人声变调》（proj3_handout）</li>
+                <li>按顺序完成 ex0, ex2, ex3, ex5，填写标记为 <code>?</code> 的代码</li>
+                <li>运行 <code>test_Project3.p</code> 检查代码</li>
+                <li>输入 9 生成加密成绩，将文件压缩为【学号_姓名.zip】提交</li>
+            </ol>
+        </div>
+
+        <!-- ex0 主函数 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex0_all.m（主函数）<span class="tag tag-required">需修改</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code0')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code0"><span class="keyword">function</span> [y_interpolated, fs] = ex0_all(audio_path, alpha, Lwin, Ra, useMethod, beta)
+<span class="comment">% EX0_ALL - 根据指定参数对音频文件进行变调处理</span>
+<span class="comment">%</span>
+<span class="comment">% 输入参数：</span>
+<span class="comment">%   audio_path  - 输入音频文件的路径</span>
+<span class="comment">%   alpha       - 变调因子 (alpha > 1 升调, alpha < 1 降调)</span>
+<span class="comment">%   Lwin        - 窗长</span>
+<span class="comment">%   Ra          - 分析帧移</span>
+<span class="comment">%   useMethod   - 1 使用方法一，2 使用方法二</span>
+<span class="comment">%   beta        - 是否启用共振峰修正（可选，默认为1）</span>
+
+<span class="comment">% 处理可选参数</span>
+<span class="keyword">if</span> nargin < 6
+    beta = 1;
+<span class="keyword">end</span>
+
+<span class="comment">% 清空变量和关闭图形窗口</span>
+clc;
+clearvars -except audio_path alpha Lwin Ra useMethod beta;
+close all;
+
+<span class="comment">% 读取输入音频文件</span>
+[x, fs] = audioread(audio_path);
+
+<span class="comment">% 确保信号为列向量</span>
+<span class="keyword">if</span> size(x, 2) > 1
+    x = x(:, 1);
+<span class="keyword">end</span>
+x = x(:);
+
+<span class="comment">% 对输入音频进行 STFT 频谱分析</span>
+Freq = ex1_analysis(x, fs, Lwin, Ra);
+
+<span class="comment">% 根据选择的方法对频谱进行处理</span>
+<span class="keyword">if</span> useMethod == 1
+    <span class="comment">% 方法1：Phase Vocoder，改变合成帧移实现变速</span>
+    Freq_out = ex2_process_method1(Freq, Lwin, Ra, alpha);
+    <span class="comment">% TODO: 方法1的合成帧移 = ?</span>
+    synthesize_param = <span class="todo">?</span>;
+<span class="keyword">elseif</span> useMethod == 2
+    <span class="comment">% 方法2：频谱帧操作</span>
+    Freq_out = ex2_process_method2(Freq, Lwin, Ra, alpha);
+    <span class="comment">% TODO: 方法2的合成帧移 = ?</span>
+    synthesize_param = <span class="todo">?</span>;
+<span class="keyword">else</span>
+    error(<span class="string">'useMethod 参数必须为 1 或 2'</span>);
+<span class="keyword">end</span>
+
+<span class="comment">% 调整共振峰</span>
+Freq_out_tuned = ex3_formant(Freq_out, alpha);
+
+<span class="comment">% 将处理后的频谱通过 ISTFT 合成回时域信号</span>
+y_out = ex4_synthesis(Freq_out_tuned, Lwin, fs, synthesize_param);
+
+<span class="comment">% 调整输出信号长度，使其与原始信号长度一致</span>
+y_interpolated = ex5_reformation(y_out, length(x));
+
+<span class="comment">% 播放处理后的音频</span>
+sound(y_interpolated, fs);
+<span class="keyword">end</span></pre>
+            </div>
+        </div>
+
+        <!-- ex1 已完成 -->
+        <div class="file-block collapsed">
+            <div class="file-header completed" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex1_analysis.m（STFT分析）<span class="tag tag-completed">已完成</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code1"><span class="keyword">function</span> Freq = ex1_analysis(x, fs, Lwin, Ra)
+<span class="comment">% EX1_ANALYSIS 对输入信号进行短时傅里叶变换（STFT）</span>
+<span class="comment">% 此函数已完成，无需修改</span>
+
+x = x(:);
+
+Freq = stft_custom(x, fs, ...
+    <span class="string">'Window'</span>, hann(Lwin, <span class="string">'periodic'</span>), ...
+    <span class="string">'FFTLength'</span>, Lwin, ...
+    <span class="string">'OverlapLength'</span>, Lwin - Ra, ...
+    <span class="string">'FrequencyRange'</span>, <span class="string">'onesided'</span>);
+<span class="keyword">end</span></pre>
+            </div>
+        </div>
+
+        <!-- ex2_process_method1 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex2_process_method1.m（方法一变调）<span class="tag tag-required">需修改</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2a')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2a"><span class="keyword">function</span> [Freq_out] = ex2_process_method1(Freq, Lwin, Ra, alpha)
+<span class="comment">% EX2_PROCESS_METHOD1 频谱处理（方法一：Phase Vocoder）</span>
+<span class="comment">%</span>
+<span class="comment">% 方法一原理：通过修改合成帧移Rs实现时间伸缩，同时修正相位保证频率连续性</span>
+
+<span class="comment">% 获取频谱矩阵的大小</span>
+[num_freqs, num_frames] = size(Freq);
+
+<span class="comment">% 计算频率索引和理论角频率</span>
+k = (0:num_freqs-1)';
+Omega = 2 * pi * k / Lwin;
+
+<span class="comment">% 计算合成帧移</span>
+Rs = Ra * alpha;
+
+<span class="comment">% 初始化相位变量</span>
+prev_phase = zeros(num_freqs, 1);
+phase_out = zeros(num_freqs, 1);
+
+<span class="comment">% TODO: 初始化输出频谱矩阵</span>
+Freq_out = <span class="todo">?</span>;
+
+<span class="comment">% 从第2帧开始处理</span>
+<span class="keyword">for</span> idx = <span class="todo">?</span>
+    <span class="comment">% 提取当前帧的幅度和相位</span>
+    Amp = abs(Freq(:, idx));
+    Pha = angle(Freq(:, idx));
+
+    <span class="comment">% TODO: 计算相位增量（相位展开）</span>
+    <span class="comment">% 公式: mod(当前相位 - 上一帧相位 - 理论增量 + π, 2π) - π</span>
+    delta_phase = <span class="todo">?</span>;
+
+    <span class="comment">% 更新上一帧相位</span>
+    prev_phase = Pha;
+
+    <span class="comment">% TODO: 计算频率偏移量</span>
+    delta_w = <span class="todo">?</span>;
+    
+    <span class="comment">% TODO: 累积输出相位（使用真实频率 × 合成帧移）</span>
+    phase_out = <span class="todo">?</span>;
+
+    <span class="comment">% TODO: 生成输出频谱（幅度 × 复指数相位）</span>
+    Freq_out(:, idx) = <span class="todo">?</span>;
+<span class="keyword">end</span>
+<span class="keyword">end</span></pre>
+            </div>
+        </div>
+
+        <!-- ex2_process_method2 -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex2_process_method2.m（方法二变调）<span class="tag tag-required">需修改</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code2b')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code2b"><span class="keyword">function</span> [Freq_out] = ex2_process_method2(Freq, Lwin, Ra, alpha)
+<span class="comment">% EX2_PROCESS_METHOD2 频谱处理（方法二：频谱帧操作）</span>
+<span class="comment">%</span>
+<span class="comment">% 方法二原理：通过对频谱帧进行抽取或复制改变帧数，重建时使用原帧移Ra</span>
+
+<span class="comment">% 获取频谱矩阵的大小</span>
+[num_freqs, num_frames] = size(Freq);
+
+<span class="comment">% 计算频率索引和理论角频率</span>
+k = (0:num_freqs-1)';
+Omega = 2 * pi * k / Lwin;
+
+<span class="comment">% 初始化累积相位</span>
+phase_out = zeros(num_freqs, 1);
+
+<span class="comment">% TODO: 计算新的时间索引</span>
+<span class="comment">% 例如：alpha=2时，帧数增加；alpha=0.5时，帧数减少</span>
+t = <span class="todo">?</span>;
+
+<span class="comment">% 计算输出帧数</span>
+num_frames_out = length(t);
+
+<span class="comment">% TODO: 初始化输出频谱矩阵</span>
+Freq_out = <span class="todo">?</span>;
+
+<span class="comment">% 初始化帧计数器</span>
+itr = <span class="todo">?</span>;
+
+<span class="comment">% 遍历每个新的时间索引</span>
+<span class="keyword">for</span> idx = t
+    <span class="comment">% TODO: 计算当前帧索引</span>
+    col = <span class="todo">?</span>;
+    
+    <span class="comment">% 边界检查</span>
+    <span class="keyword">if</span> col >= num_frames
+        col = num_frames - 1;
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> col < 1
+        col = 1;
+    <span class="keyword">end</span>
+    
+    <span class="comment">% 计算插值系数</span>
+    delta = idx - col;
+    
+    <span class="comment">% 获取相邻帧幅值并进行线性插值</span>
+    p0Amp = abs(Freq(:, col));
+    p1Amp = abs(Freq(:, min(col + 1, num_frames)));
+    Amp = (1 - delta) * p0Amp + delta * p1Amp;
+    
+    <span class="comment">% 获取相邻帧相位</span>
+    p0Pha = angle(Freq(:, col));
+    p1Pha = angle(Freq(:, min(col + 1, num_frames)));
+    
+    <span class="comment">% 计算相位增量（相位展开）</span>
+    delta_phase = mod(p1Pha - p0Pha - Omega * Ra + pi, 2 * pi) - pi;
+    
+    <span class="comment">% 累积相位</span>
+    phase_out = phase_out + Omega * Ra + delta_phase;
+    
+    <span class="comment">% TODO: 生成输出频谱</span>
+    Freq_out(:, itr) = <span class="todo">?</span>;
+    itr = itr + 1;
+<span class="keyword">end</span>
+<span class="keyword">end</span></pre>
+            </div>
+        </div>
+
+        <!-- ex3_formant -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex3_formant.m（共振峰修正）<span class="tag tag-required">需修改</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code3"><span class="keyword">function</span> new_Freq = ex3_formant(Freq_out, alpha)
+<span class="comment">% EX3_FORMANT 对输入的频谱进行共振峰修正</span>
+<span class="comment">%</span>
+<span class="comment">% 共振峰修正原理：</span>
+<span class="comment">% 1. 提取频谱包络（代表共振峰位置）</span>
+<span class="comment">% 2. 计算残差 = 频谱 / 包络</span>
+<span class="comment">% 3. 根据变调因子调整包络</span>
+<span class="comment">% 4. 输出 = 残差 × 调整后的包络</span>
+
+[num_freqs, num_frames] = size(Freq_out);
+new_Freq = zeros(size(Freq_out));
+new_Freq(:, 1) = Freq_out(:, 1);
+
+<span class="keyword">for</span> idx = 2:num_frames
+    <span class="comment">% 提取幅度谱和相位谱</span>
+    Amp = abs(Freq_out(:, idx));
+    phase_out = angle(Freq_out(:, idx));
+    Amp_len = length(Amp);
+
+    <span class="comment">% 找到幅度谱的峰值作为共振峰估计</span>
+    [pks, loc] = findpeaks(Amp, <span class="string">'MinPeakDistance'</span>, max(1, floor(Amp_len/20)));
+    
+    <span class="keyword">if</span> isempty(pks)
+        env = Amp;
+    <span class="keyword">else</span>
+        <span class="comment">% 对峰值进行插值得到包络</span>
+        loc_extended = [1; loc(:); Amp_len];
+        pks_extended = [Amp(1); pks(:); Amp(end)];
+        env = interp1(loc_extended, pks_extended, (1:Amp_len)', <span class="string">'linear'</span>, <span class="string">'extrap'</span>);
+    <span class="keyword">end</span>
+
+    env(isnan(env)) = eps;
+    env = max(env, eps);
+
+    <span class="comment">% 计算残差谱</span>
+    indices = env > eps;
+    Amp_res = Amp;
+    Amp_res(indices) = Amp(indices) ./ env(indices);
+
+    <span class="comment">% 根据alpha调整包络</span>
+    <span class="keyword">if</span> alpha > 1
+        cut = max(1, fix(Amp_len / alpha));
+        spec_donor = zeros(size(Amp));
+        old_indices = linspace(1, length(env), cut);
+        new_indices = 1:cut;
+        spec_donor(new_indices) = interp1(1:length(env), env, old_indices, <span class="string">'linear'</span>, <span class="string">'extrap'</span>);
+    <span class="keyword">else</span>
+        cut = max(1, fix(length(env) * alpha));
+        old_indices = 1:cut;
+        new_indices = linspace(1, cut, Amp_len);
+        spec_donor = interp1(old_indices, env(1:cut), new_indices, <span class="string">'linear'</span>, <span class="string">'extrap'</span>);
+        spec_donor = spec_donor(:);
+    <span class="keyword">end</span>
+    
+    spec_donor(isnan(spec_donor)) = eps;
+    spec_donor = max(spec_donor, 0);
+
+    <span class="comment">% 合成新的幅度谱</span>
+    new_Amp = Amp_res .* spec_donor;
+
+    <span class="comment">% 低通滤波</span>
+    filter_order = min(8, floor(Amp_len/4));
+    cutoff_freq = min(0.99, 300/Amp_len);
+    
+    <span class="keyword">if</span> cutoff_freq > 0 && cutoff_freq < 1 && filter_order > 0
+        <span class="comment">% TODO: 设计巴特沃斯低通滤波器</span>
+        [b, a] = <span class="todo">?</span>;
+        <span class="comment">% TODO: 计算滤波器频率响应</span>
+        [h, ~] = <span class="todo">?</span>;
+        new_Amp = new_Amp .* abs(h);
+    <span class="keyword">end</span>
+
+    <span class="comment">% TODO: 生成新的复数频谱</span>
+    new_Freq(:, idx) = <span class="todo">?</span>;
+<span class="keyword">end</span>
+<span class="keyword">end</span></pre>
+            </div>
+        </div>
+
+        <!-- ex4 已完成 -->
+        <div class="file-block collapsed">
+            <div class="file-header completed" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex4_synthesis.m（ISTFT合成）<span class="tag tag-completed">已完成</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code4"><span class="keyword">function</span> y = ex4_synthesis(Freq_out, Lwin, fs, Rs)
+<span class="comment">% EX4_SYNTHESIS 使用 ISTFT 重建时域信号</span>
+<span class="comment">% 此函数已完成，无需修改</span>
+
+Rs = max(1, floor(Rs));
+overlap_length = Lwin - Rs;
+overlap_length = max(0, min(overlap_length, Lwin - 1));
+
+y = istft_custom(Freq_out, fs, ...
+    <span class="string">'Window'</span>, hann(Lwin, <span class="string">'periodic'</span>), ...
+    <span class="string">'FFTLength'</span>, Lwin, ...
+    <span class="string">'OverlapLength'</span>, overlap_length, ...
+    <span class="string">'FrequencyRange'</span>, <span class="string">'onesided'</span>, ...
+    <span class="string">'ConjugateSymmetric'</span>, true);
+y = y(:);
+<span class="keyword">end</span></pre>
+            </div>
+        </div>
+
+        <!-- ex5_reformation -->
+        <div class="file-block">
+            <div class="file-header" onclick="toggleBlock(this)">
+                <span class="file-title">
+                    <span class="arrow-icon">▼</span>
+                    📄 ex5_reformation.m（插值重建）<span class="tag tag-required">需修改</span>
+                </span>
+                <button class="copy-btn" onclick="copyCode(event, 'code5')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code5"><span class="keyword">function</span> [y_interpolated] = ex5_reformation(y, lx)
+<span class="comment">% EX5_REFORMATION 对信号进行插值重建</span>
+<span class="comment">%</span>
+<span class="comment">% 将变速后的信号恢复到原始长度，实现"变调不变速"</span>
+
+<span class="comment">% 确保输入为实数列向量</span>
+y = real(y(:));
+ly = length(y);
+
+<span class="keyword">if</span> ly == lx
+    y_interpolated = y;
+<span class="keyword">else</span>
+    <span class="comment">% TODO: 使用interp1进行线性插值</span>
+    x_old = 1:ly;
+    x_new = linspace(1, ly, lx);
+    y_interpolated = <span class="todo">?</span>;
+<span class="keyword">end</span>
+
+y_interpolated = y_interpolated(:);
+
+<span class="comment">% TODO: 获取最小值和最大值</span>
+min_val = <span class="todo">?</span>;
+max_val = <span class="todo">?</span>;
+
+<span class="comment">% TODO: 归一化到 [-1, 1] 范围</span>
+<span class="keyword">if</span> max_val > min_val
+    y_interpolated = <span class="todo">?</span>;
+<span class="keyword">else</span>
+    y_interpolated = zeros(lx, 1);
+<span class="keyword">end</span>
+<span class="keyword">end</span></pre>
+            </div>
+        </div>
+
+        <!-- 测试示例 -->
+        <div class="test-banner">
+            <strong>🧪 完成后测试：</strong>
+            <p style="margin: 10px 0;">完成所有代码后，可使用以下命令测试：</p>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
+<span class="comment">% 示例1：方法一升调1.5倍（无共振峰修正）</span>
+[y_out, fs] = ex0_all(<span class="string">'./audio/orig1.wav'</span>, 1.5, 1024, 256, 1, 0);
+<span class="comment">% 预期：输出长度与原始相同，音调升高</span>
+
+<span class="comment">% 示例2：方法一升调1.5倍（含共振峰修正）</span>
+[y_out, fs] = ex0_all(<span class="string">'./audio/orig1.wav'</span>, 1.5, 1024, 256, 1, 1);
+<span class="comment">% 预期：音调升高但音色自然，不会像"小黄人"</span></pre>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleBlock(header) {
+            const block = header.parentElement;
+            block.classList.toggle('collapsed');
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.file-block').forEach(block => {
+                block.classList.remove('collapsed');
+            });
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.file-block').forEach(block => {
+                block.classList.add('collapsed');
+            });
+        }
+
+        function copyCode(event, codeId) {
+            event.stopPropagation();
+            const code = document.getElementById(codeId).innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ 已复制';
+                btn.style.background = '#38a169';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#48bb78';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

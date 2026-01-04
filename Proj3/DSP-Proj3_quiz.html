@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP-Proj3 练习测验 - 音频变调实验</title>
+    
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            }
+        });
+    </script>
+
+    <style>
+        .mathjax-status {
+            position: fixed;
+            top: 10px;
+            right: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            font-size: 14px;
+            z-index: 10000;
+            font-family: 'Microsoft YaHei', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mathjax-status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+        .mathjax-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+            transition: opacity 0.5s ease-out 1.5s;
+            opacity: 0;
+        }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            background: linear-gradient(135deg, #e74c3c 0%, #8e44ad 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #e74c3c;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #e74c3c;
+            margin: 25px 0 15px 0;
+        }
+
+        .login-section, .quiz-section, .result-section {
+            display: none;
+        }
+
+        .login-section.active, .quiz-section.active, .result-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #c0392b;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #e74c3c 0%, #8e44ad 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.5);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            border-left: 5px solid #e74c3c;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .question-title {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            margin: 15px 0;
+        }
+
+        .option {
+            display: block;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background: #fff5f5;
+            border-color: #e74c3c;
+        }
+
+        .option.selected {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .option.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #38a169;
+        }
+
+        .option.incorrect {
+            background: #f56565;
+            color: white;
+            border-color: #e53e3e;
+        }
+
+        .feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #e8f5e9;
+            color: #48bb78;
+            border-left: 5px solid #48bb78;
+        }
+
+        .feedback.incorrect {
+            background: #ffebee;
+            color: #f56565;
+            border-left: 5px solid #f56565;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #e74c3c 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-table th {
+            background: linear-gradient(135deg, #e74c3c 0%, #8e44ad 100%);
+            color: white;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .mastery-excellent { color: #48bb78; font-weight: bold; }
+        .mastery-good { color: #667eea; font-weight: bold; }
+        .mastery-fair { color: #ed8936; font-weight: bold; }
+        .mastery-poor { color: #f56565; font-weight: bold; }
+
+        .tf-options {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .tf-option {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tf-option:hover {
+            border-color: #e74c3c;
+        }
+
+        .tf-option.selected {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .multiple-hint {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="mathjaxStatus" class="mathjax-status loading">⏳ 正在加载数学公式...</div>
+
+    <div class="container">
+        <!-- 登录界面 -->
+        <div class="login-section active">
+            <h1>🎵 DSP-Proj3 练习测验</h1>
+            <h2 style="text-align: center; color: #8e44ad;">音频变调实验</h2>
+            
+            <div style="background: #fff5f5; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #e74c3c;">
+                <p><strong>📋 测验说明：</strong></p>
+                <ul style="margin: 10px 0 0 20px; line-height: 2;">
+                    <li>本测验包含 <strong>7个知识点</strong>，每个知识点需答对一题才能进入下一个</li>
+                    <li>题目随机生成，数值和选项顺序每次不同</li>
+                    <li>答错会生成新题继续，直到答对为止</li>
+                    <li>最终会根据答题次数评估知识掌握程度</li>
+                </ul>
+            </div>
+
+            <div class="form-group">
+                <label>📝 学号（10位数字）</label>
+                <input type="text" id="studentId" placeholder="请输入学号" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label>👤 姓名</label>
+                <input type="text" id="studentName" placeholder="请输入姓名">
+            </div>
+            <button onclick="startQuiz()">开始测验 →</button>
+        </div>
+
+        <!-- 答题界面 -->
+        <div class="quiz-section">
+            <h1>🎵 DSP-Proj3 练习测验</h1>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">0/7</div>
+            </div>
+
+            <div id="topicInfo" style="color: #8e44ad; font-weight: bold; margin-bottom: 10px;"></div>
+            
+            <div class="question-box">
+                <div class="question-title" id="questionTitle"></div>
+                <div id="questionContent"></div>
+                <div id="feedbackArea"></div>
+            </div>
+
+            <button id="submitBtn" onclick="submitAnswer()">提交答案</button>
+            <button id="nextBtn" onclick="nextQuestion()" style="display: none;">继续答题</button>
+        </div>
+
+        <!-- 结果界面 -->
+        <div class="result-section">
+            <h1>📊 测验结果报告</h1>
+            <div id="finalReport"></div>
+            <button id="saveBtn" onclick="saveScreenshot()">截图保存</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据结构 ====================
+        let studentData = {
+            id: '',
+            name: '',
+            topicStats: {},
+            currentTopicIndex: 0,
+            currentQuestionIndex: 0,
+            usedQuestions: {}
+        };
+
+        // 知识点定义
+        const topics = [
+            {
+                name: '基频与音调',
+                id: 'pitch_basics',
+                description: '音高、基频、男女声频率范围'
+            },
+            {
+                name: '人体发声原理',
+                id: 'voice_production',
+                description: '声源-滤波器模型、声带与调音区'
+            },
+            {
+                name: '共振峰概念',
+                id: 'formant',
+                description: '共振峰的定义、作用及"小黄人"效应'
+            },
+            {
+                name: 'Phase Vocoder回顾',
+                id: 'pv_review',
+                description: '相位声码器的变速原理'
+            },
+            {
+                name: '变调方法一',
+                id: 'method1',
+                description: 'PV时间伸缩+重采样变调'
+            },
+            {
+                name: '变调方法二',
+                id: 'method2',
+                description: '频谱帧操作变调'
+            },
+            {
+                name: '频谱幅度修正',
+                id: 'envelope_correction',
+                description: '共振峰保持与包络修正'
+            }
+        ];
+
+        // ==================== 工具函数 ====================
+        
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function randChoice(arr) {
+            return arr[randInt(0, arr.length - 1)];
+        }
+
+        function randFloat(min, max, decimals = 2) {
+            return (Math.random() * (max - min) + min).toFixed(decimals);
+        }
+
+        function shuffleOptionsWithAnswer(options, correctIndex) {
+            const indices = options.map((_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            return {
+                options: indices.map(i => options[i]),
+                correct: indices.indexOf(correctIndex)
+            };
+        }
+
+        function shuffleOptionsWithAnswers(options, correctIndices) {
+            const indices = options.map((_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            return {
+                options: indices.map(i => options[i]),
+                correct: correctIndices.map(ci => indices.indexOf(ci)).sort((a, b) => a - b)
+            };
+        }
+
+        // ==================== 题目生成函数 ====================
+        
+        const questionGenerators = {
+            // ========== 知识点1: 基频与音调 ==========
+            pitch_basics: [
+                () => {
+                    return {
+                        type: 'single',
+                        question: '变调（Pitch Shifting）是指改变音频信号的什么特性？',
+                        options: [
+                            '基本频率（基频），从而改变音高',
+                            '振幅，从而改变响度',
+                            '持续时间，从而改变速度',
+                            '采样率，从而改变质量'
+                        ],
+                        correct: 0,
+                        explanation: '变调是改变音频的基频（Fundamental Frequency），基频决定了我们听到的音高。'
+                    };
+                },
+                
+                () => {
+                    const noteC = 261;
+                    const noteE = 330;
+                    return {
+                        type: 'single',
+                        question: `钢琴中音C（do）的基频约为${noteC}Hz，中音E（mi）的基频约为${noteE}Hz。哪个音调更高？`,
+                        options: [
+                            'mi更高，因为基频更大',
+                            'do更高，因为基频更小',
+                            '两者一样高',
+                            '无法判断'
+                        ],
+                        correct: 0,
+                        explanation: `基频越高，音调越高。${noteE}Hz > ${noteC}Hz，所以mi比do音调高。`
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '关于男女声的基频范围，以下正确的是：',
+                        options: [
+                            '男性约85-180Hz，女性约165-255Hz',
+                            '男性约165-255Hz，女性约85-180Hz',
+                            '男女基频范围相同',
+                            '男性约500-1000Hz，女性约1000-2000Hz'
+                        ],
+                        correct: 0,
+                        explanation: '男性声带较长较厚，振动频率较低（85-180Hz）；女性声带较短较薄，振动频率较高（165-255Hz）。'
+                    };
+                },
+                
+                () => {
+                    const threshold = randChoice([150, 160, 170]);
+                    return {
+                        type: 'tf',
+                        question: `判断：通常基频大于${threshold}Hz的语音会被判断为女声。`,
+                        correct: threshold <= 160,
+                        explanation: `通常以约160Hz为分界，大于160Hz判断为女声，小于160Hz判断为男声。${threshold}Hz ${threshold <= 160 ? '≤' : '>'} 160Hz。`
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '在MATLAB 2018及以后版本中，可以用哪个函数直接获取语音信号的基频？',
+                        options: [
+                            'pitch(x, fs)',
+                            'fft(x)',
+                            'stft(x)',
+                            'fundamental(x, fs)'
+                        ],
+                        correct: 0,
+                        explanation: 'MATLAB提供了pitch()函数来估计语音信号的基频，用法为 f0 = pitch(x, fs)。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点2: 人体发声原理 ==========
+            voice_production: [
+                () => {
+                    return {
+                        type: 'single',
+                        question: '人体发声系统可以简化为哪两个主要部分？',
+                        options: [
+                            '声带（声源区）和调音区（过滤器）',
+                            '肺部和口腔',
+                            '喉咙和鼻腔',
+                            '气管和声门'
+                        ],
+                        correct: 0,
+                        explanation: '发声系统分为：声源区（声带振动产生基频）和调音区/过滤器（口腔、咽腔等修饰音色）。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '在声源-滤波器模型中，声带的作用是：',
+                        options: [
+                            '振动产生基频，决定音高',
+                            '修饰音色，产生共振峰',
+                            '提供气流动力',
+                            '控制说话速度'
+                        ],
+                        correct: 0,
+                        explanation: '声带是声源区，通过振动产生特定频率的声波，这个频率就是基频，决定了音高。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '为什么每个人的说话声音不同，即使唱同一个音调？',
+                        options: [
+                            '每个人口腔形状、舌头位置等不同，调音区对音色的修改不同',
+                            '每个人声带振动频率不同',
+                            '每个人肺活量不同',
+                            '每个人听力不同'
+                        ],
+                        correct: 0,
+                        explanation: '即使基频相同（音调相同），不同人的调音区（口腔、咽腔形状等）会对声音进行不同的修饰，形成不同音色。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断：仅改变语音信号的基频就能完美模拟另一个人的声音。',
+                        correct: false,
+                        explanation: '错误。改变基频只改变音高，但音色由调音区（共振峰）决定。要模拟另一人的声音，还需要修改共振峰特性。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '以下哪些属于人体发声系统的组成部分？（多选）',
+                        options: [
+                            '肺部和横膈膜（动力区）',
+                            '声带和喉部（声源区）',
+                            '口腔、咽腔、鼻腔（调音区）',
+                            '耳朵（听觉区）'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '发声系统包括：动力区（肺、横膈膜提供气流）、声源区（声带振动）、调音区（口腔等修饰音色）。耳朵是听觉器官，不属于发声系统。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点3: 共振峰概念 ==========
+            formant: [
+                () => {
+                    return {
+                        type: 'single',
+                        question: '共振峰（Formant）的作用是什么？',
+                        options: [
+                            '决定音色，区分不同人的声音',
+                            '决定音高，区分不同音调',
+                            '决定响度，区分声音大小',
+                            '决定速度，区分说话快慢'
+                        ],
+                        correct: 0,
+                        explanation: '共振峰是调音区产生的共振频率，决定了声音的音色特征，是区分不同人声音的关键参数。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '基频（F0）和共振峰（F1, F2, F3...）的关系是：',
+                        options: [
+                            '基频决定音高，共振峰决定音色，二者相对独立',
+                            '共振峰是基频的整数倍',
+                            '基频等于所有共振峰的平均值',
+                            '基频和共振峰完全相同'
+                        ],
+                        correct: 0,
+                        explanation: '基频由声带振动产生（决定音高），共振峰由调音区共振产生（决定音色）。二者由不同发声器官产生，相对独立。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '"小黄人"或"花栗鼠"效应是由什么原因造成的？',
+                        options: [
+                            '升高音调时共振峰也被升高，超出正常人类范围',
+                            '降低音调时基频过低',
+                            '音频采样率太低',
+                            '窗函数选择不当'
+                        ],
+                        correct: 0,
+                        explanation: '简单变调会同时改变基频和共振峰。当共振峰超出人类正常范围（约500-3000Hz）时，声音就会失真，听起来像卡通人物。'
+                    };
+                },
+                
+                () => {
+                    const gender = randChoice(['男性', '女性']);
+                    const range = gender === '男性' ? '500~2600Hz' : '600~2900Hz';
+                    return {
+                        type: 'single',
+                        question: `${gender}元音i/u的共振峰范围大约是：`,
+                        options: [
+                            range,
+                            gender === '男性' ? '600~2900Hz' : '500~2600Hz',
+                            '100~500Hz',
+                            '3000~5000Hz'
+                        ],
+                        correct: 0,
+                        explanation: `人类共振峰有固定范围：男性约500~2600Hz，女性约600~2900Hz。超出此范围会产生不自然的声音。`
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断：不同元音（如[ah]、[ee]、[oo]）具有不同的共振峰特征。',
+                        correct: true,
+                        explanation: '正确。不同元音由不同的口型、舌位产生，形成不同的共振峰模式，这是区分元音的关键。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点4: Phase Vocoder回顾 ==========
+            pv_review: [
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'Phase Vocoder变速的核心原理是：',
+                        options: [
+                            '以分析帧移Ra分帧，以合成帧移Rs重建',
+                            '直接对时域信号插值',
+                            '改变采样率',
+                            '修改FFT点数'
+                        ],
+                        correct: 0,
+                        explanation: 'Phase Vocoder通过不同的分析帧移Ra和合成帧移Rs实现变速，α = Rs/Ra 为拉伸因子。'
+                    };
+                },
+                
+                () => {
+                    const alpha = randChoice([0.5, 0.8, 1.2, 1.5, 2.0]);
+                    const effect = alpha > 1 ? '减速（变慢）' : (alpha < 1 ? '加速（变快）' : '不变');
+                    return {
+                        type: 'single',
+                        question: `当拉伸因子 α = ${alpha} 时，音频会：`,
+                        options: [
+                            effect,
+                            alpha > 1 ? '加速（变快）' : '减速（变慢）',
+                            '音调升高',
+                            '音调降低'
+                        ],
+                        correct: 0,
+                        explanation: `α = Rs/Ra。α > 1 表示合成帧移大于分析帧移，信号被拉伸（减速）；α < 1 则压缩（加速）。α = ${alpha} ${alpha > 1 ? '> 1，减速' : '< 1，加速'}。`
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'Phase Vocoder中为什么需要进行相位修正？',
+                        options: [
+                            '保证频率连续性，避免相位不连续导致的伪影',
+                            '增加计算速度',
+                            '减少内存占用',
+                            '提高采样率'
+                        ],
+                        correct: 0,
+                        explanation: '改变帧移后，相邻帧的相位关系会被破坏。相位修正确保重建信号的频率连续性，避免听觉伪影。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'Phase Vocoder的基本处理流程是：',
+                        options: [
+                            '分帧加窗 → FFT → 修改帧移/相位 → IFFT → OLA重建',
+                            'FFT → 分帧 → 修改相位 → 重建',
+                            '直接插值 → FFT → IFFT',
+                            '采样率转换 → 滤波 → 输出'
+                        ],
+                        correct: 0,
+                        explanation: 'PV流程：输入信号分帧加窗 → 每帧FFT → 修改帧移并修正相位 → IFFT → 重叠相加(OLA)重建。'
+                    };
+                },
+                
+                () => {
+                    const Ra = randChoice([128, 256, 512]);
+                    const alpha = randChoice([0.5, 1.5, 2.0]);
+                    const Rs = Ra * alpha;
+                    return {
+                        type: 'single',
+                        question: `若分析帧移 Ra = ${Ra}，拉伸因子 α = ${alpha}，则合成帧移 Rs = ？`,
+                        options: [
+                            `${Rs}`,
+                            `${Ra / alpha}`,
+                            `${Ra}`,
+                            `${Ra + alpha}`
+                        ],
+                        correct: 0,
+                        explanation: `Rs = Ra × α = ${Ra} × ${alpha} = ${Rs}。`
+                    };
+                }
+            ],
+            
+            // ========== 知识点5: 变调方法一 ==========
+            method1: [
+                () => {
+                    return {
+                        type: 'single',
+                        question: '变调方法一的核心思想是：',
+                        options: [
+                            '先用PV变速（时间伸缩），再重采样恢复原长度',
+                            '直接修改频谱的频率分量',
+                            '改变采样率',
+                            '使用滤波器'
+                        ],
+                        correct: 0,
+                        explanation: '方法一：PV时间伸缩改变信号长度 → 重采样（插值）恢复原长度。长度恢复后，频率随之改变，实现变调。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '使用方法一升高音调的步骤是：',
+                        options: [
+                            'PV拉伸信号（α > 1）→ 下采样到原长度 → 频率升高',
+                            'PV压缩信号（α < 1）→ 上采样到原长度 → 频率升高',
+                            '直接增加采样率',
+                            '增加FFT点数'
+                        ],
+                        correct: 0,
+                        explanation: '升调：先拉伸信号（变长），再下采样到原长度。下采样相当于加快播放，频率升高，音调上升。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '使用方法一降低音调的步骤是：',
+                        options: [
+                            'PV压缩信号（α < 1）→ 上采样到原长度 → 频率降低',
+                            'PV拉伸信号（α > 1）→ 下采样到原长度 → 频率降低',
+                            '直接降低采样率',
+                            '减少FFT点数'
+                        ],
+                        correct: 0,
+                        explanation: '降调：先压缩信号（变短），再上采样到原长度。上采样相当于放慢播放，频率降低，音调下降。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '方法一中，ISTFT重建时使用的帧移是：',
+                        options: [
+                            '新帧移 Rs（= Ra × α）',
+                            '原帧移 Ra',
+                            '帧长 Lwin',
+                            'FFT点数 N'
+                        ],
+                        correct: 0,
+                        explanation: '方法一使用PV变速算法，重建时使用新帧移 Rs = Ra × α，实现时间伸缩。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断：方法一可以直接复用Project 2中的Phase Vocoder变速代码。',
+                        correct: true,
+                        explanation: '正确。方法一的变速部分与Project 2完全相同，只是在变速后增加了重采样（插值）步骤来恢复原长度。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点6: 变调方法二 ==========
+            method2: [
+                () => {
+                    return {
+                        type: 'single',
+                        question: '变调方法二的核心思想是：',
+                        options: [
+                            '对频谱帧进行抽取或复制，改变帧数后以原帧移重建',
+                            '改变分析和合成帧移',
+                            '直接修改采样率',
+                            '使用不同的窗函数'
+                        ],
+                        correct: 0,
+                        explanation: '方法二：通过抽取（减少帧）或复制（增加帧）频谱帧，改变帧数后以原帧移Ra重建，再插值恢复原长度。'
+                    };
+                },
+                
+                () => {
+                    const alpha = 0.5;
+                    return {
+                        type: 'single',
+                        question: `方法二中，当 α = ${alpha} 时，对频谱帧的操作是：`,
+                        options: [
+                            '抽取（每2帧保留1帧，帧数减半）',
+                            '复制（每帧复制一次，帧数加倍）',
+                            '不变',
+                            '全部删除'
+                        ],
+                        correct: 0,
+                        explanation: `α < 1 表示降调，需要减少帧数。α = ${alpha} 意味着帧数变为原来的一半，即每2帧保留1帧。`
+                    };
+                },
+                
+                () => {
+                    const alpha = 2.0;
+                    return {
+                        type: 'single',
+                        question: `方法二中，当 α = ${alpha} 时，对频谱帧的操作是：`,
+                        options: [
+                            '复制/插值（帧数加倍）',
+                            '抽取（帧数减半）',
+                            '不变',
+                            '全部删除'
+                        ],
+                        correct: 0,
+                        explanation: `α > 1 表示升调，需要增加帧数。α = ${alpha} 意味着帧数变为原来的两倍，通过复制或插值实现。`
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '方法二中，ISTFT重建时使用的帧移是：',
+                        options: [
+                            '原帧移 Ra',
+                            '新帧移 Rs',
+                            '帧长 Lwin',
+                            'FFT点数 N'
+                        ],
+                        correct: 0,
+                        explanation: '方法二的关键区别：重建时使用原帧移Ra（而非方法一的Rs）。通过改变帧数而非帧移来实现信号长度变化。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '方法二的完整流程包括哪些步骤？（多选）',
+                        options: [
+                            '分帧加窗 + FFT计算频谱',
+                            '频谱帧抽取或复制',
+                            'IFFT + OLA以原帧移Ra重建',
+                            '插值恢复原始长度'
+                        ],
+                        correct: [0, 1, 2, 3],
+                        explanation: '方法二完整流程：分帧加窗→FFT→帧抽取/复制→IFFT+OLA(用Ra)→插值恢复原长。'
+                    };
+                }
+            ],
+            
+            // ========== 知识点7: 频谱幅度修正 ==========
+            envelope_correction: [
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频谱幅度修正的目的是：',
+                        options: [
+                            '保持原始共振峰位置，避免"小黄人"效应',
+                            '增加音量',
+                            '减少噪声',
+                            '加快处理速度'
+                        ],
+                        correct: 0,
+                        explanation: '变调会同时改变基频和共振峰。频谱修正保持原始共振峰包络，只改变基频，避免音色失真。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频谱修正算法中，"残差"是如何计算的？',
+                        options: [
+                            '频谱 ÷ 包络',
+                            '频谱 × 包络',
+                            '频谱 - 包络',
+                            '频谱 + 包络'
+                        ],
+                        correct: 0,
+                        explanation: '残差 = 原始频谱 / 包络。这样可以消除共振峰的影响，得到"纯净"的谐波结构。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频谱修正的最终输出如何得到？',
+                        options: [
+                            '残差 × 重构后的包络',
+                            '残差 + 原始包络',
+                            '残差 - 新包络',
+                            '残差 ÷ 新包络'
+                        ],
+                        correct: 0,
+                        explanation: '输出 = 残差 × 重构包络。残差保留了谐波结构，乘以修正后的包络得到"基频变化但共振峰不变"的效果。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '以下哪些是常用的包络提取方法？（多选）',
+                        options: [
+                            'LPC（线性预测编码）',
+                            '倒谱法（Cepstrum）',
+                            'FFT',
+                            '直接取幅度峰值插值'
+                        ],
+                        correct: [0, 1, 3],
+                        explanation: 'LPC和倒谱法是经典的包络提取方法，直接对幅度谱峰值插值也是一种简单方法。FFT本身不是包络提取方法。'
+                    };
+                },
+                
+                () => {
+                    return {
+                        type: 'single',
+                        question: '频谱修正算法的正确步骤顺序是：',
+                        options: [
+                            '求包络 → 计算残差 → 重构包络 → 残差×新包络',
+                            '计算残差 → 求包络 → 合成 → 重构',
+                            '重构包络 → 求残差 → 合成',
+                            'FFT → IFFT → 修正'
+                        ],
+                        correct: 0,
+                        explanation: '步骤：1)对原频谱求包络 2)残差=频谱/包络 3)根据α重构包络 4)输出=残差×新包络。'
+                    };
+                }
+            ]
+        };
+
+        // ==================== 核心逻辑 ====================
+
+        function startQuiz() {
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            
+            if (!/^\d{10}$/.test(id)) {
+                alert('请输入正确的10位学号！');
+                return;
+            }
+            if (!name) {
+                alert('请输入姓名！');
+                return;
+            }
+            
+            studentData.id = id;
+            studentData.name = name;
+            
+            topics.forEach(topic => {
+                studentData.topicStats[topic.id] = {
+                    attempts: 0,
+                    correct: false,
+                    questions: []
+                };
+                studentData.usedQuestions[topic.id] = [];
+            });
+            
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.quiz-section').classList.add('active');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const generators = questionGenerators[topicId];
+            
+            // 更新进度
+            const progress = ((studentData.currentTopicIndex) / topics.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressFill').textContent = `${studentData.currentTopicIndex}/${topics.length}`;
+            
+            document.getElementById('topicInfo').innerHTML = 
+                `📚 知识点 ${studentData.currentTopicIndex + 1}/${topics.length}: <span style="color: #e74c3c;">${currentTopic.name}</span>`;
+            
+            // 生成新题目
+            let questionIndex;
+            const usedList = studentData.usedQuestions[topicId];
+            
+            if (usedList.length >= generators.length) {
+                studentData.usedQuestions[topicId] = [];
+            }
+            
+            do {
+                questionIndex = randInt(0, generators.length - 1);
+            } while (studentData.usedQuestions[topicId].includes(questionIndex) && 
+                     studentData.usedQuestions[topicId].length < generators.length);
+            
+            studentData.usedQuestions[topicId].push(questionIndex);
+            
+            const question = generators[questionIndex]();
+            studentData.currentQuestion = question;
+            
+            document.getElementById('questionTitle').textContent = question.question;
+            
+            let contentHTML = '';
+            
+            if (question.type === 'single') {
+                const shuffled = shuffleOptionsWithAnswer(question.options, question.correct);
+                question.shuffledOptions = shuffled.options;
+                question.shuffledCorrect = shuffled.correct;
+                
+                contentHTML = '<div class="options">';
+                shuffled.options.forEach((opt, i) => {
+                    contentHTML += `<div class="option" data-index="${i}" onclick="selectOption(this)">${String.fromCharCode(65+i)}. ${opt}</div>`;
+                });
+                contentHTML += '</div>';
+            } else if (question.type === 'multiple') {
+                const shuffled = shuffleOptionsWithAnswers(question.options, question.correct);
+                question.shuffledOptions = shuffled.options;
+                question.shuffledCorrect = shuffled.correct;
+                
+                contentHTML = '<p class="multiple-hint">⚠️ 本题为多选题，请选择所有正确答案</p>';
+                contentHTML += '<div class="options">';
+                shuffled.options.forEach((opt, i) => {
+                    contentHTML += `<div class="option" data-index="${i}" onclick="toggleOption(this)">${String.fromCharCode(65+i)}. ${opt}</div>`;
+                });
+                contentHTML += '</div>';
+            } else if (question.type === 'tf') {
+                contentHTML = `
+                    <div class="tf-options">
+                        <div class="tf-option" data-value="true" onclick="selectTF(this)">✓ 正确</div>
+                        <div class="tf-option" data-value="false" onclick="selectTF(this)">✗ 错误</div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('questionContent').innerHTML = contentHTML;
+            document.getElementById('feedbackArea').innerHTML = '';
+            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function selectOption(el) {
+            document.querySelectorAll('.options .option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function toggleOption(el) {
+            el.classList.toggle('selected');
+        }
+
+        function selectTF(el) {
+            document.querySelectorAll('.tf-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function submitAnswer() {
+            const question = studentData.currentQuestion;
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            
+            let userAnswer, isCorrect;
+            
+            if (question.type === 'single') {
+                const selected = document.querySelector('.options .option.selected');
+                if (!selected) {
+                    alert('请选择一个答案！');
+                    return;
+                }
+                userAnswer = parseInt(selected.dataset.index);
+                isCorrect = (userAnswer === question.shuffledCorrect);
+                
+                document.querySelectorAll('.options .option').forEach((opt, i) => {
+                    if (i === question.shuffledCorrect) {
+                        opt.classList.add('correct');
+                    } else if (i === userAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            } else if (question.type === 'multiple') {
+                const selected = document.querySelectorAll('.options .option.selected');
+                if (selected.length === 0) {
+                    alert('请至少选择一个答案！');
+                    return;
+                }
+                userAnswer = Array.from(selected).map(el => parseInt(el.dataset.index)).sort((a,b) => a-b);
+                isCorrect = JSON.stringify(userAnswer) === JSON.stringify(question.shuffledCorrect);
+                
+                document.querySelectorAll('.options .option').forEach((opt, i) => {
+                    if (question.shuffledCorrect.includes(i)) {
+                        opt.classList.add('correct');
+                    } else if (userAnswer.includes(i)) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            } else if (question.type === 'tf') {
+                const selected = document.querySelector('.tf-option.selected');
+                if (!selected) {
+                    alert('请选择正确或错误！');
+                    return;
+                }
+                userAnswer = selected.dataset.value === 'true';
+                isCorrect = (userAnswer === question.correct);
+                
+                document.querySelectorAll('.tf-option').forEach(opt => {
+                    const val = opt.dataset.value === 'true';
+                    if (val === question.correct) {
+                        opt.classList.add('correct');
+                        opt.style.background = '#48bb78';
+                        opt.style.color = 'white';
+                    } else if (val === userAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                        opt.style.background = '#f56565';
+                        opt.style.color = 'white';
+                    }
+                });
+            }
+            
+            stats.attempts++;
+            stats.questions.push({
+                question: question.question,
+                userAnswer: userAnswer,
+                isCorrect: isCorrect
+            });
+            
+            const feedbackDiv = document.getElementById('feedbackArea');
+            
+            if (isCorrect) {
+                stats.correct = true;
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback correct">
+                        ✅ 回答正确！<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = 
+                    studentData.currentTopicIndex < topics.length - 1 ? '下一知识点' : '查看结果';
+            } else {
+                feedbackDiv.innerHTML = 
+                    `<div class="feedback incorrect">
+                        ❌ 回答错误，请再试一次！<br>
+                        <small>${question.explanation}</small>
+                    </div>`;
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').textContent = '继续答题';
+            }
+            
+            if (typeof MathJax !== 'undefined') {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+        }
+
+        function nextQuestion() {
+            const currentTopic = topics[studentData.currentTopicIndex];
+            const topicId = currentTopic.id;
+            const stats = studentData.topicStats[topicId];
+            const lastQuestion = stats.questions[stats.questions.length - 1];
+            
+            if (lastQuestion.isCorrect) {
+                studentData.currentTopicIndex++;
+                
+                if (studentData.currentTopicIndex >= topics.length) {
+                    showResults();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-section').classList.remove('active');
+            document.querySelector('.result-section').classList.add('active');
+            
+            let reportHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #e74c3c;">🎉 ${studentData.name} 同学（学号：${studentData.id}）</h2>
+                    <p style="color: #666; font-size: 1.1em;">您已完成DSP-Proj3音频变调实验练习测验！</p>
+                </div>
+                
+                <table class="stats-table">
+                    <tr>
+                        <th>知识点</th>
+                        <th>答题次数</th>
+                        <th>首次正确率</th>
+                        <th>掌握程度</th>
+                    </tr>
+            `;
+            
+            let excellentTopics = [];
+            let goodTopics = [];
+            let fairTopics = [];
+            let poorTopics = [];
+            
+            topics.forEach(topic => {
+                const stats = studentData.topicStats[topic.id];
+                const accuracy = ((1 / stats.attempts) * 100).toFixed(0);
+                
+                let mastery, masteryClass;
+                if (stats.attempts === 1) {
+                    mastery = '优秀 ⭐⭐⭐⭐';
+                    masteryClass = 'mastery-excellent';
+                    excellentTopics.push(topic.name);
+                } else if (stats.attempts === 2) {
+                    mastery = '良好 ⭐⭐⭐';
+                    masteryClass = 'mastery-good';
+                    goodTopics.push(topic.name);
+                } else if (stats.attempts <= 4) {
+                    mastery = '一般 ⭐⭐';
+                    masteryClass = 'mastery-fair';
+                    fairTopics.push(topic.name);
+                } else {
+                    mastery = '需加强 ⭐';
+                    masteryClass = 'mastery-poor';
+                    poorTopics.push(topic.name);
+                }
+                
+                reportHTML += `
+                    <tr>
+                        <td><strong>${topic.name}</strong></td>
+                        <td>${stats.attempts}次</td>
+                        <td>${accuracy}%</td>
+                        <td class="${masteryClass}">${mastery}</td>
+                    </tr>
+                `;
+            });
+            
+            reportHTML += '</table>';
+            
+            reportHTML += '<div style="margin-top: 30px;">';
+            reportHTML += '<h3 style="color: #e74c3c;">📊 知识掌握分析</h3>';
+            
+            if (excellentTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e8f5e9; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #48bb78;">
+                        <strong style="color: #48bb78;">✅ 掌握优秀的知识点：</strong><br>
+                        ${excellentTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (goodTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #667eea;">
+                        <strong style="color: #667eea;">👍 掌握良好的知识点：</strong><br>
+                        ${goodTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (fairTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #fff8e1; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #ed8936;">
+                        <strong style="color: #ed8936;">⚠️ 需要巩固的知识点：</strong><br>
+                        ${fairTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            if (poorTopics.length > 0) {
+                reportHTML += `
+                    <div style="background: #ffebee; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #f56565;">
+                        <strong style="color: #f56565;">❌ 需要重点加强的知识点：</strong><br>
+                        ${poorTopics.join('、')}
+                    </div>
+                `;
+            }
+            
+            reportHTML += `
+                <div style="background: #fff5f5; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #e74c3c;">
+                    <h4 style="color: #e74c3c; margin-top: 0;">💡 复习建议</h4>
+                    <ul style="line-height: 2; color: #555;">
+                        <li>重点复习标记为"需加强"的知识点，结合实验手册详细学习</li>
+                        <li>理解基频（音高）与共振峰（音色）的区别是关键</li>
+                        <li>掌握方法一与方法二的核心区别：重建时的帧移不同（Rs vs Ra）</li>
+                        <li>理解"小黄人"效应的成因：共振峰超出人类正常范围</li>
+                        <li>动手实践MATLAB代码，理解频谱修正的包络提取和残差计算</li>
+                    </ul>
+                </div>
+            `;
+            
+            reportHTML += '</div>';
+            
+            document.getElementById('finalReport').innerHTML = reportHTML;
+        }
+
+        function saveScreenshot() {
+            const button = document.getElementById('saveBtn');
+            button.disabled = true;
+            button.textContent = '正在生成截图...';
+            
+            html2canvas(document.body, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false
+            }).then(canvas => {
+                canvas.toBlob(blob => {
+                    const cleanId = studentData.id.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const cleanName = studentData.name.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_');
+                    const filename = `${cleanId}_${cleanName}_Proj3Quiz.png`;
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    button.disabled = false;
+                    button.textContent = '截图已保存';
+                    setTimeout(() => {
+                        button.textContent = '再次截图';
+                    }, 2000);
+                }, 'image/png');
+            }).catch(error => {
+                console.error('截图失败:', error);
+                alert('截图失败，请尝试使用浏览器截图功能');
+                button.disabled = false;
+                button.textContent = '截图保存';
+            });
+        }
+    </script>
+    
+    <script>
+        (function() {
+            const statusDiv = document.getElementById('mathjaxStatus');
+            const primaryCDN = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+            const backupCDN = 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+
+            function loadScript(src, onload, onerror) {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.onload = onload;
+                script.onerror = onerror;
+                document.head.appendChild(script);
+            }
+
+            function onMathJaxLoad() {
+                console.log('MathJax loaded successfully.');
+                statusDiv.textContent = '✓ 数学公式加载成功';
+                statusDiv.className = 'mathjax-status success';
+            }
+
+            loadScript(primaryCDN, onMathJaxLoad, function() {
+                console.warn('Primary MathJax CDN failed. Trying backup...');
+                statusDiv.textContent = '主CDN加载失败，尝试备用...';
+                loadScript(backupCDN, onMathJaxLoad, function() {
+                    console.error('Backup MathJax CDN also failed.');
+                    statusDiv.textContent = '❌ 公式加载失败，请检查网络';
+                    statusDiv.className = 'mathjax-status';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

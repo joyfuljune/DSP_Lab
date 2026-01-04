@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP 项目3 说明 - 人声变调实验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f6f8fa;
+            color: #24292e;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #d1d5da;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 45px;
+        }
+
+        /* 返回按钮 */
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background-color: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #c0392b;
+        }
+
+        /* 标题样式 */
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            color: #e74c3c;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e1e4e8;
+            color: #c0392b;
+        }
+
+        h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #8e44ad;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* 段落 */
+        p {
+            margin-bottom: 16px;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 代码块样式 */
+        pre {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        code {
+            background-color: #fce4ec;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+            color: #c0392b;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            border: 1px solid #e1e4e8;
+        }
+
+        th, td {
+            padding: 10px 15px;
+            text-align: left;
+            border: 1px solid #e1e4e8;
+        }
+
+        th {
+            background: linear-gradient(135deg, #e74c3c 0%, #8e44ad 100%);
+            font-weight: 600;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        /* 引用块 */
+        blockquote {
+            padding: 10px 20px;
+            margin: 0 0 16px 0;
+            border-left: 4px solid #e74c3c;
+            background-color: #f6f8fa;
+            color: #586069;
+        }
+
+        /* 分隔线 */
+        hr {
+            height: 2px;
+            background-color: #e1e4e8;
+            border: none;
+            margin: 30px 0;
+        }
+
+        /* 检查清单样式 */
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            font-size: 18px;
+            color: #e74c3c;
+        }
+
+        /* 信息框样式 */
+        .info-box {
+            background-color: #fef5f5;
+            border: 1px solid #f5c6cb;
+            border-left: 4px solid #e74c3c;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .warning-box {
+            background-color: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-left: 4px solid #f56565;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .success-box {
+            background-color: #f0fff4;
+            border: 1px solid #c6f6d5;
+            border-left: 4px solid #48bb78;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .tip-box {
+            background-color: #fffaf0;
+            border: 1px solid #feebc8;
+            border-left: 4px solid #ed8936;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        /* 文件树样式 */
+        .file-tree {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 14px;
+        }
+
+        .file-tree .folder {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .file-tree .file-m {
+            color: #8e44ad;
+        }
+
+        .file-tree .file-wav {
+            color: #27ae60;
+        }
+
+        .file-tree .file-p {
+            color: #3498db;
+        }
+
+        /* 流程图样式 */
+        .flow-chart {
+            background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .flow-chart pre {
+            background: transparent;
+            border: none;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* 流程步骤 */
+        .flow-steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #e74c3c 0%, #8e44ad 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            color: #e74c3c;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .tag-required {
+            background-color: #fed7d7;
+            color: #c53030;
+        }
+
+        .tag-optional {
+            background-color: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .tag-completed {
+            background-color: #e9d8fd;
+            color: #6b46c1;
+        }
+
+        /* 页脚 */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e4e8;
+            text-align: center;
+            color: #586069;
+            font-size: 14px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="proj3_handout.html" class="back-button">📖 查看实验手册</a>
+
+        <h1>🎵 DSP 项目3 说明 - 人声变调实验</h1>
+
+        <p>本文档为 DSP 课程项目3（人声变调实验）的项目说明，请仔细阅读后按步骤完成实验。</p>
+
+        <hr>
+
+        <h2>📁 项目文件结构</h2>
+
+        <div class="file-tree">
+            <span class="folder">📁 项目3文件夹/</span><br>
+            ├── <span class="folder">📁 audio/</span><br>
+            │   ├── <span class="file-wav">🎵 female1.wav</span> &nbsp;&nbsp;&nbsp;&nbsp;# 女声音频1<br>
+            │   ├── <span class="file-wav">🎵 female2.wav</span> &nbsp;&nbsp;&nbsp;&nbsp;# 女声音频2<br>
+            │   ├── <span class="file-wav">🎵 male1.wav</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 男声音频1<br>
+            │   ├── <span class="file-wav">🎵 male2.wav</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 男声音频2<br>
+            │   ├── <span class="file-wav">🎵 orig1.wav</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 音乐片段1<br>
+            │   ├── <span class="file-wav">🎵 orig1_shift.wav</span> &nbsp;# orig1升高1.5倍（参考）<br>
+            │   ├── <span class="file-wav">🎵 orig1_corr.wav</span> &nbsp;&nbsp;# orig1共振峰修正（参考）<br>
+            │   ├── <span class="file-wav">🎵 orig2.wav</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 音乐片段2<br>
+            │   ├── <span class="file-wav">🎵 orig2_shift.wav</span> &nbsp;# orig2升高1.5倍（参考）<br>
+            │   └── <span class="file-wav">🎵 orig2_corr.wav</span> &nbsp;&nbsp;# orig2共振峰修正（参考）<br>
+            ├── <span class="file-m">📄 ex0_all.m</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 主函数 <span class="tag tag-required">需修改</span><br>
+            ├── <span class="file-m">📄 ex1_analysis.m</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# STFT分析 <span class="tag tag-completed">已完成</span><br>
+            ├── <span class="file-m">📄 ex2_process_method1.m</span> # 方法一变调 <span class="tag tag-required">需修改</span><br>
+            ├── <span class="file-m">📄 ex2_process_method2.m</span> # 方法二变调 <span class="tag tag-required">需修改</span><br>
+            ├── <span class="file-m">📄 ex3_formant.m</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 共振峰修正 <span class="tag tag-required">需修改</span><br>
+            ├── <span class="file-m">📄 ex4_synthesis.m</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# ISTFT合成 <span class="tag tag-completed">已完成</span><br>
+            ├── <span class="file-m">📄 ex5_reformation.m</span> &nbsp;&nbsp;&nbsp;# 插值重建 <span class="tag tag-required">需修改</span><br>
+            ├── <span class="file-m">📄 stft_custom.m</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 自定义STFT函数 <span class="tag tag-completed">辅助函数</span><br>
+            ├── <span class="file-m">📄 istft_custom.m</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 自定义ISTFT函数 <span class="tag tag-completed">辅助函数</span><br>
+            └── <span class="file-p">📄 test_Project3.p</span> &nbsp;&nbsp;&nbsp;&nbsp;# 测试文件（加密）<br>
+        </div>
+
+        <div class="info-box">
+            <strong>📌 说明：</strong>
+            <ul>
+                <li>文件中以 <code>?</code> 标记的地方需用合适的代码进行替换</li>
+                <li><code>ex1</code> 和 <code>ex4</code> 文件已完成，<strong>无需</strong>修改</li>
+                <li><code>stft_custom.m</code> 和 <code>istft_custom.m</code> 是<strong>辅助函数</strong>，用于兼容旧版MATLAB，无需修改</li>
+                <li><code>test_Project3.p</code> 是加密文件，无法打开，用于检查代码正确性</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>📋 实验流程</h2>
+
+        <div class="flow-steps">
+            <div class="flow-step">1. 阅读手册</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">2. 设置路径</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">3. 完成代码</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">4. 测试检查</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">5. 提交实验</div>
+        </div>
+
+        <h3>步骤详解</h3>
+
+        <ol>
+            <li><strong>阅读实验手册【人声变调】</strong>，可互相讨论，理解实验目的</li>
+            <li><strong>修改MATLAB当前文件夹路径</strong>为所有实验文件所在路径，如桌面</li>
+            <li>在当前路径下，根据代码文件中的提示，<strong>完成 ex0, ex2, ex3, ex5</strong>（ex1和ex4已完成）</li>
+            <li>使用 <code>test_project3</code> 文件进行检查：
+                <ol type="a">
+                    <li>在MATLAB中文件夹栏右键单击 <code>test_project3.p</code> 文件，选择"运行"</li>
+                    <li>输入编号检查对应模块：<code>0</code>=ex0, <code>21</code>=方法一, <code>22</code>=方法二, <code>3</code>=ex3, <code>5</code>=ex5</li>
+                    <li>输入 <code>1</code> 或 <code>4</code> 可验证已完成的ex1/ex4是否正常工作</li>
+                    <li>程序将显示正确或错误，否则会提示问题所在行</li>
+                </ol>
+            </li>
+            <li>完成所有代码后，<strong>提交实验</strong>：
+                <ol type="a">
+                    <li>运行 <code>test_project3</code>，键入 <code>9</code> 后按回车</li>
+                    <li>输入学号和姓名，程序将生成 <strong>128位加密成绩</strong></li>
+                    <li>将所有文件压缩为zip，重命名为【学号_姓名】</li>
+                    <li>在学习通提交zip文件，并填写加密成绩</li>
+                </ol>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>📝 函数说明</h2>
+
+        <h3>0️⃣ ex0_all - 主函数 <span class="tag tag-required">需修改</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [y_interpolated, fs] = ex0_all(audioPath, alpha, Lwin, Ra, method)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>主函数，调用各子函数完成完整的变调流程。在完成 ex1-ex5 所有内容后执行。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>audioPath</code></td>
+                    <td>字符串</td>
+                    <td>音频文件路径</td>
+                </tr>
+                <tr>
+                    <td><code>alpha</code></td>
+                    <td>标量</td>
+                    <td>变调系数（α > 1 升调，α < 1 降调）</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>分帧帧长（如1024）</td>
+                </tr>
+                <tr>
+                    <td><code>Ra</code></td>
+                    <td>整数</td>
+                    <td>分析帧移（如256）</td>
+                </tr>
+                <tr>
+                    <td><code>method</code></td>
+                    <td>整数</td>
+                    <td>方法选择（1或2）</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>y_interpolated</code></td>
+                    <td>向量</td>
+                    <td>变调后的音频信号</td>
+                </tr>
+                <tr>
+                    <td><code>fs</code></td>
+                    <td>标量</td>
+                    <td>采样率</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-box">
+            <strong>💡 调用示例：</strong>
+            <pre><code>>> [y_interpolated, fs] = ex0_all('./audio/male2.wav', 2, 1024, 256, 2);
+% 使用方法二将male2.wav升高2倍频率</code></pre>
+        </div>
+
+        <hr>
+
+        <h3>1️⃣ ex1_analysis - STFT分析 <span class="tag tag-completed">已完成</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function Freq = ex1_analysis(x, fs, Lwin, Ra)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对输入信号进行短时傅里叶变换（STFT），得到频谱矩阵。此函数已完成，无需修改。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>x</code></td>
+                    <td>向量</td>
+                    <td>输入音频信号</td>
+                </tr>
+                <tr>
+                    <td><code>fs</code></td>
+                    <td>标量</td>
+                    <td>采样频率</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>窗长（FFT长度）</td>
+                </tr>
+                <tr>
+                    <td><code>Ra</code></td>
+                    <td>整数</td>
+                    <td>分析帧移</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>Freq</code></td>
+                    <td>复数矩阵</td>
+                    <td>STFT频谱 [num_freqs × num_frames]</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>📌 注意：</strong>由于学校机房MATLAB版本较低，不包含 <code>stft</code> 函数，项目提供了 <code>stft_custom.m</code> 文件。请阅读 ex1 的注释部分，理解该函数目的。
+        </div>
+
+        <hr>
+
+        <h3>2️⃣ ex2_process_method1 - 方法一变调 <span class="tag tag-required">需修改</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [Freq_out] = ex2_process_method1(Freq, Lwin, Ra, alpha)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>使用方法一（Phase Vocoder + 相位修正）实现频谱修改。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>Freq</code></td>
+                    <td>复数矩阵</td>
+                    <td>输入频谱矩阵</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>窗长（FFT长度）</td>
+                </tr>
+                <tr>
+                    <td><code>Ra</code></td>
+                    <td>整数</td>
+                    <td>分析帧移</td>
+                </tr>
+                <tr>
+                    <td><code>alpha</code></td>
+                    <td>标量</td>
+                    <td>变调因子</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>Freq_out</code></td>
+                    <td>复数矩阵</td>
+                    <td>相位修正后的频谱</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 方法一原理：</strong>使用Phase Vocoder进行时间伸缩，通过修改合成帧移Rs实现变速，保持幅度不变只调整相位。
+        </div>
+
+        <hr>
+
+        <h3>2️⃣ ex2_process_method2 - 方法二变调 <span class="tag tag-required">需修改</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [Freq_out] = ex2_process_method2(Freq, Lwin, Ra, alpha)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>使用方法二（频谱帧操作）实现频谱修改。通过对频谱帧进行抽取或复制改变帧数。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>Freq</code></td>
+                    <td>复数矩阵</td>
+                    <td>输入频谱矩阵</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>窗长（FFT长度）</td>
+                </tr>
+                <tr>
+                    <td><code>Ra</code></td>
+                    <td>整数</td>
+                    <td>分析帧移</td>
+                </tr>
+                <tr>
+                    <td><code>alpha</code></td>
+                    <td>标量</td>
+                    <td>变调因子</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>Freq_out</code></td>
+                    <td>复数矩阵</td>
+                    <td>帧操作后的频谱</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 方法二原理：</strong>
+            <ul>
+                <li>α &lt; 1（降调）：每n帧保留1帧，帧数减少</li>
+                <li>α &gt; 1（升调）：对帧进行复制，帧数增加</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h3>3️⃣ ex3_formant - 共振峰修正 <span class="tag tag-required">需修改</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function new_Freq = ex3_formant(Freq_out, alpha)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对频谱进行共振峰修正，保持原始音色不变。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>Freq_out</code></td>
+                    <td>复数矩阵</td>
+                    <td>变调后的频谱</td>
+                </tr>
+                <tr>
+                    <td><code>alpha</code></td>
+                    <td>标量</td>
+                    <td>变调因子</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>new_Freq</code></td>
+                    <td>复数矩阵</td>
+                    <td>共振峰修正后的频谱</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip-box">
+            <strong>🔬 共振峰修正步骤：</strong>
+            <ol>
+                <li>提取原始频谱包络</li>
+                <li>计算频谱残差 = 频谱 / 包络</li>
+                <li>根据变调因子调整/保持包络</li>
+                <li>输出 = 残差 × 调整后的包络</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h3>4️⃣ ex4_synthesis - ISTFT合成 <span class="tag tag-completed">已完成</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function y = ex4_synthesis(Freq_out, Lwin, fs, Rs)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>对修改后的频谱进行逆短时傅里叶变换（ISTFT），重建时域信号。此函数已完成，无需修改。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>Freq_out</code></td>
+                    <td>复数矩阵</td>
+                    <td>修改后的频谱</td>
+                </tr>
+                <tr>
+                    <td><code>Lwin</code></td>
+                    <td>整数</td>
+                    <td>窗长</td>
+                </tr>
+                <tr>
+                    <td><code>fs</code></td>
+                    <td>标量</td>
+                    <td>采样频率</td>
+                </tr>
+                <tr>
+                    <td><code>Rs</code></td>
+                    <td>标量</td>
+                    <td>合成帧移</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>y</code></td>
+                    <td>向量</td>
+                    <td>重建的时域信号</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>📌 注意：</strong>由于学校机房MATLAB版本较低，不包含 <code>istft</code> 函数，项目提供了 <code>istft_custom.m</code> 文件。请阅读 ex4 的注释部分，理解该函数目的。
+        </div>
+
+        <hr>
+
+        <h3>5️⃣ ex5_reformation - 插值重建 <span class="tag tag-required">需修改</span></h3>
+
+        <p><strong>函数签名</strong></p>
+        <pre><code>function [y_interpolated] = ex5_reformation(y, lx)</code></pre>
+
+        <p><strong>功能说明</strong></p>
+        <p>通过插值将变调后的信号恢复到原始长度，实现变调但不变速。</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>类型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3"><strong>输入</strong></td>
+                </tr>
+                <tr>
+                    <td><code>y</code></td>
+                    <td>向量</td>
+                    <td>重建后的信号（长度已改变）</td>
+                </tr>
+                <tr>
+                    <td><code>lx</code></td>
+                    <td>整数</td>
+                    <td>目标长度（原始信号长度）</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>输出</strong></td>
+                </tr>
+                <tr>
+                    <td><code>y_interpolated</code></td>
+                    <td>向量</td>
+                    <td>插值后的信号（恢复原长度）</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <strong>💡 关键步骤：</strong>
+            <ol>
+                <li>计算插值比例 = 原始长度 / 当前长度</li>
+                <li>使用 <code>interp1()</code> 进行插值</li>
+                <li>插值实现频率的最终变化</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h2>🎵 音频文件说明</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>文件名</th>
+                    <th>说明</th>
+                    <th>用途</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>female1.wav, female2.wav</code></td>
+                    <td>女声音频</td>
+                    <td>测试变调效果</td>
+                </tr>
+                <tr>
+                    <td><code>male1.wav, male2.wav</code></td>
+                    <td>男声音频</td>
+                    <td>测试变调效果</td>
+                </tr>
+                <tr>
+                    <td><code>orig1.wav, orig2.wav</code></td>
+                    <td>音乐片段</td>
+                    <td>原始参考</td>
+                </tr>
+                <tr>
+                    <td><code>orig1_shift.wav, orig2_shift.wav</code></td>
+                    <td>升高1.5倍</td>
+                    <td>完成ex2+ex5后对比</td>
+                </tr>
+                <tr>
+                    <td><code>orig1_corr.wav, orig2_corr.wav</code></td>
+                    <td>共振峰修正</td>
+                    <td>完成ex2+ex3+ex5后对比</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="success-box">
+            <strong>✅ 验证方法：</strong>
+            <ul>
+                <li>正确完成 ex2 + ex5，忽略 ex3：应与 <code>orig*_shift.wav</code> 一致</li>
+                <li>正确完成 ex2 + ex3 + ex5：应与 <code>orig*_corr.wav</code> 一致</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>✅ 检查清单</h2>
+
+        <p>在提交前，请确认：</p>
+
+        <ul class="checklist">
+            <li>ex0 中的 <code>synthesize_param</code> 已正确填写（方法一用Ra*alpha，方法二用Ra）</li>
+            <li>所有 ex2, ex3, ex5 文件中的 <code>?</code> 都已替换为正确代码</li>
+            <li>运行 <code>test_project3.p</code>，输入 <code>9</code> 检查，5个模块全部通过</li>
+            <li>运行 <code>ex0_all</code> 能够正常执行并听到变调音频</li>
+            <li>与参考音频对比，效果一致</li>
+            <li>压缩文件命名为【学号_姓名.zip】</li>
+            <li>zip文件中包含所有必需文件</li>
+            <li>已获得128位加密成绩</li>
+            <li>已在学习通提交zip文件和加密成绩</li>
+        </ul>
+
+        <hr>
+
+        <h2>📞 常见问题</h2>
+
+        <div class="info-box">
+            <p><strong>Q1: 方法一和方法二有什么区别？</strong></p>
+            <p><strong>A:</strong></p>
+            <ul>
+                <li><strong>方法一</strong>：使用Phase Vocoder相位修正，改变合成帧移Rs，重建时使用Rs</li>
+                <li><strong>方法二</strong>：直接对频谱帧进行抽取/复制，重建时使用原始帧移Ra</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q2: 为什么变调后声音像"小黄人"？</strong></p>
+            <p><strong>A:</strong> 简单变调会同时改变基频和共振峰。当共振峰超出正常人类范围时，声音就会失真。需要使用 ex3 的共振峰修正来保持原始音色。</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q3: ex5 插值的作用是什么？</strong></p>
+            <p><strong>A:</strong> 变调处理后信号长度会改变（升调变短，降调变长）。插值的作用是将信号恢复到原始长度，实现"变调不变速"。</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Q4: 如何调试代码？</strong></p>
+            <p><strong>A:</strong> 使用以下调试方法：</p>
+            <pre><code>% 1. 检查维度
+size(spectrum)
+
+% 2. 可视化频谱
+imagesc(abs(spectrum));
+colorbar;
+
+% 3. 播放音频对比
+sound(y_original, fs);
+pause(2);
+sound(y_shifted, fs);</code></pre>
+        </div>
+
+        <hr>
+
+        <h2>🎯 学习目标</h2>
+
+        <p>通过本实验，你将掌握：</p>
+
+        <ol>
+            <li><strong>音频变调原理</strong>：基频与音高的关系</li>
+            <li><strong>Phase Vocoder</strong>：相位声码器的变调应用</li>
+            <li><strong>共振峰（Formant）</strong>：理解其对音色的影响</li>
+            <li><strong>频谱包络修正</strong>：保持自然音色的变调技术</li>
+            <li><strong>信号插值</strong>：实现变调不变速</li>
+        </ol>
+
+        <hr>
+
+        <h2>💡 选做题</h2>
+
+        <div class="tip-box">
+            <p><strong>思考：</strong>ex0 输入参数最后一项为 beta，该参数用于表示速度。在给定 beta 的情况下如何通过修改代码实现<strong>变调+变速</strong>？</p>
+            <p><em>本题选做，不考查。</em></p>
+        </div>
+
+        <hr>
+
+        <div style="text-align: center; font-size: 24px; margin: 30px 0;">
+            <strong>祝实验顺利！</strong> 🎵🎉
+        </div>
+
+        <footer>
+            <p><strong>南京工业大学浦江学院 | 计算机与通信工程专业 | 通信工程 | DSP课程实践</strong></p>
+            <p style="margin-top: 10px; color: #999;">人声变调实验 - 基于相位声码器的音频变调</p>
+        </footer>
+    </div>
+</body>
+</html>
