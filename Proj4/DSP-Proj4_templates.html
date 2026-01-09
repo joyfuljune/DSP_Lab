@@ -6,66 +6,37 @@
     <style>
         body { font-family: 'Segoe UI', Consolas, 'Microsoft YaHei', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
         .container { max-width: 1200px; margin: 0 auto; }
-        
-        .control-panel {
-            position: sticky; top: 0; z-index: 100;
-            background: white; padding: 15px; margin-bottom: 20px;
-            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .control-btn {
-            background: #3498db; color: white; border: none; padding: 8px 16px;
-            border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px;
-        }
-        .control-btn:hover { background: #2980b9; }
-        .control-btn.secondary { background: #9b59b6; }
-
+        .control-panel { position: sticky; top: 0; z-index: 100; background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .control-btn { background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .control-btn:hover { background: #5a67d8; }
+        .control-btn.secondary { background: #6c757d; }
         .file-block { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
-        
-        .file-header { 
-            background: linear-gradient(135deg, #3498db 0%, #9b59b6 100%); 
-            color: white; padding: 15px 20px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; user-select: none;
-        }
+        .file-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .file-header:hover { opacity: 0.9; }
-        .file-header.completed { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
-        .file-header.helper { background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%); }
-        
+        .file-header.completed { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
         .file-title { font-weight: bold; display: flex; align-items: center; }
         .arrow-icon { display: inline-block; margin-right: 10px; transition: transform 0.3s; }
         .file-block.collapsed .arrow-icon { transform: rotate(-90deg); }
-        
         .file-content { display: block; }
         .file-block.collapsed .file-content { display: none; }
-
         .copy-btn { background: #48bb78; border: none; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
         .copy-btn:hover { background: #38a169; }
-
         pre { margin: 0; padding: 20px; overflow-x: auto; line-height: 1.8; font-size: 13px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
-        
         .keyword { color: #0000ff; font-weight: bold; }
         .comment { color: #228b22; font-style: italic; }
         .string { color: #a020f0; }
         .number { color: #ff0000; }
         .todo { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffeeba; font-weight: bold; }
-        
-        .info-banner { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 4px solid #3498db; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .info-banner { background: linear-gradient(135deg, #e7f3ff 0%, #f0f7ff 100%); border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
         .warning-banner { background: linear-gradient(135deg, #fff3cd 0%, #fffdf7 100%); border-left: 4px solid #ed8936; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
         .success-banner { background: linear-gradient(135deg, #f0fff4 0%, #f7fafc 100%); border-left: 4px solid #48bb78; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-        .test-banner { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-left: 4px solid #4caf50; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-
-        code { background: #edf2f7; padding: 2px 6px; border-radius: 3px; color: #3498db; font-size: 0.95em; }
-        .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 10px; }
-        .tag-required { background: #fed7d7; color: #c53030; }
-        .tag-completed { background: #c6f6d5; color: #276749; }
-        .tag-helper { background: #e2e8f0; color: #4a5568; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 3px; color: #667eea; font-size: 0.95em; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="control-panel">
-            <h2 style="margin:0; color:#3498db;">🎤 DSP 项目4 - DTW孤立词语音识别代码模板</h2>
+            <h2 style="margin:0; color:#667eea;">🎤 DSP 项目4 - DTW孤立词语音识别代码模板</h2>
             <div>
                 <button class="control-btn" onclick="expandAll()">全部展开</button>
                 <button class="control-btn secondary" onclick="collapseAll()">全部折叠</button>
@@ -77,237 +48,190 @@
             <ul style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
                 <li>本项目实现基于<strong>动态时间规整（DTW）</strong>的孤立词语音识别系统</li>
                 <li>代码中 <code>?</code> 标记处需要填写合适的代码</li>
-                <li><code>ex0</code>、<code>ex5</code>、<code>ex6</code> 已完成，<strong>无需修改</strong></li>
-                <li>完成后使用 <code>test_Project4.p</code> 进行自动检查</li>
+                <li>完成ex1-ex4后，运行 <code>train_template.m</code> 生成模板，再运行 <code>ex0_all.m</code> 测试</li>
             </ul>
         </div>
 
         <div class="warning-banner">
-            <strong>⚠️ 提交清单：</strong>
-            <ul style="margin:5px 0 0 20px; padding:0;">
-                <li>ex1_preemphasis.m（预加重滤波）<span class="tag tag-required">需修改</span></li>
-                <li>ex2_enframe.m（信号分帧）<span class="tag tag-required">需修改</span></li>
-                <li>ex3_mfcc.m（MFCC特征提取）<span class="tag tag-required">需修改</span></li>
-                <li>ex4_dtw.m（DTW动态规整）<span class="tag tag-required">需修改</span></li>
-            </ul>
+            <strong>⚠️ 提交清单：</strong>ex1_preemphasis.m、ex2_enframe.m、ex3_mfcc.m、ex4_dtw.m
         </div>
 
         <div class="success-banner">
             <strong>✅ 实验流程：</strong>
             <ol style="margin:5px 0 0 20px; padding:0; line-height:1.8;">
-                <li>阅读实验手册《DTW语音识别》（proj4_handout）</li>
-                <li>按顺序完成 ex1, ex2, ex3, ex4，填写标记为 <code>?</code> 的代码</li>
-                <li>运行 <code>test_Project4.p</code> 检查代码</li>
-                <li>输入 9 生成加密成绩，将文件压缩为【学号_姓名.zip】提交</li>
+                <li>按顺序完成 ex1-ex4，填写 <code>?</code> 处的代码</li>
+                <li>运行 <code>train_template.m</code> 生成 template.mat</li>
+                <li>运行 <code>ex0_all.m</code> 测试（先用test目录，再用train目录对比）</li>
+                <li>运行 <code>test_Project4.p</code> 检查代码，生成加密成绩</li>
             </ol>
+        </div>
+
+        <!-- train_template -->
+        <div class="file-block collapsed">
+            <div class="file-header completed" onclick="toggleBlock(this)">
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 train_template.m（模板训练 - 必须先运行）</span>
+                <button class="copy-btn" onclick="copyCode(event, 'code_train')">复制代码</button>
+            </div>
+            <div class="file-content">
+                <pre id="code_train"><span class="comment">%% train_template.m - 从训练音频生成DTW模板库</span>
+<span class="comment">% 功能: 从 train/ 目录读取音频，使用中心样本法生成模板</span>
+<span class="comment">% 使用: >> train_template</span>
+
+<span class="keyword">clear</span>; <span class="keyword">clc</span>; <span class="keyword">close</span> <span class="keyword">all</span>;
+
+train_dir = <span class="string">'train'</span>;
+output_file = <span class="string">'template.mat'</span>;
+target_fs = <span class="number">16000</span>;
+
+params = <span class="keyword">struct</span>();
+params.frame_len_ms = <span class="number">25</span>;
+params.frame_shift_ms = <span class="number">10</span>;
+params.pre_emphasis = <span class="number">0.97</span>;
+params.nfft = <span class="number">2048</span>;
+params.num_filters = <span class="number">32</span>;
+params.num_ceps = <span class="number">12</span>;
+params.lifter_coef = <span class="number">22</span>;
+params.delta_N = <span class="number">2</span>;
+
+fprintf(<span class="string">'DTW模板训练程序\n'</span>);
+wav_files = dir(fullfile(train_dir, <span class="string">'*.wav'</span>));
+digit_names = {<span class="string">'zero'</span>,<span class="string">'one'</span>,<span class="string">'two'</span>,<span class="string">'three'</span>,<span class="string">'four'</span>,<span class="string">'five'</span>,<span class="string">'six'</span>,<span class="string">'seven'</span>,<span class="string">'eight'</span>,<span class="string">'nine'</span>};
+
+<span class="comment">% 按数字分组</span>
+digit_files = cell(<span class="number">10</span>, <span class="number">1</span>);
+<span class="keyword">for</span> i = <span class="number">1</span>:length(wav_files)
+    filename = wav_files(i).name;
+    label = extract_digit_label(filename, digit_names);
+    <span class="keyword">if</span> label >= <span class="number">0</span> && label <= <span class="number">9</span>
+        digit_files{label+<span class="number">1</span>} = [digit_files{label+<span class="number">1</span>}; {filename}];
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% 提取MFCC</span>
+all_features = cell(<span class="number">10</span>, <span class="number">1</span>);
+<span class="keyword">for</span> digit = <span class="number">0</span>:<span class="number">9</span>
+    files = digit_files{digit+<span class="number">1</span>};
+    features = {};
+    <span class="keyword">for</span> k = <span class="number">1</span>:length(files)
+        [audio, fs] = audioread(fullfile(train_dir, files{k}));
+        <span class="keyword">if</span> size(audio,<span class="number">2</span>)><span class="number">1</span>, audio=audio(:,<span class="number">1</span>); <span class="keyword">end</span>
+        <span class="keyword">if</span> fs~=target_fs, audio=resample(audio,target_fs,fs); <span class="keyword">end</span>
+        audio_vad = ex6_vad(audio, target_fs);
+        <span class="keyword">if</span> length(audio_vad) >= target_fs*<span class="number">0.05</span>
+            features{end+<span class="number">1</span>} = ex3_mfcc(audio_vad, target_fs, params);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    all_features{digit+<span class="number">1</span>} = features;
+    fprintf(<span class="string">'数字%d: %d样本\n'</span>, digit, length(features));
+<span class="keyword">end</span>
+
+<span class="comment">% 中心样本法选择模板</span>
+template = cell(<span class="number">1</span>, <span class="number">10</span>);
+<span class="keyword">for</span> digit = <span class="number">0</span>:<span class="number">9</span>
+    samples = all_features{digit+<span class="number">1</span>};
+    <span class="keyword">if</span> length(samples)==<span class="number">1</span>
+        template{digit+<span class="number">1</span>} = samples{<span class="number">1</span>};
+    <span class="keyword">else</span>
+        dist_sum = zeros(length(samples),<span class="number">1</span>);
+        <span class="keyword">for</span> i=<span class="number">1</span>:length(samples)
+            <span class="keyword">for</span> j=<span class="number">1</span>:length(samples)
+                <span class="keyword">if</span> i~=j, dist_sum(i)=dist_sum(i)+ex4_dtw(samples{i},samples{j},<span class="keyword">true</span>); <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        [~,idx] = min(dist_sum);
+        template{digit+<span class="number">1</span>} = samples{idx};
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+save(output_file, <span class="string">'template'</span>);
+fprintf(<span class="string">'模板已保存: %s\n'</span>, output_file);
+
+<span class="keyword">function</span> label = extract_digit_label(filename, digit_names)
+    [~,name,~] = fileparts(filename);
+    name_lower = lower(name);
+    <span class="keyword">for</span> i=<span class="number">1</span>:<span class="number">10</span>
+        <span class="keyword">if</span> contains(name_lower, digit_names{i}), label=i-<span class="number">1</span>; <span class="keyword">return</span>; <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> ~isempty(name)&&name(<span class="number">1</span>)>=<span class="string">'0'</span>&&name(<span class="number">1</span>)<=<span class="string">'9'</span>, label=str2double(name(<span class="number">1</span>)); <span class="keyword">return</span>; <span class="keyword">end</span>
+    label = -<span class="number">1</span>;
+<span class="keyword">end</span></pre>
+            </div>
         </div>
 
         <!-- ex0 主函数 -->
         <div class="file-block collapsed">
             <div class="file-header completed" onclick="toggleBlock(this)">
-                <span class="file-title">
-                    <span class="arrow-icon">▼</span>
-                    📄 ex0_all.m（主程序）<span class="tag tag-completed">已完成</span>
-                </span>
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 ex0_all.m（主程序 - 无需修改）</span>
                 <button class="copy-btn" onclick="copyCode(event, 'code0')">复制代码</button>
             </div>
             <div class="file-content">
                 <pre id="code0"><span class="comment">%% ex0_all.m - DTW孤立词语音识别主程序</span>
-<span class="comment">%</span>
-<span class="comment">%  功能: 批量识别 audio/ 目录下的所有 wav 文件</span>
-<span class="comment">%</span>
-<span class="comment">%  调用关系:</span>
-<span class="comment">%      ex0_main</span>
-<span class="comment">%        ├── ex6_vad        (端点检测)</span>
-<span class="comment">%        ├── ex3_mfcc       (MFCC特征提取)</span>
-<span class="comment">%        │     ├── ex1_preemphasis  (预加重)</span>
-<span class="comment">%        │     └── ex2_enframe      (分帧)</span>
-<span class="comment">%        └── ex5_recognize  (识别决策)</span>
-<span class="comment">%              └── ex4_dtw  (DTW计算)</span>
-<span class="comment">%</span>
-<span class="comment">%  音频文件命名规则 (自动从文件名提取真实标签):</span>
-<span class="comment">%      - 文件名中包含数字0-9即可</span>
-<span class="comment">%      - 例如: 0_male.wav, female_3.wav, test5.wav, 数字7.wav</span>
-<span class="comment">%</span>
-<span class="comment">%  南京工业大学浦江学院 - DSP课程实验</span>
+<span class="comment">% 使用方法: 先运行train_template.m，再运行此脚本</span>
+<span class="comment">% 可修改audio_dir为'test'或'train'进行对比测试</span>
 
 <span class="keyword">clear</span>; <span class="keyword">clc</span>; <span class="keyword">close</span> <span class="keyword">all</span>;
 
-<span class="comment">%% ==================== 配置参数 ====================</span>
-audio_dir = <span class="string">'audio'</span>;  <span class="comment">% 音频文件目录</span>
+audio_dir = <span class="string">'test'</span>;   <span class="comment">% 可改为'train'对比</span>
+target_fs = <span class="number">16000</span>;
 
-<span class="comment">% MFCC参数 (与模板提取时一致)</span>
 params = <span class="keyword">struct</span>();
-params.frame_len_ms = <span class="number">25</span>;      <span class="comment">% 帧长 25ms</span>
-params.frame_shift_ms = <span class="number">10</span>;    <span class="comment">% 帧移 10ms</span>
-params.pre_emphasis = <span class="number">0.97</span>;    <span class="comment">% 预加重系数</span>
-params.nfft = <span class="number">2048</span>;            <span class="comment">% FFT点数</span>
-params.num_filters = <span class="number">32</span>;       <span class="comment">% Mel滤波器数</span>
-params.num_ceps = <span class="number">12</span>;          <span class="comment">% MFCC系数数 (不含0阶)</span>
-params.lifter_coef = <span class="number">22</span>;       <span class="comment">% 升倒谱系数</span>
-params.delta_N = <span class="number">2</span>;            <span class="comment">% 差分窗口</span>
+params.frame_len_ms = <span class="number">25</span>;
+params.frame_shift_ms = <span class="number">10</span>;
+params.pre_emphasis = <span class="number">0.97</span>;
+params.nfft = <span class="number">2048</span>;
+params.num_filters = <span class="number">32</span>;
+params.num_ceps = <span class="number">12</span>;
+params.lifter_coef = <span class="number">22</span>;
+params.delta_N = <span class="number">2</span>;
 
-<span class="comment">%% ==================== 显示信息 ====================</span>
-fprintf(<span class="string">'╔══════════════════════════════════════════════════╗\n'</span>);
-fprintf(<span class="string">'║       DTW 孤立词语音识别系统 (批量模式)           ║\n'</span>);
-fprintf(<span class="string">'╠══════════════════════════════════════════════════╣\n'</span>);
-fprintf(<span class="string">'║  音频目录: %-38s║\n'</span>, audio_dir);
-fprintf(<span class="string">'║  特征维度: 36 (12 MFCC + 12 Δ + 12 ΔΔ)          ║\n'</span>);
-fprintf(<span class="string">'╚══════════════════════════════════════════════════╝\n\n'</span>);
-
-<span class="comment">%% ==================== 加载模板库 ====================</span>
-fprintf(<span class="string">'[1/3] 加载模板库...\n'</span>);
+fprintf(<span class="string">'DTW孤立词语音识别\n'</span>);
+fprintf(<span class="string">'测试目录: %s\n'</span>, audio_dir);
 
 <span class="keyword">if</span> ~exist(<span class="string">'template.mat'</span>, <span class="string">'file'</span>)
-    error(<span class="string">'找不到 template.mat 文件！'</span>);
+    error(<span class="string">'找不到template.mat！请先运行train_template.m'</span>);
 <span class="keyword">end</span>
-
 load(<span class="string">'template.mat'</span>, <span class="string">'template'</span>);
+templates = template;
 
-<span class="comment">% 转换为cell数组格式</span>
-<span class="keyword">if</span> iscell(template)
-    templates = template;
-<span class="keyword">else</span>
-    templates = cell(<span class="number">1</span>, <span class="number">10</span>);
-    <span class="keyword">for</span> i = <span class="number">1</span>:<span class="number">10</span>
-        templates{i} = template{i};
-    <span class="keyword">end</span>
-<span class="keyword">end</span>
-
-fprintf(<span class="string">'      ✓ 已加载 %d 个模板 (数字 0-9)\n\n'</span>, length(templates));
-
-<span class="comment">%% ==================== 扫描音频文件 ====================</span>
-fprintf(<span class="string">'[2/3] 扫描音频文件...\n'</span>);
-
-<span class="keyword">if</span> ~exist(audio_dir, <span class="string">'dir'</span>)
-    error(<span class="string">'找不到音频目录: %s'</span>, audio_dir);
-<span class="keyword">end</span>
-
-<span class="comment">% 获取所有wav文件</span>
 wav_files = dir(fullfile(audio_dir, <span class="string">'*.wav'</span>));
+correct = <span class="number">0</span>; total = <span class="number">0</span>;
 
-<span class="keyword">if</span> isempty(wav_files)
-    error(<span class="string">'音频目录中没有找到 .wav 文件'</span>);
-<span class="keyword">end</span>
-
-fprintf(<span class="string">'      ✓ 找到 %d 个音频文件\n\n'</span>, length(wav_files));
-
-<span class="comment">%% ==================== 批量识别 ====================</span>
-fprintf(<span class="string">'[3/3] 开始识别...\n'</span>);
-fprintf(<span class="string">'──────────────────────────────────────────────────────────────\n'</span>);
-fprintf(<span class="string">'  序号  文件名                    真实  识别  结果    DTW距离\n'</span>);
-fprintf(<span class="string">'──────────────────────────────────────────────────────────────\n'</span>);
-
-num_files = length(wav_files);
-results = zeros(num_files, <span class="number">1</span>);      <span class="comment">% 识别结果</span>
-true_labels = zeros(num_files, <span class="number">1</span>);  <span class="comment">% 真实标签</span>
-scores_all = zeros(num_files, <span class="number">10</span>);  <span class="comment">% 所有DTW得分</span>
-correct = <span class="number">0</span>;
-has_label = <span class="number">0</span>;
-
-<span class="keyword">for</span> i = <span class="number">1</span>:num_files
-    filename = wav_files(i).name;
-    filepath = fullfile(audio_dir, filename);
+<span class="keyword">for</span> i = <span class="number">1</span>:length(wav_files)
+    [audio, fs] = audioread(fullfile(audio_dir, wav_files(i).name));
+    <span class="keyword">if</span> size(audio,<span class="number">2</span>)><span class="number">1</span>, audio=audio(:,<span class="number">1</span>); <span class="keyword">end</span>
+    <span class="keyword">if</span> fs~=target_fs, audio=resample(audio,target_fs,fs); fs=target_fs; <span class="keyword">end</span>
     
-    <span class="comment">% 读取音频</span>
-    [audio, fs] = audioread(filepath);
-    
-    <span class="comment">% 如果是双声道，取第一声道</span>
-    <span class="keyword">if</span> size(audio, <span class="number">2</span>) > <span class="number">1</span>
-        audio = audio(:, <span class="number">1</span>);
-    <span class="keyword">end</span>
-    
-    <span class="comment">% 端点检测</span>
     audio_vad = ex6_vad(audio, fs);
+    <span class="keyword">if</span> length(audio_vad) < fs*<span class="number">0.05</span>, <span class="keyword">continue</span>; <span class="keyword">end</span>
     
-    <span class="comment">% 检查有效性</span>
-    <span class="keyword">if</span> length(audio_vad) < fs * <span class="number">0.05</span>
-        fprintf(<span class="string">'  %3d   %-25s  跳过 (语音太短)\n'</span>, i, filename);
-        results(i) = <span class="number">-1</span>;
-        true_labels(i) = <span class="number">-1</span>;
-        <span class="keyword">continue</span>;
-    <span class="keyword">end</span>
-    
-    <span class="comment">% MFCC提取</span>
     test_feat = ex3_mfcc(audio_vad, fs, params);
-    
-    <span class="comment">% DTW识别</span>
     [result, scores, ~] = ex5_recognize(test_feat, templates);
-    results(i) = result;
-    scores_all(i, :) = scores;
     
-    <span class="comment">% 尝试从文件名提取真实标签</span>
-    true_label = extract_label(filename);
-    true_labels(i) = true_label;
-    
-    <span class="comment">% 判断正误</span>
+    true_label = extract_label(wav_files(i).name);
     <span class="keyword">if</span> true_label >= <span class="number">0</span>
-        has_label = has_label + <span class="number">1</span>;
-        <span class="keyword">if</span> result == true_label
-            correct = correct + <span class="number">1</span>;
-            status = <span class="string">'✓'</span>;
-        <span class="keyword">else</span>
-            status = <span class="string">'✗'</span>;
-        <span class="keyword">end</span>
-        fprintf(<span class="string">'  %3d   %-25s   %d     %d     %s     %.2f\n'</span>, ...
-                i, filename, true_label, result, status, min(scores));
-    <span class="keyword">else</span>
-        fprintf(<span class="string">'  %3d   %-25s   -     %d     -     %.2f\n'</span>, ...
-                i, filename, result, min(scores));
+        total = total + <span class="number">1</span>;
+        <span class="keyword">if</span> result == true_label, correct = correct + <span class="number">1</span>; <span class="keyword">end</span>
+        fprintf(<span class="string">'%s: 真实=%d 识别=%d %s\n'</span>, wav_files(i).name, true_label, result, ...
+            iif(result==true_label, <span class="string">'✓'</span>, <span class="string">'✗'</span>));
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-fprintf(<span class="string">'──────────────────────────────────────────────────────────────\n'</span>);
-
-<span class="comment">%% ==================== 统计结果 ====================</span>
-fprintf(<span class="string">'\n'</span>);
-fprintf(<span class="string">'┌────────────────────────────────────────────────────────────┐\n'</span>);
-fprintf(<span class="string">'│                      识别结果统计                          │\n'</span>);
-fprintf(<span class="string">'├────────────────────────────────────────────────────────────┤\n'</span>);
-fprintf(<span class="string">'│  总文件数:     %3d                                         │\n'</span>, num_files);
-
-<span class="keyword">if</span> has_label > <span class="number">0</span>
-    accuracy = correct / has_label * <span class="number">100</span>;
-    fprintf(<span class="string">'│  有标签文件:   %3d                                         │\n'</span>, has_label);
-    fprintf(<span class="string">'│  识别正确:     %3d                                         │\n'</span>, correct);
-    fprintf(<span class="string">'│  识别错误:     %3d                                         │\n'</span>, has_label - correct);
-    fprintf(<span class="string">'│  准确率:       %.1f%%                                       │\n'</span>, accuracy);
-<span class="keyword">else</span>
-    fprintf(<span class="string">'│  (无法计算准确率 - 文件名中未包含数字标签)                 │\n'</span>);
+<span class="keyword">if</span> total > <span class="number">0</span>
+    fprintf(<span class="string">'\n识别率: %.1f%% (%d/%d)\n'</span>, correct/total*<span class="number">100</span>, correct, total);
 <span class="keyword">end</span>
 
-fprintf(<span class="string">'└────────────────────────────────────────────────────────────┘\n'</span>);
-
-fprintf(<span class="string">'\n程序结束。\n'</span>);
-
-<span class="comment">%% ==================== 辅助函数 ====================</span>
 <span class="keyword">function</span> label = extract_label(filename)
-<span class="comment">%EXTRACT_LABEL 从文件名中提取数字标签</span>
+    [~,name,~] = fileparts(filename);
+    digit_names = {<span class="string">'zero'</span>,<span class="string">'one'</span>,<span class="string">'two'</span>,<span class="string">'three'</span>,<span class="string">'four'</span>,<span class="string">'five'</span>,<span class="string">'six'</span>,<span class="string">'seven'</span>,<span class="string">'eight'</span>,<span class="string">'nine'</span>};
+    <span class="keyword">for</span> i=<span class="number">1</span>:<span class="number">10</span>
+        <span class="keyword">if</span> contains(lower(name), digit_names{i}), label=i-<span class="number">1</span>; <span class="keyword">return</span>; <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> ~isempty(name)&&name(<span class="number">1</span>)>=<span class="string">'0'</span>&&name(<span class="number">1</span>)<=<span class="string">'9'</span>, label=str2double(name(<span class="number">1</span>)); <span class="keyword">return</span>; <span class="keyword">end</span>
+    label = -<span class="number">1</span>;
+<span class="keyword">end</span>
 
-    [~, name, ~] = fileparts(filename);
-    
-    <span class="keyword">if</span> ~isempty(name) && name(<span class="number">1</span>) >= <span class="string">'0'</span> && name(<span class="number">1</span>) <= <span class="string">'9'</span>
-        label = str2double(name(<span class="number">1</span>));
-        <span class="keyword">return</span>;
-    <span class="keyword">end</span>
-    
-    digits = regexp(name, <span class="string">'\d'</span>, <span class="string">'match'</span>);
-    <span class="keyword">if</span> ~isempty(digits)
-        label = str2double(digits{<span class="number">1</span>});
-        <span class="keyword">if</span> label >= <span class="number">0</span> && label <= <span class="number">9</span>
-            <span class="keyword">return</span>;
-        <span class="keyword">end</span>
-    <span class="keyword">end</span>
-    
-    chinese_digits = {<span class="string">'零'</span>, <span class="string">'一'</span>, <span class="string">'二'</span>, <span class="string">'三'</span>, <span class="string">'四'</span>, <span class="string">'五'</span>, <span class="string">'六'</span>, <span class="string">'七'</span>, <span class="string">'八'</span>, <span class="string">'九'</span>};
-    <span class="keyword">for</span> i = <span class="number">1</span>:<span class="number">10</span>
-        <span class="keyword">if</span> contains(name, chinese_digits{i})
-            label = i - <span class="number">1</span>;
-            <span class="keyword">return</span>;
-        <span class="keyword">end</span>
-    <span class="keyword">end</span>
-    
-    label = <span class="number">-1</span>;
+<span class="keyword">function</span> r = iif(cond, t, f)
+    <span class="keyword">if</span> cond, r=t; <span class="keyword">else</span>, r=f; <span class="keyword">end</span>
 <span class="keyword">end</span></pre>
             </div>
         </div>
@@ -315,40 +239,19 @@ fprintf(<span class="string">'\n程序结束。\n'</span>);
         <!-- ex1 预加重 -->
         <div class="file-block">
             <div class="file-header" onclick="toggleBlock(this)">
-                <span class="file-title">
-                    <span class="arrow-icon">▼</span>
-                    📄 ex1_preemphasis.m（预加重滤波）<span class="tag tag-required">需修改</span>
-                </span>
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 ex1_preemphasis.m（预加重滤波）</span>
                 <button class="copy-btn" onclick="copyCode(event, 'code1')">复制代码</button>
             </div>
             <div class="file-content">
                 <pre id="code1"><span class="keyword">function</span> y = ex1_preemphasis(x, alpha)
 <span class="comment">%EX1_PREEMPHASIS 预加重滤波</span>
-<span class="comment">%</span>
 <span class="comment">%   y = ex1_preemphasis(x, alpha)</span>
-<span class="comment">%</span>
-<span class="comment">%   输入:</span>
-<span class="comment">%       x     - 语音信号 (列向量)</span>
-<span class="comment">%       alpha - 预加重系数, 默认 0.97</span>
-<span class="comment">%</span>
-<span class="comment">%   输出:</span>
-<span class="comment">%       y     - 预加重后的信号</span>
-<span class="comment">%</span>
-<span class="comment">%   公式:</span>
-<span class="comment">%       y[n] = x[n] - alpha * x[n-1]</span>
-<span class="comment">%</span>
-<span class="comment">%   说明:</span>
-<span class="comment">%       预加重用于补偿语音信号的高频衰减，使频谱更加平坦</span>
-<span class="comment">%       实现为一阶高通FIR滤波器: H(z) = 1 - alpha*z^(-1)</span>
+<span class="comment">%   公式: y[n] = x[n] - alpha * x[n-1]</span>
 
-<span class="keyword">if</span> nargin < <span class="number">2</span>
-    alpha = <span class="number">0.97</span>;
-<span class="keyword">end</span>
+<span class="keyword">if</span> nargin < <span class="number">2</span>, alpha = <span class="number">0.97</span>; <span class="keyword">end</span>
+x = x(:);
 
-x = x(:);  <span class="comment">% 确保列向量</span>
-
-<span class="comment">% TODO: 使用filter函数实现一阶高通滤波器</span>
-<span class="comment">% 滤波器系数 b = [1, -alpha], a = 1</span>
+<span class="comment">% TODO: 使用filter函数实现，b = [1, -alpha], a = 1</span>
 y = filter(<span class="todo">?</span>, <span class="number">1</span>, x);
 
 <span class="keyword">end</span></pre>
@@ -358,48 +261,25 @@ y = filter(<span class="todo">?</span>, <span class="number">1</span>, x);
         <!-- ex2 分帧 -->
         <div class="file-block">
             <div class="file-header" onclick="toggleBlock(this)">
-                <span class="file-title">
-                    <span class="arrow-icon">▼</span>
-                    📄 ex2_enframe.m（信号分帧）<span class="tag tag-required">需修改</span>
-                </span>
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 ex2_enframe.m（信号分帧）</span>
                 <button class="copy-btn" onclick="copyCode(event, 'code2')">复制代码</button>
             </div>
             <div class="file-content">
                 <pre id="code2"><span class="keyword">function</span> frames = ex2_enframe(x, frame_len, frame_shift)
 <span class="comment">%EX2_ENFRAME 将信号分帧</span>
-<span class="comment">%</span>
-<span class="comment">%   frames = ex2_enframe(x, frame_len, frame_shift)</span>
-<span class="comment">%</span>
-<span class="comment">%   输入:</span>
-<span class="comment">%       x           - 语音信号 (列向量)</span>
-<span class="comment">%       frame_len   - 帧长 (采样点数)</span>
-<span class="comment">%       frame_shift - 帧移 (采样点数)</span>
-<span class="comment">%</span>
-<span class="comment">%   输出:</span>
-<span class="comment">%       frames - 分帧矩阵 [frame_len x num_frames]</span>
-<span class="comment">%                每列是一帧</span>
-<span class="comment">%</span>
-<span class="comment">%   说明:</span>
-<span class="comment">%       典型参数: 帧长25ms, 帧移10ms</span>
-<span class="comment">%       对于16kHz采样率: frame_len=400, frame_shift=160</span>
-<span class="comment">%       帧数计算公式: num_frames = floor((N - frame_len) / frame_shift) + 1</span>
+<span class="comment">%   帧数 = floor((N - frame_len) / frame_shift) + 1</span>
 
 x = x(:);
 N = length(x);
 
-<span class="comment">% TODO: 根据公式计算帧数</span>
-<span class="comment">% num_frames = floor((信号长度 - 帧长) / 帧移) + 1</span>
+<span class="comment">% TODO: 计算帧数</span>
 num_frames = <span class="todo">?</span>;
 
-<span class="keyword">if</span> num_frames < <span class="number">1</span>
-    error(<span class="string">'信号太短，无法分帧'</span>);
-<span class="keyword">end</span>
+<span class="keyword">if</span> num_frames < <span class="number">1</span>, error(<span class="string">'信号太短'</span>); <span class="keyword">end</span>
 
-<span class="comment">% 分帧</span>
 frames = zeros(frame_len, num_frames);
 <span class="keyword">for</span> i = <span class="number">1</span>:num_frames
     <span class="comment">% TODO: 计算第i帧的起始索引</span>
-    <span class="comment">% 第1帧从索引1开始，第2帧从索引(1+frame_shift)开始，以此类推</span>
     start_idx = <span class="todo">?</span>;
     frames(:, i) = x(start_idx : start_idx + frame_len - <span class="number">1</span>);
 <span class="keyword">end</span>
@@ -411,190 +291,99 @@ frames = zeros(frame_len, num_frames);
         <!-- ex3 MFCC -->
         <div class="file-block">
             <div class="file-header" onclick="toggleBlock(this)">
-                <span class="file-title">
-                    <span class="arrow-icon">▼</span>
-                    📄 ex3_mfcc.m（MFCC特征提取）<span class="tag tag-required">需修改</span>
-                </span>
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 ex3_mfcc.m（MFCC特征提取）</span>
                 <button class="copy-btn" onclick="copyCode(event, 'code3')">复制代码</button>
             </div>
             <div class="file-content">
                 <pre id="code3"><span class="keyword">function</span> [mfcc_all, mfcc_base] = ex3_mfcc(x, fs, params)
 <span class="comment">%EX3_MFCC 计算MFCC特征 (含Delta和Delta-Delta)</span>
-<span class="comment">%</span>
-<span class="comment">%   [mfcc_all, mfcc_base] = ex3_mfcc(x, fs, params)</span>
-<span class="comment">%</span>
-<span class="comment">%   输入:</span>
-<span class="comment">%       x      - 语音信号</span>
-<span class="comment">%       fs     - 采样率</span>
-<span class="comment">%       params - 参数结构体 (可选)</span>
-<span class="comment">%</span>
-<span class="comment">%   输出:</span>
-<span class="comment">%       mfcc_all  - 完整特征 [36 x num_frames] (MFCC + Delta + Delta-Delta)</span>
-<span class="comment">%       mfcc_base - 基础MFCC [12 x num_frames]</span>
-<span class="comment">%</span>
-<span class="comment">%   处理流程:</span>
-<span class="comment">%       1. 预加重</span>
-<span class="comment">%       2. 分帧</span>
-<span class="comment">%       3. 加窗 (汉宁窗)</span>
-<span class="comment">%       4. FFT -> 功率谱</span>
-<span class="comment">%       5. Mel滤波器组</span>
-<span class="comment">%       6. 取对数</span>
-<span class="comment">%       7. DCT</span>
-<span class="comment">%       8. 升倒谱 (Liftering)</span>
-<span class="comment">%       9. 计算Delta和Delta-Delta</span>
+<span class="comment">%   输出: mfcc_all [36 x num_frames]</span>
 
-<span class="comment">%% 默认参数</span>
-<span class="keyword">if</span> nargin < <span class="number">3</span>
-    params = <span class="keyword">struct</span>();
-<span class="keyword">end</span>
-
-<span class="comment">% 设置默认值</span>
-<span class="keyword">if</span> ~isfield(params, <span class="string">'frame_len_ms'</span>),  params.frame_len_ms = <span class="number">25</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> nargin < <span class="number">3</span>, params = <span class="keyword">struct</span>(); <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(params, <span class="string">'frame_len_ms'</span>), params.frame_len_ms = <span class="number">25</span>; <span class="keyword">end</span>
 <span class="keyword">if</span> ~isfield(params, <span class="string">'frame_shift_ms'</span>), params.frame_shift_ms = <span class="number">10</span>; <span class="keyword">end</span>
-<span class="keyword">if</span> ~isfield(params, <span class="string">'pre_emphasis'</span>),  params.pre_emphasis = <span class="number">0.97</span>; <span class="keyword">end</span>
-<span class="keyword">if</span> ~isfield(params, <span class="string">'nfft'</span>),          params.nfft = <span class="number">2048</span>; <span class="keyword">end</span>
-<span class="keyword">if</span> ~isfield(params, <span class="string">'num_filters'</span>),   params.num_filters = <span class="number">32</span>; <span class="keyword">end</span>
-<span class="keyword">if</span> ~isfield(params, <span class="string">'num_ceps'</span>),      params.num_ceps = <span class="number">12</span>; <span class="keyword">end</span>
-<span class="keyword">if</span> ~isfield(params, <span class="string">'lifter_coef'</span>),   params.lifter_coef = <span class="number">22</span>; <span class="keyword">end</span>
-<span class="keyword">if</span> ~isfield(params, <span class="string">'delta_N'</span>),       params.delta_N = <span class="number">2</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(params, <span class="string">'pre_emphasis'</span>), params.pre_emphasis = <span class="number">0.97</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(params, <span class="string">'nfft'</span>), params.nfft = <span class="number">2048</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(params, <span class="string">'num_filters'</span>), params.num_filters = <span class="number">32</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(params, <span class="string">'num_ceps'</span>), params.num_ceps = <span class="number">12</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(params, <span class="string">'lifter_coef'</span>), params.lifter_coef = <span class="number">22</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(params, <span class="string">'delta_N'</span>), params.delta_N = <span class="number">2</span>; <span class="keyword">end</span>
 
-<span class="comment">%% Step 1: 预加重</span>
+<span class="comment">% Step 1: 预加重</span>
 x_emph = ex1_preemphasis(x, params.pre_emphasis);
 
-<span class="comment">%% Step 2: 分帧</span>
+<span class="comment">% Step 2: 分帧</span>
 frame_len = round(params.frame_len_ms * fs / <span class="number">1000</span>);
 frame_shift = round(params.frame_shift_ms * fs / <span class="number">1000</span>);
 frames = ex2_enframe(x_emph, frame_len, frame_shift);
 num_frames = size(frames, <span class="number">2</span>);
 
-<span class="comment">%% Step 3: 加窗 (汉宁窗)</span>
-<span class="comment">% TODO: 创建周期性汉宁窗，长度为 frame_len</span>
-<span class="comment">% 使用 hann(N, 'periodic') 生成窗函数</span>
+<span class="comment">% Step 3: 加窗</span>
+<span class="comment">% TODO: 创建汉宁窗</span>
 win = <span class="todo">?</span>;
-
-<span class="comment">% TODO: 对每帧应用窗函数 (逐元素相乘)</span>
-<span class="comment">% 使用 repmat 将窗函数复制成与 frames 相同列数的矩阵</span>
 frames_win = <span class="todo">?</span>;
 
-<span class="comment">%% Step 4: FFT -> 功率谱</span>
+<span class="comment">% Step 4: FFT</span>
 nfft = params.nfft;
-
-<span class="comment">% TODO: 对加窗后的帧进行 nfft 点 FFT</span>
+<span class="comment">% TODO: 计算FFT和功率谱</span>
 X = <span class="todo">?</span>;
-
-<span class="comment">% TODO: 只取正频率部分 (前 nfft/2+1 个点)</span>
-<span class="comment">% 计算功率谱: P = (1/nfft) * |X|^2</span>
 pow_spec = <span class="todo">?</span>;
 
-<span class="comment">%% Step 5: Mel滤波器组</span>
-num_filters = params.num_filters;
-mel_bank = create_mel_filterbank(fs, nfft, num_filters, <span class="number">0</span>, fs/<span class="number">2</span>);
-<span class="comment">% 应用滤波器: [num_filters x num_frames]</span>
+<span class="comment">% Step 5: Mel滤波器组</span>
+mel_bank = create_mel_filterbank(fs, nfft, params.num_filters, <span class="number">0</span>, fs/<span class="number">2</span>);
 mel_energy = mel_bank * pow_spec;
-<span class="comment">% 避免log(0)</span>
 mel_energy = max(mel_energy, eps);
 
-<span class="comment">%% Step 6: 取对数</span>
+<span class="comment">% Step 6: 取对数</span>
 log_mel = log(mel_energy);
 
-<span class="comment">%% Step 7: DCT</span>
-<span class="comment">% TODO: 对对数梅尔能量进行离散余弦变换</span>
-<span class="comment">% 使用 MATLAB 内置的 dct 函数</span>
+<span class="comment">% Step 7: DCT</span>
+<span class="comment">% TODO: DCT变换，取第2到(num_ceps+1)阶</span>
 dct_coef = <span class="todo">?</span>;
-
-<span class="comment">% TODO: 保留第2到第(num_ceps+1)阶系数，即去掉0阶能量项</span>
-<span class="comment">% MFCC通常不使用第0阶(代表能量)，而是取第1-12阶</span>
-num_ceps = params.num_ceps;
 mfcc_base = <span class="todo">?</span>;
 
-<span class="comment">%% Step 8: 升倒谱 (Liftering)</span>
+<span class="comment">% Step 8: 升倒谱</span>
 L = params.lifter_coef;
-n = (<span class="number">1</span>:num_ceps)';
+n = (<span class="number">1</span>:params.num_ceps)';
 lifter = <span class="number">1</span> + (L/<span class="number">2</span>) * sin(pi * n / L);
 mfcc_base = mfcc_base .* repmat(lifter, <span class="number">1</span>, num_frames);
 
-<span class="comment">%% Step 9: 计算Delta和Delta-Delta</span>
+<span class="comment">% Step 9: Delta</span>
 delta = compute_delta(mfcc_base, params.delta_N);
 delta_delta = compute_delta(delta, params.delta_N);
-
-<span class="comment">%% 合并输出 [36 x num_frames]</span>
 mfcc_all = [mfcc_base; delta; delta_delta];
-
 <span class="keyword">end</span>
-
-<span class="comment">%% ==================== 辅助函数 ====================</span>
 
 <span class="keyword">function</span> mel_bank = create_mel_filterbank(fs, nfft, num_filters, low_freq, high_freq)
-<span class="comment">%CREATE_MEL_FILTERBANK 创建梅尔三角滤波器组</span>
-
-<span class="comment">% Hz -> Mel</span>
-hz2mel = @(f) <span class="number">2595</span> * log10(<span class="number">1</span> + f/<span class="number">700</span>);
-<span class="comment">% Mel -> Hz</span>
-mel2hz = @(m) <span class="number">700</span> * (<span class="number">10</span>.^(m/<span class="number">2595</span>) - <span class="number">1</span>);
-
-<span class="comment">% 梅尔频率范围</span>
-low_mel = hz2mel(low_freq);
-high_mel = hz2mel(high_freq);
-
-<span class="comment">% 在梅尔尺度上均匀分布 (num_filters + 2) 个点</span>
-mel_points = linspace(low_mel, high_mel, num_filters + <span class="number">2</span>);
-hz_points = mel2hz(mel_points);
-
-<span class="comment">% 转换为FFT bin索引</span>
-bin_points = floor(hz_points / fs * nfft) + <span class="number">1</span>;
-bin_points = min(bin_points, nfft/<span class="number">2</span> + <span class="number">1</span>);
-bin_points = max(bin_points, <span class="number">1</span>);
-
-<span class="comment">% 构建滤波器组</span>
-num_bins = nfft/<span class="number">2</span> + <span class="number">1</span>;
-mel_bank = zeros(num_filters, num_bins);
-
-<span class="keyword">for</span> i = <span class="number">1</span>:num_filters
-    left = bin_points(i);
-    center = bin_points(i + <span class="number">1</span>);
-    right = bin_points(i + <span class="number">2</span>);
-    
-    <span class="comment">% 上升沿</span>
-    <span class="keyword">for</span> k = left:center
-        <span class="keyword">if</span> center ~= left
-            mel_bank(i, k) = (k - left) / (center - left);
+    hz2mel = @(f) <span class="number">2595</span> * log10(<span class="number">1</span> + f/<span class="number">700</span>);
+    mel2hz = @(m) <span class="number">700</span> * (<span class="number">10</span>.^(m/<span class="number">2595</span>) - <span class="number">1</span>);
+    mel_points = linspace(hz2mel(low_freq), hz2mel(high_freq), num_filters + <span class="number">2</span>);
+    hz_points = mel2hz(mel_points);
+    bin_points = floor(hz_points / fs * nfft) + <span class="number">1</span>;
+    bin_points = min(max(bin_points, <span class="number">1</span>), nfft/<span class="number">2</span> + <span class="number">1</span>);
+    mel_bank = zeros(num_filters, nfft/<span class="number">2</span> + <span class="number">1</span>);
+    <span class="keyword">for</span> i = <span class="number">1</span>:num_filters
+        left = bin_points(i); center = bin_points(i+<span class="number">1</span>); right = bin_points(i+<span class="number">2</span>);
+        <span class="keyword">for</span> k = left:center
+            <span class="keyword">if</span> center ~= left, mel_bank(i,k) = (k-left)/(center-left); <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">for</span> k = center:right
+            <span class="keyword">if</span> right ~= center, mel_bank(i,k) = (right-k)/(right-center); <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-    
-    <span class="comment">% 下降沿</span>
-    <span class="keyword">for</span> k = center:right
-        <span class="keyword">if</span> right ~= center
-            mel_bank(i, k) = (right - k) / (right - center);
-        <span class="keyword">end</span>
-    <span class="keyword">end</span>
-<span class="keyword">end</span>
-
 <span class="keyword">end</span>
 
 <span class="keyword">function</span> delta = compute_delta(feat, N)
-<span class="comment">%COMPUTE_DELTA 计算差分系数</span>
-<span class="comment">%</span>
-<span class="comment">%   公式:</span>
-<span class="comment">%       delta[t] = sum(n * (c[t+n] - c[t-n])) / (2 * sum(n^2))</span>
-<span class="comment">%       n = 1, 2, ..., N</span>
-
-[num_ceps, num_frames] = size(feat);
-delta = zeros(num_ceps, num_frames);
-
-<span class="comment">% 归一化因子</span>
-denom = <span class="number">2</span> * sum((<span class="number">1</span>:N).^<span class="number">2</span>);
-
-<span class="keyword">for</span> t = <span class="number">1</span>:num_frames
-    numerator = zeros(num_ceps, <span class="number">1</span>);
-    <span class="keyword">for</span> n = <span class="number">1</span>:N
-        <span class="comment">% 边界处理: 复制边界值</span>
-        t_plus = min(t + n, num_frames);
-        t_minus = max(t - n, <span class="number">1</span>);
-        numerator = numerator + n * (feat(:, t_plus) - feat(:, t_minus));
+    [num_ceps, num_frames] = size(feat);
+    delta = zeros(num_ceps, num_frames);
+    denom = <span class="number">2</span> * sum((<span class="number">1</span>:N).^<span class="number">2</span>);
+    <span class="keyword">for</span> t = <span class="number">1</span>:num_frames
+        numerator = zeros(num_ceps, <span class="number">1</span>);
+        <span class="keyword">for</span> n = <span class="number">1</span>:N
+            numerator = numerator + n * (feat(:, min(t+n,num_frames)) - feat(:, max(t-n,<span class="number">1</span>)));
+        <span class="keyword">end</span>
+        delta(:, t) = numerator / denom;
     <span class="keyword">end</span>
-    delta(:, t) = numerator / denom;
-<span class="keyword">end</span>
-
 <span class="keyword">end</span></pre>
             </div>
         </div>
@@ -602,148 +391,74 @@ denom = <span class="number">2</span> * sum((<span class="number">1</span>:N).^<
         <!-- ex4 DTW -->
         <div class="file-block">
             <div class="file-header" onclick="toggleBlock(this)">
-                <span class="file-title">
-                    <span class="arrow-icon">▼</span>
-                    📄 ex4_dtw.m（DTW动态规整）<span class="tag tag-required">需修改</span>
-                </span>
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 ex4_dtw.m（DTW动态规整）</span>
                 <button class="copy-btn" onclick="copyCode(event, 'code4')">复制代码</button>
             </div>
             <div class="file-content">
                 <pre id="code4"><span class="keyword">function</span> [dist, D, path] = ex4_dtw(template, test, normalize_flag)
 <span class="comment">%EX4_DTW 动态时间规整算法</span>
-<span class="comment">%</span>
-<span class="comment">%   [dist, D, path] = ex4_dtw(template, test, normalize_flag)</span>
-<span class="comment">%</span>
-<span class="comment">%   输入:</span>
-<span class="comment">%       template       - 模板特征 [dim x n]</span>
-<span class="comment">%       test           - 测试特征 [dim x m]</span>
-<span class="comment">%       normalize_flag - 是否均值归一化, 默认true</span>
-<span class="comment">%</span>
-<span class="comment">%   输出:</span>
-<span class="comment">%       dist - DTW距离 (标量)</span>
-<span class="comment">%       D    - 累积距离矩阵 [(n+1) x (m+1)]</span>
-<span class="comment">%       path - 最优路径 [k x 2], 每行为 [i, j]</span>
-<span class="comment">%</span>
-<span class="comment">%   算法:</span>
-<span class="comment">%       递推公式: D(i,j) = d(i,j) + min{D(i-1,j), D(i,j-1), D(i-1,j-1)}</span>
-<span class="comment">%       其中 d(i,j) = ||template(:,i) - test(:,j)||_2 (欧氏距离)</span>
-<span class="comment">%</span>
-<span class="comment">%   边界条件:</span>
-<span class="comment">%       D(0,0) = 0</span>
-<span class="comment">%       D(i,0) = D(0,j) = inf</span>
+<span class="comment">%   递推公式: D(i,j) = d(i,j) + min{D(i-1,j), D(i,j-1), D(i-1,j-1)}</span>
 
-<span class="keyword">if</span> nargin < <span class="number">3</span>
-    normalize_flag = <span class="keyword">true</span>;
-<span class="keyword">end</span>
+<span class="keyword">if</span> nargin < <span class="number">3</span>, normalize_flag = <span class="keyword">true</span>; <span class="keyword">end</span>
 
-<span class="comment">%% 获取维度</span>
-[dim1, n] = size(template);  <span class="comment">% n = 模板帧数</span>
-[dim2, m] = size(test);      <span class="comment">% m = 测试帧数</span>
+[dim1, n] = size(template);
+[dim2, m] = size(test);
+<span class="keyword">if</span> dim1 ~= dim2, error(<span class="string">'特征维度不匹配'</span>); <span class="keyword">end</span>
 
-<span class="keyword">if</span> dim1 ~= dim2
-    error(<span class="string">'特征维度不匹配: %d vs %d'</span>, dim1, dim2);
-<span class="keyword">end</span>
-
-<span class="comment">%% 均值归一化 (消除说话人差异)</span>
+<span class="comment">% 均值归一化</span>
 <span class="keyword">if</span> normalize_flag
     template = template - mean(template, <span class="number">2</span>);
     test = test - mean(test, <span class="number">2</span>);
 <span class="keyword">end</span>
 
-<span class="comment">%% 计算局部距离矩阵 d(i,j)</span>
+<span class="comment">% 计算局部距离</span>
 local_dist = zeros(n, m);
 <span class="keyword">for</span> i = <span class="number">1</span>:n
     <span class="keyword">for</span> j = <span class="number">1</span>:m
-        <span class="comment">% TODO: 计算模板第i帧与测试第j帧之间的欧氏距离</span>
-        <span class="comment">% 使用 norm 函数计算两个特征向量的2范数距离</span>
+        <span class="comment">% TODO: 计算欧氏距离</span>
         local_dist(i, j) = <span class="todo">?</span>;
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-<span class="comment">%% 初始化累积距离矩阵</span>
-<span class="comment">% 使用 (n+1) x (m+1) 矩阵, 索引从1开始</span>
-<span class="comment">% D(1,1) 对应边界 D(0,0) = 0</span>
-
-<span class="comment">% TODO: 初始化 D 矩阵为全 inf，大小为 (n+1) x (m+1)</span>
+<span class="comment">% 初始化累积距离矩阵</span>
+<span class="comment">% TODO: D矩阵初始化为inf，大小(n+1)x(m+1)</span>
 D = <span class="todo">?</span>;
-
-<span class="comment">% TODO: 设置边界条件 D(0,0) = 0，即 D(1,1) = 0</span>
+<span class="comment">% TODO: 设置D(1,1)=0</span>
 <span class="todo">?</span>;
 
-<span class="comment">%% 动态规划填充</span>
+<span class="comment">% 动态规划</span>
 <span class="keyword">for</span> i = <span class="number">1</span>:n
     <span class="keyword">for</span> j = <span class="number">1</span>:m
         cost = local_dist(i, j);
-        <span class="comment">% TODO: 获取三个候选路径的累积距离</span>
-        <span class="comment">% d1: 从上方 (i-1, j) 来，对应 D(i, j+1)</span>
-        <span class="comment">% d2: 从左方 (i, j-1) 来，对应 D(i+1, j)</span>
-        <span class="comment">% d3: 从对角 (i-1, j-1) 来，对应 D(i, j)</span>
-        d1 = <span class="todo">?</span>;
-        d2 = <span class="todo">?</span>;
-        d3 = <span class="todo">?</span>;
-        <span class="comment">% TODO: 递推公式: D(i,j) = d(i,j) + min{d1, d2, d3}</span>
+        <span class="comment">% TODO: 获取三个方向的累积距离</span>
+        d1 = <span class="todo">?</span>;  <span class="comment">% D(i, j+1) 上方</span>
+        d2 = <span class="todo">?</span>;  <span class="comment">% D(i+1, j) 左方</span>
+        d3 = <span class="todo">?</span>;  <span class="comment">% D(i, j)   对角</span>
+        <span class="comment">% TODO: 递推</span>
         D(i + <span class="number">1</span>, j + <span class="number">1</span>) = <span class="todo">?</span>;
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-<span class="comment">%% 最终距离</span>
 dist = D(n + <span class="number">1</span>, m + <span class="number">1</span>);
-
-<span class="comment">%% 路径回溯 (可选)</span>
-<span class="keyword">if</span> nargout >= <span class="number">3</span>
-    path = backtrack(D);
+<span class="keyword">if</span> nargout >= <span class="number">3</span>, path = backtrack(D); <span class="keyword">end</span>
 <span class="keyword">end</span>
-
-<span class="keyword">end</span>
-
-<span class="comment">%% ==================== 辅助函数 ====================</span>
 
 <span class="keyword">function</span> path = backtrack(D)
-<span class="comment">%BACKTRACK 从累积距离矩阵回溯最优路径</span>
-
-[n_plus1, m_plus1] = size(D);
-n = n_plus1 - <span class="number">1</span>;
-m = m_plus1 - <span class="number">1</span>;
-
-<span class="comment">% 从终点开始回溯</span>
-path = zeros(n + m, <span class="number">2</span>);
-k = <span class="number">0</span>;
-i = n;
-j = m;
-
-<span class="keyword">while</span> i > <span class="number">0</span> && j > <span class="number">0</span>
-    k = k + <span class="number">1</span>;
-    path(k, :) = [i, j];
-    
-    <span class="keyword">if</span> i == <span class="number">1</span> && j == <span class="number">1</span>
-        <span class="keyword">break</span>;
+    [n_plus1, m_plus1] = size(D);
+    path = zeros(n_plus1 + m_plus1, <span class="number">2</span>);
+    k = <span class="number">0</span>; i = n_plus1-<span class="number">1</span>; j = m_plus1-<span class="number">1</span>;
+    <span class="keyword">while</span> i > <span class="number">0</span> && j > <span class="number">0</span>
+        k = k + <span class="number">1</span>; path(k, :) = [i, j];
+        <span class="keyword">if</span> i == <span class="number">1</span> && j == <span class="number">1</span>, <span class="keyword">break</span>; <span class="keyword">end</span>
+        candidates = [];
+        <span class="keyword">if</span> i><span class="number">1</span>&&j><span class="number">1</span>, candidates = [candidates; i-<span class="number">1</span>,j-<span class="number">1</span>,D(i,j)]; <span class="keyword">end</span>
+        <span class="keyword">if</span> i><span class="number">1</span>, candidates = [candidates; i-<span class="number">1</span>,j,D(i,j+<span class="number">1</span>)]; <span class="keyword">end</span>
+        <span class="keyword">if</span> j><span class="number">1</span>, candidates = [candidates; i,j-<span class="number">1</span>,D(i+<span class="number">1</span>,j)]; <span class="keyword">end</span>
+        <span class="keyword">if</span> isempty(candidates), <span class="keyword">break</span>; <span class="keyword">end</span>
+        [~, idx] = min(candidates(:, <span class="number">3</span>));
+        i = candidates(idx, <span class="number">1</span>); j = candidates(idx, <span class="number">2</span>);
     <span class="keyword">end</span>
-    
-    <span class="comment">% 选择来源方向 (累积距离最小的)</span>
-    candidates = [];
-    <span class="keyword">if</span> i > <span class="number">1</span> && j > <span class="number">1</span>
-        candidates = [candidates; i-<span class="number">1</span>, j-<span class="number">1</span>, D(i, j)];      <span class="comment">% 对角</span>
-    <span class="keyword">end</span>
-    <span class="keyword">if</span> i > <span class="number">1</span>
-        candidates = [candidates; i-<span class="number">1</span>, j, D(i, j+<span class="number">1</span>)];      <span class="comment">% 上方</span>
-    <span class="keyword">end</span>
-    <span class="keyword">if</span> j > <span class="number">1</span>
-        candidates = [candidates; i, j-<span class="number">1</span>, D(i+<span class="number">1</span>, j)];      <span class="comment">% 左方</span>
-    <span class="keyword">end</span>
-    
-    <span class="keyword">if</span> isempty(candidates)
-        <span class="keyword">break</span>;
-    <span class="keyword">end</span>
-    
-    [~, idx] = min(candidates(:, <span class="number">3</span>));
-    i = candidates(idx, <span class="number">1</span>);
-    j = candidates(idx, <span class="number">2</span>);
-<span class="keyword">end</span>
-
-<span class="comment">% 截取有效部分并反转 (从起点到终点)</span>
-path = path(<span class="number">1</span>:k, :);
-path = flipud(path);
-
+    path = flipud(path(<span class="number">1</span>:k, :));
 <span class="keyword">end</span></pre>
             </div>
         </div>
@@ -751,44 +466,18 @@ path = flipud(path);
         <!-- ex5 识别决策 -->
         <div class="file-block collapsed">
             <div class="file-header completed" onclick="toggleBlock(this)">
-                <span class="file-title">
-                    <span class="arrow-icon">▼</span>
-                    📄 ex5_recognize.m（识别决策）<span class="tag tag-completed">已完成</span>
-                </span>
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 ex5_recognize.m（识别决策 - 已完成）</span>
                 <button class="copy-btn" onclick="copyCode(event, 'code5')">复制代码</button>
             </div>
             <div class="file-content">
                 <pre id="code5"><span class="keyword">function</span> [result, scores, min_score] = ex5_recognize(test_feat, templates)
-<span class="comment">%EX5_RECOGNIZE 基于DTW的识别决策</span>
-<span class="comment">%</span>
-<span class="comment">%   [result, scores, min_score] = ex5_recognize(test_feat, templates)</span>
-<span class="comment">%</span>
-<span class="comment">%   输入:</span>
-<span class="comment">%       test_feat - 测试语音特征 [dim x num_frames]</span>
-<span class="comment">%       templates - 模板库 (cell数组), templates{i} 为第i个模板</span>
-<span class="comment">%</span>
-<span class="comment">%   输出:</span>
-<span class="comment">%       result    - 识别结果 (0-9)</span>
-<span class="comment">%       scores    - 各模板的DTW距离 [1 x 10]</span>
-<span class="comment">%       min_score - 最小距离</span>
-<span class="comment">%</span>
-<span class="comment">%   说明:</span>
-<span class="comment">%       选择DTW距离最小的模板作为识别结果</span>
-
 num_templates = length(templates);
 scores = zeros(<span class="number">1</span>, num_templates);
-
-<span class="comment">% 计算与每个模板的DTW距离</span>
 <span class="keyword">for</span> i = <span class="number">1</span>:num_templates
     scores(i) = ex4_dtw(templates{i}, test_feat, <span class="keyword">true</span>);
 <span class="keyword">end</span>
-
-<span class="comment">% 找最小距离</span>
 [min_score, min_idx] = min(scores);
-
-<span class="comment">% 结果 (0-9)</span>
 result = min_idx - <span class="number">1</span>;
-
 <span class="keyword">end</span></pre>
             </div>
         </div>
@@ -796,168 +485,68 @@ result = min_idx - <span class="number">1</span>;
         <!-- ex6 VAD -->
         <div class="file-block collapsed">
             <div class="file-header completed" onclick="toggleBlock(this)">
-                <span class="file-title">
-                    <span class="arrow-icon">▼</span>
-                    📄 ex6_vad.m（端点检测）<span class="tag tag-completed">已完成</span>
-                </span>
+                <span class="file-title"><span class="arrow-icon">▼</span>📄 ex6_vad.m（端点检测 - 已完成）</span>
                 <button class="copy-btn" onclick="copyCode(event, 'code6')">复制代码</button>
             </div>
             <div class="file-content">
                 <pre id="code6"><span class="keyword">function</span> [y, start_idx, end_idx] = ex6_vad(x, fs)
-<span class="comment">%EX6_VAD 语音端点检测 (Voice Activity Detection)</span>
-<span class="comment">%</span>
-<span class="comment">%   [y, start_idx, end_idx] = ex6_vad(x, fs)</span>
-<span class="comment">%</span>
-<span class="comment">%   输入:</span>
-<span class="comment">%       x  - 语音信号</span>
-<span class="comment">%       fs - 采样率</span>
-<span class="comment">%</span>
-<span class="comment">%   输出:</span>
-<span class="comment">%       y         - 裁剪后的语音</span>
-<span class="comment">%       start_idx - 起始样本索引</span>
-<span class="comment">%       end_idx   - 结束样本索引</span>
-<span class="comment">%</span>
-<span class="comment">%   算法:</span>
-<span class="comment">%       基于短时能量的双门限法</span>
+x = x(:); N = length(x);
+frame_len = round(<span class="number">0.025</span> * fs);
+frame_shift = round(<span class="number">0.010</span> * fs);
+thresh_high = <span class="number">0.15</span>; thresh_low = <span class="number">0.05</span>; margin = <span class="number">3</span>;
 
-x = x(:);
-N = length(x);
-
-<span class="comment">%% 参数</span>
-frame_len = round(<span class="number">0.025</span> * fs);   <span class="comment">% 帧长 25ms</span>
-frame_shift = round(<span class="number">0.010</span> * fs); <span class="comment">% 帧移 10ms</span>
-thresh_high = <span class="number">0.15</span>;              <span class="comment">% 高阈值</span>
-thresh_low = <span class="number">0.05</span>;               <span class="comment">% 低阈值</span>
-margin = <span class="number">3</span>;                      <span class="comment">% 边界扩展帧数</span>
-
-<span class="comment">%% 计算帧数</span>
 num_frames = floor((N - frame_len) / frame_shift) + <span class="number">1</span>;
+<span class="keyword">if</span> num_frames < <span class="number">1</span>, y = x; start_idx = <span class="number">1</span>; end_idx = N; <span class="keyword">return</span>; <span class="keyword">end</span>
 
-<span class="keyword">if</span> num_frames < <span class="number">1</span>
-    y = x;
-    start_idx = <span class="number">1</span>;
-    end_idx = N;
-    <span class="keyword">return</span>;
-<span class="keyword">end</span>
-
-<span class="comment">%% 计算每帧能量</span>
 energy = zeros(num_frames, <span class="number">1</span>);
 <span class="keyword">for</span> i = <span class="number">1</span>:num_frames
     s = (i - <span class="number">1</span>) * frame_shift + <span class="number">1</span>;
-    frame = x(s : s + frame_len - <span class="number">1</span>);
-    energy(i) = sum(frame.^<span class="number">2</span>);
+    energy(i) = sum(x(s : s + frame_len - <span class="number">1</span>).^<span class="number">2</span>);
 <span class="keyword">end</span>
 
-<span class="comment">%% 归一化能量</span>
 max_energy = max(energy);
-<span class="keyword">if</span> max_energy > <span class="number">0</span>
-    energy_norm = energy / max_energy;
-<span class="keyword">else</span>
-    y = x;
-    start_idx = <span class="number">1</span>;
-    end_idx = N;
-    <span class="keyword">return</span>;
-<span class="keyword">end</span>
+<span class="keyword">if</span> max_energy <= <span class="number">0</span>, y = x; start_idx = <span class="number">1</span>; end_idx = N; <span class="keyword">return</span>; <span class="keyword">end</span>
+energy_norm = energy / max_energy;
 
-<span class="comment">%% 双门限检测</span>
-<span class="comment">% 用高阈值找确定的语音帧</span>
 speech_high = energy_norm > thresh_high;
+<span class="keyword">if</span> ~any(speech_high), speech_high = energy_norm > thresh_low; <span class="keyword">end</span>
+<span class="keyword">if</span> ~any(speech_high), y = x; start_idx = <span class="number">1</span>; end_idx = N; <span class="keyword">return</span>; <span class="keyword">end</span>
 
-<span class="keyword">if</span> ~any(speech_high)
-    <span class="comment">% 降低阈值重试</span>
-    speech_high = energy_norm > thresh_low;
-<span class="keyword">end</span>
-
-<span class="keyword">if</span> ~any(speech_high)
-    y = x;
-    start_idx = <span class="number">1</span>;
-    end_idx = N;
-    <span class="keyword">return</span>;
-<span class="keyword">end</span>
-
-<span class="comment">% 找首尾</span>
 first_high = find(speech_high, <span class="number">1</span>, <span class="string">'first'</span>);
 last_high = find(speech_high, <span class="number">1</span>, <span class="string">'last'</span>);
 
-<span class="comment">% 用低阈值向外扩展</span>
 start_frame = first_high;
 <span class="keyword">while</span> start_frame > <span class="number">1</span> && energy_norm(start_frame - <span class="number">1</span>) > thresh_low
     start_frame = start_frame - <span class="number">1</span>;
 <span class="keyword">end</span>
-
 end_frame = last_high;
 <span class="keyword">while</span> end_frame < num_frames && energy_norm(end_frame + <span class="number">1</span>) > thresh_low
     end_frame = end_frame + <span class="number">1</span>;
 <span class="keyword">end</span>
 
-<span class="comment">% 再扩展几帧余量</span>
 start_frame = max(<span class="number">1</span>, start_frame - margin);
 end_frame = min(num_frames, end_frame + margin);
 
-<span class="comment">%% 转换为样本索引</span>
 start_idx = (start_frame - <span class="number">1</span>) * frame_shift + <span class="number">1</span>;
 end_idx = min(N, (end_frame - <span class="number">1</span>) * frame_shift + frame_len);
-
 y = x(start_idx : end_idx);
-
 <span class="keyword">end</span></pre>
             </div>
-        </div>
-
-        <!-- 测试示例 -->
-        <div class="test-banner">
-            <strong>🧪 完成后测试：</strong>
-            <p style="margin: 10px 0;">完成所有代码后，可使用以下命令测试：</p>
-            <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
-<span class="comment">% 将测试音频放入 audio/ 目录后运行主程序</span>
->> ex0_all
-
-<span class="comment">% 或单独测试各模块：</span>
-<span class="comment">% 测试预加重</span>
->> x = randn(<span class="number">1000</span>, <span class="number">1</span>);
->> y = ex1_preemphasis(x, <span class="number">0.97</span>);
-
-<span class="comment">% 测试分帧 (帧长400，帧移160)</span>
->> frames = ex2_enframe(x, <span class="number">400</span>, <span class="number">160</span>);
-
-<span class="comment">% 测试DTW</span>
->> template = randn(<span class="number">36</span>, <span class="number">20</span>);
->> test = randn(<span class="number">36</span>, <span class="number">25</span>);
->> dist = ex4_dtw(template, test);</pre>
         </div>
 
     </div>
 
     <script>
-        function toggleBlock(header) {
-            const block = header.parentElement;
-            block.classList.toggle('collapsed');
-        }
-
-        function expandAll() {
-            document.querySelectorAll('.file-block').forEach(block => {
-                block.classList.remove('collapsed');
-            });
-        }
-
-        function collapseAll() {
-            document.querySelectorAll('.file-block').forEach(block => {
-                block.classList.add('collapsed');
-            });
-        }
-
+        function toggleBlock(header) { header.parentElement.classList.toggle('collapsed'); }
+        function expandAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.remove('collapsed')); }
+        function collapseAll() { document.querySelectorAll('.file-block').forEach(b => b.classList.add('collapsed')); }
         function copyCode(event, codeId) {
             event.stopPropagation();
             const code = document.getElementById(codeId).innerText;
             navigator.clipboard.writeText(code).then(() => {
                 const btn = event.target;
-                const originalText = btn.textContent;
                 btn.textContent = '✓ 已复制';
-                btn.style.background = '#38a169';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = '#48bb78';
-                }, 2000);
+                setTimeout(() => { btn.textContent = '复制代码'; }, 2000);
             });
         }
     </script>
