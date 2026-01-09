@@ -132,6 +132,7 @@
             <a href="#mfcc">MFCC特征</a>
             <a href="#dtw">DTW算法</a>
             <a href="#experiments">实验任务</a>
+            <a href="#analysis">结果分析</a>
         </nav>
 
         <div class="content">
@@ -283,9 +284,15 @@
                 <h2>🔀 第四步：DTW 动态时间规整</h2>
                 <h3>4.1 为什么需要 DTW？</h3>
                 <p>不同人说同一个词，<strong>时长往往不同</strong>。DTW通过非线性时间扭曲找到最佳对齐。</p>
-                <div class="figure">
-                    <canvas id="dtwProblemCanvas" width="900" height="180"></canvas>
-                    <p class="figure-caption">图7：DTW问题 - 如何对齐长度不同的序列？</p>
+                <div class="two-column">
+                    <div class="figure">
+                        <canvas id="euclideanCanvas" width="400" height="220"></canvas>
+                        <p class="figure-caption">图7a：欧几里得距离 - 逐点对齐</p>
+                    </div>
+                    <div class="figure">
+                        <canvas id="dtwAlignCanvas" width="400" height="220"></canvas>
+                        <p class="figure-caption">图7b：DTW距离 - 最佳对齐</p>
+                    </div>
                 </div>
                 <h3>4.2 DTW 算法核心</h3>
                 <div class="formula-box">
@@ -403,6 +410,62 @@
                         <li><strong>MFCC</strong>：模拟人耳感知的特征提取</li>
                         <li><strong>DTW</strong>：动态规划解决时间对齐问题</li>
                     </ul>
+                </div>
+            </section>
+
+            <!-- 实验现象分析 -->
+            <section id="analysis" style="background: #f8f9ff;">
+                <h2>📊 实验现象与分析</h2>
+                
+                <h3>预期实验结果</h3>
+                <div class="two-column">
+                    <div class="step-box" style="border-color: #f56565;">
+                        <h4 style="color: #c53030;">使用 test/ 目录测试</h4>
+                        <p style="font-size: 2em; color: #f56565; font-weight: bold; text-align: center;">10-30%</p>
+                        <p style="text-align: center;">识别率较低</p>
+                        <p><strong>原因：</strong>测试集与训练集来源不同（不同说话人、录音环境）</p>
+                    </div>
+                    <div class="step-box" style="border-color: #48bb78;">
+                        <h4 style="color: #2f855a;">使用 train/ 目录测试</h4>
+                        <p style="font-size: 2em; color: #48bb78; font-weight: bold; text-align: center;">70-90%</p>
+                        <p style="text-align: center;">识别率较高</p>
+                        <p><strong>原因：</strong>同源数据，模板与测试来自相同分布</p>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>🔍 核心发现：</strong>
+                    <p>DTW是<strong>说话人相关</strong>的识别方法。当测试音频与训练模板来自不同说话人时，识别率会大幅下降。这是DTW方法的固有局限性，<strong>不是代码错误</strong>！</p>
+                </div>
+                
+                <h3>DTW 方法的局限性</h3>
+                <div class="three-column">
+                    <div class="step-box">
+                        <h4 style="color: #e74c3c;">❌ 说话人敏感</h4>
+                        <p>不同人说同一个词，声学特征差异大，DTW无法泛化到新说话人。</p>
+                    </div>
+                    <div class="step-box">
+                        <h4 style="color: #e74c3c;">❌ 孤立词限制</h4>
+                        <p>只能识别单个词，无法处理连续语音流。</p>
+                    </div>
+                    <div class="step-box">
+                        <h4 style="color: #e74c3c;">❌ 模板依赖</h4>
+                        <p>每个词都需要模板，词汇量扩展困难。</p>
+                    </div>
+                </div>
+                
+                <h3>现代语音识别技术演进</h3>
+                <table>
+                    <tr><th>时代</th><th>技术</th><th>特点</th></tr>
+                    <tr><td>1970-1990</td><td><strong>DTW（本实验）</strong></td><td>说话人相关，模板匹配</td></tr>
+                    <tr><td>1990-2010</td><td>GMM-HMM</td><td>统计建模，说话人无关</td></tr>
+                    <tr><td>2015-2020</td><td>端到端深度学习</td><td>神经网络，序列到序列</td></tr>
+                    <tr><td>2020-现在</td><td style="color: #48bb78; font-weight: bold;">Whisper/Wav2Vec</td><td>大规模预训练，接近人类水平</td></tr>
+                </table>
+                
+                <div class="success-box">
+                    <strong>💡 思考题：</strong>
+                    <p>为什么现代语音助手（Siri、小爱同学）可以识别任何人的语音？它们使用了海量数据训练的深度学习模型，学习到语音的通用特征，而非依赖特定说话人的模板。</p>
                 </div>
             </section>
         </div>
@@ -585,38 +648,136 @@
             ctx.textAlign='right'; ctx.fillText('高频区：分辨率低', marginL+plotW-10, marginT+15);
         }
 
-        // 图7：DTW问题
-        function drawDTWProblem() {
-            const canvas = document.getElementById('dtwProblemCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            const marginL=60, seqW=280, y1=90;
-            const n=8, m=12, template=[], test=[];
-            for (let i=0; i<n; i++) template.push(Math.sin(i*0.8)*20);
-            for (let j=0; j<m; j++) test.push(Math.sin(j*0.55)*20);
-            // 模板
-            ctx.fillStyle=colors.signal1; ctx.font='bold 13px Microsoft YaHei'; ctx.textAlign='left'; ctx.fillText('模板 (n='+n+'帧)', marginL, 30);
-            ctx.strokeStyle=colors.signal1; ctx.lineWidth=2; ctx.beginPath();
-            for (let i=0; i<n; i++) { const x=marginL+(i/(n-1))*seqW, y=y1+template[i]; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-            ctx.stroke();
-            for (let i=0; i<n; i++) { const x=marginL+(i/(n-1))*seqW, y=y1+template[i]; ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill(); }
-            // 问号
-            const midX = marginL + seqW + 80;
-            ctx.fillStyle=colors.warning; ctx.font='bold 40px Arial'; ctx.textAlign='center'; ctx.fillText('?', midX, y1+10);
-            ctx.font='12px Microsoft YaHei'; ctx.fillText('如何对齐?', midX, y1+35);
-            // 测试
-            const x2Start = midX + 80;
-            ctx.fillStyle=colors.signal2; ctx.font='bold 13px Microsoft YaHei'; ctx.textAlign='left'; ctx.fillText('测试 (m='+m+'帧)', x2Start, 30);
-            ctx.strokeStyle=colors.signal2; ctx.lineWidth=2; ctx.beginPath();
-            for (let j=0; j<m; j++) { const x=x2Start+(j/(m-1))*seqW, y=y1+test[j]; if(j===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-            ctx.stroke();
-            for (let j=0; j<m; j++) { const x=x2Start+(j/(m-1))*seqW, y=y1+test[j]; ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill(); }
-            // 说明
-            ctx.fillStyle='#f7fafc'; ctx.fillRect(marginL,canvas.height-45,canvas.width-marginL-60,35);
-            ctx.strokeStyle=colors.accent; ctx.lineWidth=2; ctx.strokeRect(marginL,canvas.height-45,canvas.width-marginL-60,35);
-            ctx.fillStyle='#333'; ctx.font='13px Microsoft YaHei'; ctx.textAlign='center'; ctx.fillText('同一个词，不同人或不同次说，时长可能不同。DTW通过非线性时间扭曲找到最佳对齐。', canvas.width/2, canvas.height-22);
+        // 图7：欧几里得 vs DTW 对比
+        function drawEuclideanVsDTW() {
+            const n1 = 25, n2 = 35;
+            const seq1 = [], seq2 = [];
+            for (let i = 0; i < n1; i++) { const t = i / n1; seq1.push(Math.sin(2 * Math.PI * t * 2) + 0.3 * Math.sin(2 * Math.PI * t * 5)); }
+            for (let i = 0; i < n2; i++) { const t = i / n2; const tt = t * 0.8 + 0.1; seq2.push(Math.sin(2 * Math.PI * tt * 2) + 0.3 * Math.sin(2 * Math.PI * tt * 5)); }
+            
+            // 欧几里得距离图
+            const canvas1 = document.getElementById('euclideanCanvas');
+            if (!canvas1) return;
+            const ctx1 = canvas1.getContext('2d');
+            ctx1.fillStyle = 'white';
+            ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
+            
+            const margin = 35, plotW = canvas1.width - 2 * margin, plotH = (canvas1.height - 3 * margin) / 2;
+            
+            // 序列X
+            ctx1.strokeStyle = colors.signal1;
+            ctx1.lineWidth = 2.5;
+            ctx1.beginPath();
+            for (let i = 0; i < n1; i++) {
+                const x = margin + (i / n1) * plotW;
+                const y = margin + plotH / 2 - seq1[i] * plotH / 3;
+                if (i === 0) ctx1.moveTo(x, y); else ctx1.lineTo(x, y);
+            }
+            ctx1.stroke();
+            
+            // 序列Y
+            ctx1.strokeStyle = colors.signal2;
+            ctx1.beginPath();
+            for (let i = 0; i < n2; i++) {
+                const x = margin + (i / n2) * plotW;
+                const y = 2 * margin + plotH + plotH / 2 - seq2[i] * plotH / 3;
+                if (i === 0) ctx1.moveTo(x, y); else ctx1.lineTo(x, y);
+            }
+            ctx1.stroke();
+            
+            // 逐点对齐线（灰色虚线）
+            ctx1.strokeStyle = '#a0aec0';
+            ctx1.lineWidth = 1;
+            ctx1.setLineDash([3, 3]);
+            for (let i = 0; i < Math.min(n1, n2); i += 2) {
+                const x1 = margin + (i / n1) * plotW;
+                const y1 = margin + plotH / 2 - seq1[i] * plotH / 3;
+                const x2 = margin + (i / n2) * plotW;
+                const y2 = 2 * margin + plotH + plotH / 2 - seq2[Math.min(i, n2-1)] * plotH / 3;
+                ctx1.beginPath();
+                ctx1.moveTo(x1, y1);
+                ctx1.lineTo(x2, y2);
+                ctx1.stroke();
+            }
+            ctx1.setLineDash([]);
+            
+            // 标签
+            ctx1.fillStyle = colors.signal1;
+            ctx1.font = 'bold 11px Microsoft YaHei';
+            ctx1.textAlign = 'left';
+            ctx1.fillText('模板 X', margin, margin - 8);
+            ctx1.fillStyle = colors.signal2;
+            ctx1.fillText('测试 Y', margin, 2 * margin + plotH - 8);
+            ctx1.fillStyle = '#888';
+            ctx1.font = '10px Microsoft YaHei';
+            ctx1.textAlign = 'center';
+            ctx1.fillText('❌ 长度不同时对齐错位', canvas1.width / 2, canvas1.height - 8);
+            
+            // DTW对齐图
+            const canvas2 = document.getElementById('dtwAlignCanvas');
+            if (!canvas2) return;
+            const ctx2 = canvas2.getContext('2d');
+            ctx2.fillStyle = 'white';
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+            
+            // 序列X
+            ctx2.strokeStyle = colors.signal1;
+            ctx2.lineWidth = 2.5;
+            ctx2.beginPath();
+            for (let i = 0; i < n1; i++) {
+                const x = margin + (i / n1) * plotW;
+                const y = margin + plotH / 2 - seq1[i] * plotH / 3;
+                if (i === 0) ctx2.moveTo(x, y); else ctx2.lineTo(x, y);
+            }
+            ctx2.stroke();
+            
+            // 序列Y
+            ctx2.strokeStyle = colors.signal2;
+            ctx2.beginPath();
+            for (let i = 0; i < n2; i++) {
+                const x = margin + (i / n2) * plotW;
+                const y = 2 * margin + plotH + plotH / 2 - seq2[i] * plotH / 3;
+                if (i === 0) ctx2.moveTo(x, y); else ctx2.lineTo(x, y);
+            }
+            ctx2.stroke();
+            
+            // DTW最佳对齐线（绿色）
+            ctx2.strokeStyle = colors.success;
+            ctx2.lineWidth = 1;
+            const path = [];
+            let i = 0, j = 0;
+            while (i < n1 - 1 || j < n2 - 1) {
+                path.push([i, j]);
+                const ratio = n2 / n1;
+                if (j / ratio < i) j++;
+                else if (j / ratio > i + 0.5) i++;
+                else { i++; j++; }
+            }
+            path.push([n1 - 1, n2 - 1]);
+            
+            for (let k = 0; k < path.length; k += 2) {
+                const [pi, pj] = path[k];
+                const x1 = margin + (pi / n1) * plotW;
+                const y1 = margin + plotH / 2 - seq1[pi] * plotH / 3;
+                const x2 = margin + (pj / n2) * plotW;
+                const y2 = 2 * margin + plotH + plotH / 2 - seq2[pj] * plotH / 3;
+                ctx2.beginPath();
+                ctx2.moveTo(x1, y1);
+                ctx2.lineTo(x2, y2);
+                ctx2.stroke();
+            }
+            
+            // 标签
+            ctx2.fillStyle = colors.signal1;
+            ctx2.font = 'bold 11px Microsoft YaHei';
+            ctx2.textAlign = 'left';
+            ctx2.fillText('模板 X', margin, margin - 8);
+            ctx2.fillStyle = colors.signal2;
+            ctx2.fillText('测试 Y', margin, 2 * margin + plotH - 8);
+            ctx2.fillStyle = colors.success;
+            ctx2.font = '10px Microsoft YaHei';
+            ctx2.textAlign = 'center';
+            ctx2.fillText('✓ 非线性扭曲找到最佳对齐', canvas2.width / 2, canvas2.height - 8);
         }
 
         // DTW动画
@@ -715,7 +876,7 @@
 
         // 初始化
         window.addEventListener('load', function() {
-            drawFlow(); drawPreemphasis(); drawFraming(); drawWindow(); drawMFCCFlow(); drawMelFilter(); drawDTWProblem(); drawRecognition();
+            drawFlow(); drawPreemphasis(); drawFraming(); drawWindow(); drawMFCCFlow(); drawMelFilter(); drawEuclideanVsDTW(); drawRecognition();
             initDTW(); drawDTWMatrix();
             document.getElementById('dtwStartBtn').addEventListener('click', startDTW);
             document.getElementById('dtwStepBtn').addEventListener('click', function() { if(!dtw.completed)stepDTW(); });
@@ -729,62 +890,6 @@
             btn.classList.toggle('visible', window.scrollY > 300);
         });
     </script>
-
-        <!-- 实验现象分析 -->
-        <section id="analysis" style="background: #f8f9ff;">
-            <h2>📊 实验现象与分析</h2>
-            
-            <h3>预期实验结果</h3>
-            <div class="two-column">
-                <div class="step-box" style="border-color: #f56565;">
-                    <h4 style="color: #c53030;">使用 test/ 目录测试</h4>
-                    <p style="font-size: 2em; color: #f56565; font-weight: bold; text-align: center;">10-30%</p>
-                    <p style="text-align: center;">识别率较低</p>
-                    <p><strong>原因：</strong>测试集与训练集来源不同（不同说话人、录音环境）</p>
-                </div>
-                <div class="step-box" style="border-color: #48bb78;">
-                    <h4 style="color: #2f855a;">使用 train/ 目录测试</h4>
-                    <p style="font-size: 2em; color: #48bb78; font-weight: bold; text-align: center;">70-90%</p>
-                    <p style="text-align: center;">识别率较高</p>
-                    <p><strong>原因：</strong>同源数据，模板与测试来自相同分布</p>
-                </div>
-            </div>
-            
-            <div class="warning-box">
-                <strong>🔍 核心发现：</strong>
-                <p>DTW是<strong>说话人相关</strong>的识别方法。当测试音频与训练模板来自不同说话人时，识别率会大幅下降。这是DTW方法的固有局限性，<strong>不是代码错误</strong>！</p>
-            </div>
-            
-            <h3>DTW 方法的局限性</h3>
-            <div class="three-column">
-                <div class="step-box">
-                    <h4 style="color: #e74c3c;">❌ 说话人敏感</h4>
-                    <p>不同人说同一个词，声学特征差异大，DTW无法泛化到新说话人。</p>
-                </div>
-                <div class="step-box">
-                    <h4 style="color: #e74c3c;">❌ 孤立词限制</h4>
-                    <p>只能识别单个词，无法处理连续语音流。</p>
-                </div>
-                <div class="step-box">
-                    <h4 style="color: #e74c3c;">❌ 模板依赖</h4>
-                    <p>每个词都需要模板，词汇量扩展困难。</p>
-                </div>
-            </div>
-            
-            <h3>现代语音识别技术演进</h3>
-            <table>
-                <tr><th>时代</th><th>技术</th><th>特点</th></tr>
-                <tr><td>1970-1990</td><td><strong>DTW（本实验）</strong></td><td>说话人相关，模板匹配</td></tr>
-                <tr><td>1990-2010</td><td>GMM-HMM</td><td>统计建模，说话人无关</td></tr>
-                <tr><td>2015-2020</td><td>端到端深度学习</td><td>神经网络，序列到序列</td></tr>
-                <tr><td>2020-现在</td><td style="color: #48bb78; font-weight: bold;">Whisper/Wav2Vec</td><td>大规模预训练，接近人类水平</td></tr>
-            </table>
-            
-            <div class="success-box">
-                <strong>💡 思考题：</strong>
-                <p>为什么现代语音助手（Siri、小爱同学）可以识别任何人的语音？它们使用了海量数据训练的深度学习模型，学习到语音的通用特征，而非依赖特定说话人的模板。</p>
-            </div>
-        </section>
 
 </body>
 </html>
