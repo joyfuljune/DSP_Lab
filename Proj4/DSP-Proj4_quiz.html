@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP-Proj4 练习测验 - DTW语音识别实验</title>
+    
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            }
+        });
+    </script>
+
+    <style>
+        .mathjax-status {
+            position: fixed;
+            top: 10px;
+            right: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            font-size: 14px;
+            z-index: 10000;
+            font-family: 'Microsoft YaHei', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mathjax-status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+        .mathjax-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+            transition: opacity 0.5s ease-out 1.5s;
+            opacity: 0;
+        }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #11998e;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #11998e;
+            margin: 25px 0 15px 0;
+        }
+
+        .login-section, .quiz-section, .result-section {
+            display: none;
+        }
+
+        .login-section.active, .quiz-section.active, .result-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #11998e;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #38ef7d;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(17, 153, 142, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #0d7a72 0%, #11998e 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.5);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            border-left: 5px solid #11998e;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .question-title {
+            color: #11998e;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            margin: 15px 0;
+        }
+
+        .option {
+            display: block;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background: #e8f5f3;
+            border-color: #11998e;
+        }
+
+        .option.selected {
+            background: #11998e;
+            color: white;
+            border-color: #0d7a72;
+        }
+
+        .option.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #38a169;
+        }
+
+        .option.incorrect {
+            background: #f56565;
+            color: white;
+            border-color: #e53e3e;
+        }
+
+        .feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #e8f5e9;
+            color: #48bb78;
+            border-left: 5px solid #48bb78;
+        }
+
+        .feedback.incorrect {
+            background: #ffebee;
+            color: #f56565;
+            border-left: 5px solid #f56565;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #11998e 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-table th {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .mastery-excellent {
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .mastery-good {
+            color: #11998e;
+            font-weight: bold;
+        }
+
+        .mastery-fair {
+            color: #ed8936;
+            font-weight: bold;
+        }
+
+        .mastery-poor {
+            color: #f56565;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #fff8e1;
+            border-left: 5px solid #ed8936;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-option:hover {
+            background: #e8f5f3;
+            border-color: #11998e;
+        }
+
+        .checkbox-option.correct {
+            background: #e8f5e9;
+            border-color: #48bb78;
+        }
+
+        .checkbox-option.incorrect {
+            background: #ffebee;
+            border-color: #f56565;
+        }
+
+        .checkbox-option.missed {
+            background: #fff3e0;
+            border-color: #ed8936;
+        }
+
+        .tf-options {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .tf-option {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tf-option:hover {
+            border-color: #11998e;
+        }
+
+        .tf-option.selected {
+            background: #11998e;
+            color: white;
+            border-color: #0d7a72;
+        }
+
+        .tf-option.correct {
+            background: #48bb78;
+            color: white;
+        }
+
+        .tf-option.incorrect {
+            background: #f56565;
+            color: white;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nav-buttons button {
+            flex: 1;
+        }
+
+        .topic-progress {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .topic-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .topic-badge.current {
+            background: #11998e;
+            color: white;
+        }
+
+        .topic-badge.completed {
+            background: #48bb78;
+            color: white;
+        }
+
+        .topic-badge.pending {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .screenshot-area {
+            padding: 20px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- MathJax状态指示 -->
+        <div id="mathjax-status" class="mathjax-status loading">⏳ 公式加载中...</div>
+
+        <!-- 登录界面 -->
+        <div class="login-section active">
+            <h1>🎤 DSP-Proj4 练习测验</h1>
+            <h2 style="text-align: center; color: #666; font-weight: normal;">DTW语音识别实验</h2>
+            
+            <div class="info-box">
+                <strong>📋 测验说明:</strong><br>
+                • 本测验涵盖DTW语音识别实验的5个核心知识点<br>
+                • 每个知识点随机抽取1道题,共5道题<br>
+                • 题型包括:单选题、多选题、判断题<br>
+                • 完成后可查看各知识点掌握情况
+            </div>
+
+            <div class="form-group">
+                <label>学号:</label>
+                <input type="text" id="studentId" placeholder="请输入学号">
+            </div>
+            <div class="form-group">
+                <label>姓名:</label>
+                <input type="text" id="studentName" placeholder="请输入姓名">
+            </div>
+            <button onclick="startQuiz()">开始测验</button>
+        </div>
+
+        <!-- 答题界面 -->
+        <div class="quiz-section">
+            <h1>🎤 DTW语音识别测验</h1>
+            
+            <div class="topic-progress" id="topicProgress"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+
+            <div id="questionContainer"></div>
+
+            <div class="nav-buttons">
+                <button id="submitBtn" onclick="submitAnswer()">提交答案</button>
+                <button id="nextBtn" onclick="nextQuestion()" style="display:none;">下一题</button>
+            </div>
+        </div>
+
+        <!-- 结果界面 -->
+        <div class="result-section">
+            <h1>📊 测验结果报告</h1>
+            <div id="finalReport"></div>
+            <button id="saveBtn">截图保存</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据结构 ====================
+        let studentData = {
+            id: '',
+            name: '',
+            topicStats: {},
+            currentTopicIndex: 0,
+            currentQuestionIndex: 0,
+            usedQuestions: {}
+        };
+
+        // 知识点定义
+        const topics = [
+            {
+                name: '预加重',
+                id: 'preemphasis',
+                description: '高通滤波器，增强高频成分'
+            },
+            {
+                name: '分帧处理',
+                id: 'framing',
+                description: '帧长、帧移、重叠率计算'
+            },
+            {
+                name: '加窗处理',
+                id: 'windowing',
+                description: '汉宁窗、窗函数作用'
+            },
+            {
+                name: 'MFCC特征提取',
+                id: 'mfcc',
+                description: 'Mel滤波器、DCT变换'
+            },
+            {
+                name: 'DTW动态时间规整',
+                id: 'dtw',
+                description: '距离计算、动态规划、最优路径'
+            }
+        ];
+
+        // ==================== 工具函数 ====================
+        
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function randChoice(arr) {
+            return arr[randInt(0, arr.length - 1)];
+        }
+
+        function randFloat(min, max, decimals = 2) {
+            return (Math.random() * (max - min) + min).toFixed(decimals);
+        }
+
+        // 单选题选项打乱函数
+        function shuffleOptionsWithAnswer(options, correctIndex) {
+            const indices = options.map((_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            return {
+                options: indices.map(i => options[i]),
+                correct: indices.indexOf(correctIndex)
+            };
+        }
+
+        // 多选题选项打乱函数
+        function shuffleOptionsWithAnswers(options, correctIndices) {
+            const indices = options.map((_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            return {
+                options: indices.map(i => options[i]),
+                correct: correctIndices.map(ci => indices.indexOf(ci)).sort((a, b) => a - b)
+            };
+        }
+
+        // ==================== 题目生成函数 ====================
+        
+        const questionGenerators = {
+            // ========== 知识点1: 预加重 ==========
+            preemphasis: [
+                // 预加重题目1: 基本公式
+                () => {
+                    const alpha = randChoice([0.95, 0.97, 0.98]);
+                    return {
+                        type: 'single',
+                        question: `预加重滤波器的差分方程为 $y[n] = x[n] - \\alpha x[n-1]$，当 $\\alpha = ${alpha}$ 时，对应的滤波器系数为:`,
+                        options: [
+                            `$[1, -${alpha}]$`,
+                            `$[1, ${alpha}]$`,
+                            `$[-1, ${alpha}]$`,
+                            `$[${alpha}, -1]$`
+                        ],
+                        correct: 0,
+                        explanation: `预加重滤波器 $y[n] = x[n] - \\alpha x[n-1]$ 对应 MATLAB 中 filter([1, -α], 1, x)，系数为 $[1, -${alpha}]$。`
+                    };
+                },
+                
+                // 预加重题目2: 滤波器类型
+                () => {
+                    return {
+                        type: 'single',
+                        question: '预加重滤波器本质上是什么类型的滤波器?',
+                        options: [
+                            '高通滤波器',
+                            '低通滤波器',
+                            '带通滤波器',
+                            '带阻滤波器'
+                        ],
+                        correct: 0,
+                        explanation: '预加重是一阶高通滤波器，它增强高频成分，抑制低频成分。这是因为语音信号高频能量较弱，需要补偿。'
+                    };
+                },
+                
+                // 预加重题目3: 作用
+                () => {
+                    return {
+                        type: 'single',
+                        question: '在语音处理中，预加重的主要目的是:',
+                        options: [
+                            '补偿语音信号的高频衰减',
+                            '去除噪声',
+                            '降低采样率',
+                            '增加信号长度'
+                        ],
+                        correct: 0,
+                        explanation: '语音信号在发音过程中高频分量会衰减，预加重通过高通滤波补偿这种衰减，使频谱更平坦。'
+                    };
+                },
+                
+                // 预加重题目4: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 预加重系数 $\\alpha$ 通常取值接近1(如0.95~0.98)，值越大高频增强越明显。',
+                        correct: true,
+                        explanation: '正确。$\\alpha$ 越接近1，高通滤波效果越强，高频增强越明显。通常取0.95~0.98。'
+                    };
+                },
+                
+                // 预加重题目5: 多选题
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于预加重，以下说法正确的是:(多选)',
+                        options: [
+                            '预加重是一种高通滤波处理',
+                            '预加重可以使语音频谱更加平坦',
+                            '预加重系数通常取0.95~0.98',
+                            '预加重会增加信号的总能量'
+                        ],
+                        correct: [0, 1, 2],
+                        explanation: '预加重是高通滤波，使频谱平坦化，系数通常取0.95~0.98。它不会增加总能量，而是重新分配能量。'
+                    };
+                }
+            ],
+
+            // ========== 知识点2: 分帧处理 ==========
+            framing: [
+                // 分帧题目1: 帧数计算
+                () => {
+                    const L = randChoice([8000, 16000, 24000]);
+                    const frameLen = randChoice([256, 512]);
+                    const frameShift = frameLen / 2;
+                    const numFrames = Math.floor((L - frameLen) / frameShift) + 1;
+                    return {
+                        type: 'single',
+                        question: `信号长度 $L=${L}$ 点，帧长 $N=${frameLen}$ 点，帧移 $M=${frameShift}$ 点，则帧数为:`,
+                        options: [
+                            `${numFrames}`,
+                            `${Math.floor(L / frameLen)}`,
+                            `${Math.floor(L / frameShift)}`,
+                            `${numFrames + 1}`
+                        ],
+                        correct: 0,
+                        explanation: `帧数公式: $\\lfloor(L-N)/M\\rfloor + 1 = \\lfloor(${L}-${frameLen})/${frameShift}\\rfloor + 1 = ${numFrames}$`
+                    };
+                },
+                
+                // 分帧题目2: 起始位置
+                () => {
+                    const frameShift = randChoice([128, 256]);
+                    const k = randInt(2, 5);
+                    const startIdx = (k - 1) * frameShift + 1;
+                    return {
+                        type: 'single',
+                        question: `帧移为 $M=${frameShift}$ 点，第 $${k}$ 帧的起始索引(从1开始)为:`,
+                        options: [
+                            `${startIdx}`,
+                            `${k * frameShift}`,
+                            `${k * frameShift + 1}`,
+                            `${(k - 1) * frameShift}`
+                        ],
+                        correct: 0,
+                        explanation: `第k帧起始索引(从1开始): $(k-1) \\times M + 1 = (${k}-1) \\times ${frameShift} + 1 = ${startIdx}$`
+                    };
+                },
+                
+                // 分帧题目3: 重叠率
+                () => {
+                    const frameLen = randChoice([256, 512, 1024]);
+                    const overlap = randChoice([0.25, 0.5, 0.75]);
+                    const frameShift = frameLen * (1 - overlap);
+                    return {
+                        type: 'single',
+                        question: `帧长 $N=${frameLen}$ 点，重叠率为 ${overlap*100}%，则帧移为:`,
+                        options: [
+                            `${frameShift} 点`,
+                            `${frameLen * overlap} 点`,
+                            `${frameLen} 点`,
+                            `${frameLen / 2} 点`
+                        ],
+                        correct: 0,
+                        explanation: `帧移 $M = N \\times (1 - 重叠率) = ${frameLen} \\times (1 - ${overlap}) = ${frameShift}$ 点`
+                    };
+                },
+                
+                // 分帧题目4: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 帧移越小，相邻帧之间的重叠越大，时间分辨率越高。',
+                        correct: true,
+                        explanation: '正确。帧移小意味着相邻帧重叠多，能更细致地捕捉信号的时变特性，时间分辨率更高。'
+                    };
+                },
+                
+                // 分帧题目5: 多选题
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于语音分帧，以下说法正确的是:(多选)',
+                        options: [
+                            '典型帧长为20-30ms，以保证短时平稳性',
+                            '相邻帧通常有50%的重叠',
+                            '帧移 = 帧长 × (1 - 重叠率)',
+                            '帧长越长，频率分辨率越高'
+                        ],
+                        correct: [0, 1, 2, 3],
+                        explanation: '语音在20-30ms内近似平稳；50%重叠是常用设置；帧移与重叠率的关系正确；帧长越长FFT点数越多，频率分辨率越高。'
+                    };
+                }
+            ],
+
+            // ========== 知识点3: 加窗处理 ==========
+            windowing: [
+                // 加窗题目1: 汉宁窗公式
+                () => {
+                    return {
+                        type: 'single',
+                        question: '汉宁窗(Hanning window)的数学表达式为:',
+                        options: [
+                            '$w[n] = 0.5 - 0.5\\cos(\\frac{2\\pi n}{N-1})$',
+                            '$w[n] = 0.54 - 0.46\\cos(\\frac{2\\pi n}{N-1})$',
+                            '$w[n] = 1$ (矩形窗)',
+                            '$w[n] = \\sin(\\frac{\\pi n}{N-1})$'
+                        ],
+                        correct: 0,
+                        explanation: '汉宁窗: $w[n] = 0.5 - 0.5\\cos(\\frac{2\\pi n}{N-1})$。汉明窗系数为0.54和0.46。'
+                    };
+                },
+                
+                // 加窗题目2: 加窗目的
+                () => {
+                    return {
+                        type: 'single',
+                        question: '对语音帧进行加窗处理的主要目的是:',
+                        options: [
+                            '减少频谱泄露',
+                            '增加信号能量',
+                            '提高采样率',
+                            '去除直流分量'
+                        ],
+                        correct: 0,
+                        explanation: '加窗使帧边缘平滑过渡到零，减少截断造成的频谱泄露(旁瓣)，使频谱分析更准确。'
+                    };
+                },
+                
+                // 加窗题目3: MATLAB函数
+                () => {
+                    const N = randChoice([256, 512, 1024]);
+                    return {
+                        type: 'single',
+                        question: `在MATLAB中生成长度为${N}的周期性汉宁窗，正确的函数调用是:`,
+                        options: [
+                            `hann(${N}, 'periodic')`,
+                            `hanning(${N})`,
+                            `hamming(${N})`,
+                            `window(${N})`
+                        ],
+                        correct: 0,
+                        explanation: `MATLAB中使用 hann(N, 'periodic') 生成周期性汉宁窗，适合FFT分析。`
+                    };
+                },
+                
+                // 加窗题目4: 判断题
+                () => {
+                    return {
+                        type: 'tf',
+                        question: '判断: 汉宁窗和汉明窗相比，汉宁窗的主瓣更窄但旁瓣更高。',
+                        correct: false,
+                        explanation: '错误。汉宁窗的旁瓣比汉明窗低(约-31dB vs -43dB)，但主瓣略宽。汉明窗在边缘不降到零。'
+                    };
+                },
+                
+                // 加窗题目5: 多选题
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于窗函数，以下说法正确的是:(多选)',
+                        options: [
+                            '矩形窗相当于不加窗，会产生严重的频谱泄露',
+                            '汉宁窗两端平滑过渡到零',
+                            '加窗会降低频率分辨率',
+                            '窗函数的选择影响频谱分析的精度'
+                        ],
+                        correct: [0, 1, 2, 3],
+                        explanation: '矩形窗有严重泄露；汉宁窗平滑到零；加窗使主瓣变宽降低分辨率；窗函数选择很重要。'
+                    };
+                }
+            ],
+
+            // ========== 知识点4: MFCC特征提取 ==========
+            mfcc: [
+                // MFCC题目1: 处理流程
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'MFCC特征提取的正确处理顺序是:',
+                        options: [
+                            '加窗 → FFT → 功率谱 → Mel滤波 → 取对数 → DCT',
+                            'FFT → 加窗 → Mel滤波 → 功率谱 → DCT → 取对数',
+                            'Mel滤波 → FFT → 加窗 → 取对数 → 功率谱 → DCT',
+                            '加窗 → Mel滤波 → FFT → DCT → 取对数 → 功率谱'
+                        ],
+                        correct: 0,
+                        explanation: 'MFCC流程: 加窗 → FFT → 功率谱 → Mel滤波器组 → 取对数 → DCT → 保留低阶系数。'
+                    };
+                },
+                
+                // MFCC题目2: Mel频率
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'Mel频率尺度的特点是:',
+                        options: [
+                            '低频区分辨率高，高频区分辨率低',
+                            '高频区分辨率高，低频区分辨率低',
+                            '全频段分辨率相同',
+                            '只关注中频区域'
+                        ],
+                        correct: 0,
+                        explanation: 'Mel尺度模拟人耳听觉特性:对低频敏感(分辨率高)，对高频不敏感(分辨率低)。'
+                    };
+                },
+                
+                // MFCC题目3: 功率谱计算
+                () => {
+                    return {
+                        type: 'single',
+                        question: '功率谱 $P[k]$ 与FFT结果 $X[k]$ 的关系是:',
+                        options: [
+                            '$P[k] = |X[k]|^2$',
+                            '$P[k] = |X[k]|$',
+                            '$P[k] = X[k]^2$',
+                            '$P[k] = \\log|X[k]|$'
+                        ],
+                        correct: 0,
+                        explanation: '功率谱是FFT幅度的平方: $P[k] = |X[k]|^2$。在MATLAB中可用 abs(X).^2 计算。'
+                    };
+                },
+                
+                // MFCC题目4: DCT作用
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'MFCC中使用DCT(离散余弦变换)的主要目的是:',
+                        options: [
+                            '去相关，将能量集中到低阶系数',
+                            '增加特征维度',
+                            '将信号转换到频域',
+                            '增强高频成分'
+                        ],
+                        correct: 0,
+                        explanation: 'DCT对Mel滤波器输出进行去相关处理，能量集中到前几个系数，通常只保留前12-13个作为MFCC特征。'
+                    };
+                },
+                
+                // MFCC题目5: 多选题
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于MFCC特征，以下说法正确的是:(多选)',
+                        options: [
+                            'MFCC模拟了人耳的听觉特性',
+                            'Mel滤波器组在低频区更密集',
+                            '通常只保留DCT的前12-13个系数',
+                            '取对数可以压缩动态范围'
+                        ],
+                        correct: [0, 1, 2, 3],
+                        explanation: 'MFCC基于人耳听觉；Mel滤波器低频密集；保留低阶DCT系数；对数压缩动态范围。'
+                    };
+                }
+            ],
+
+            // ========== 知识点5: DTW动态时间规整 ==========
+            dtw: [
+                // DTW题目1: 基本概念
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'DTW(动态时间规整)算法的主要目的是:',
+                        options: [
+                            '找到两个不等长序列之间的最优对齐',
+                            '计算两个等长序列的相似度',
+                            '对信号进行滤波',
+                            '提取频率特征'
+                        ],
+                        correct: 0,
+                        explanation: 'DTW通过动态规划找到两个可能不等长序列之间的最优对齐路径，克服语速差异的影响。'
+                    };
+                },
+                
+                // DTW题目2: 距离计算
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'DTW中计算特征向量之间距离通常使用:',
+                        options: [
+                            '欧氏距离',
+                            '曼哈顿距离',
+                            '余弦相似度',
+                            '汉明距离'
+                        ],
+                        correct: 0,
+                        explanation: 'DTW通常使用欧氏距离: $d(i,j) = \\|x_i - y_j\\|_2$，计算两个特征向量的距离。'
+                    };
+                },
+                
+                // DTW题目3: 递推公式
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'DTW累积距离矩阵的递推公式为:',
+                        options: [
+                            '$D(i,j) = d(i,j) + \\min\\{D(i-1,j), D(i,j-1), D(i-1,j-1)\\}$',
+                            '$D(i,j) = d(i,j) + D(i-1,j-1)$',
+                            '$D(i,j) = \\min\\{d(i-1,j), d(i,j-1), d(i-1,j-1)\\}$',
+                            '$D(i,j) = d(i,j) \\times D(i-1,j-1)$'
+                        ],
+                        correct: 0,
+                        explanation: '递推公式: 当前距离 = 局部距离 + 三个方向(左、下、左下)中的最小累积距离。'
+                    };
+                },
+                
+                // DTW题目4: 边界条件
+                () => {
+                    return {
+                        type: 'single',
+                        question: 'DTW累积距离矩阵的初始化中，$D(1,1)$ 的值为:',
+                        options: [
+                            '$d(1,1)$，即第一对元素的局部距离',
+                            '0',
+                            '1',
+                            '$\\infty$'
+                        ],
+                        correct: 0,
+                        explanation: '$D(1,1) = d(1,1)$，起点的累积距离等于第一对元素的局部距离。其他边界设为$\\infty$。'
+                    };
+                },
+                
+                // DTW题目5: 多选题
+                () => {
+                    return {
+                        type: 'multiple',
+                        question: '关于DTW算法，以下说法正确的是:(多选)',
+                        options: [
+                            'DTW可以处理不等长序列的匹配',
+                            '最优路径从(1,1)到(N,M)',
+                            '路径只能向右、向上、或对角移动',
+                            'DTW距离越小表示两序列越相似'
+                        ],
+                        correct: [0, 1, 2, 3],
+                        explanation: 'DTW处理不等长序列；路径从起点到终点；三个允许方向；距离越小越相似。'
+                    };
+                }
+            ]
+        };
+
+        // ==================== 核心逻辑 ====================
+        
+        let currentQuestion = null;
+        let userAnswer = null;
+        let answered = false;
+
+        function startQuiz() {
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            
+            if (!id || !name) {
+                alert('请输入学号和姓名!');
+                return;
+            }
+            
+            studentData.id = id;
+            studentData.name = name;
+            studentData.currentTopicIndex = 0;
+            studentData.usedQuestions = {};
+            
+            // 初始化每个知识点的统计
+            topics.forEach(topic => {
+                studentData.topicStats[topic.id] = {
+                    correct: 0,
+                    total: 0,
+                    questions: []
+                };
+                studentData.usedQuestions[topic.id] = [];
+            });
+            
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.quiz-section').classList.add('active');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const topic = topics[studentData.currentTopicIndex];
+            const generators = questionGenerators[topic.id];
+            
+            // 随机选择一个未使用的题目生成器
+            let availableIndices = [];
+            for (let i = 0; i < generators.length; i++) {
+                if (!studentData.usedQuestions[topic.id].includes(i)) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            if (availableIndices.length === 0) {
+                availableIndices = generators.map((_, i) => i);
+            }
+            
+            const selectedIndex = randChoice(availableIndices);
+            studentData.usedQuestions[topic.id].push(selectedIndex);
+            
+            currentQuestion = generators[selectedIndex]();
+            userAnswer = null;
+            answered = false;
+            
+            renderQuestion();
+            updateProgress();
+        }
+
+        function renderQuestion() {
+            const topic = topics[studentData.currentTopicIndex];
+            const container = document.getElementById('questionContainer');
+            
+            let html = `
+                <div class="question-box">
+                    <div class="question-title">
+                        【${topic.name}】第 ${studentData.currentTopicIndex + 1} / ${topics.length} 题
+                    </div>
+                    <p style="margin: 15px 0; font-size: 1.1em;">${currentQuestion.question}</p>
+            `;
+            
+            if (currentQuestion.type === 'single') {
+                // 打乱选项
+                const shuffled = shuffleOptionsWithAnswer(currentQuestion.options, currentQuestion.correct);
+                currentQuestion.shuffledOptions = shuffled.options;
+                currentQuestion.shuffledCorrect = shuffled.correct;
+                
+                html += '<div class="options">';
+                shuffled.options.forEach((opt, i) => {
+                    html += `<div class="option" data-index="${i}" onclick="selectOption(this, ${i})">${String.fromCharCode(65 + i)}. ${opt}</div>`;
+                });
+                html += '</div>';
+            } else if (currentQuestion.type === 'multiple') {
+                // 打乱选项
+                const shuffled = shuffleOptionsWithAnswers(currentQuestion.options, currentQuestion.correct);
+                currentQuestion.shuffledOptions = shuffled.options;
+                currentQuestion.shuffledCorrect = shuffled.correct;
+                
+                html += '<div class="options">';
+                shuffled.options.forEach((opt, i) => {
+                    html += `<label class="checkbox-option" data-index="${i}">
+                        <input type="checkbox" value="${i}" onchange="updateMultipleSelection()">
+                        ${String.fromCharCode(65 + i)}. ${opt}
+                    </label>`;
+                });
+                html += '</div>';
+            } else if (currentQuestion.type === 'tf') {
+                html += `
+                    <div class="tf-options">
+                        <div class="tf-option" data-value="true" onclick="selectTF(this, true)">✓ 正确</div>
+                        <div class="tf-option" data-value="false" onclick="selectTF(this, false)">✗ 错误</div>
+                    </div>
+                `;
+            }
+            
+            html += '<div id="feedback"></div></div>';
+            container.innerHTML = html;
+            
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // 触发MathJax渲染
+            if (window.MathJax) {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+            }
+        }
+
+        function selectOption(element, index) {
+            if (answered) return;
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            userAnswer = index;
+        }
+
+        function selectTF(element, value) {
+            if (answered) return;
+            document.querySelectorAll('.tf-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            userAnswer = value;
+        }
+
+        function updateMultipleSelection() {
+            if (answered) return;
+            const checkboxes = document.querySelectorAll('.checkbox-option input:checked');
+            userAnswer = Array.from(checkboxes).map(cb => parseInt(cb.value)).sort((a, b) => a - b);
+        }
+
+        function submitAnswer() {
+            if (userAnswer === null || (Array.isArray(userAnswer) && userAnswer.length === 0)) {
+                alert('请选择答案!');
+                return;
+            }
+            
+            answered = true;
+            const topic = topics[studentData.currentTopicIndex];
+            let isCorrect = false;
+            
+            if (currentQuestion.type === 'single') {
+                isCorrect = userAnswer === currentQuestion.shuffledCorrect;
+                
+                document.querySelectorAll('.option').forEach((opt, i) => {
+                    if (i === currentQuestion.shuffledCorrect) {
+                        opt.classList.add('correct');
+                    } else if (i === userAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            } else if (currentQuestion.type === 'multiple') {
+                const correctSet = new Set(currentQuestion.shuffledCorrect);
+                const userSet = new Set(userAnswer);
+                isCorrect = correctSet.size === userSet.size && 
+                           [...correctSet].every(x => userSet.has(x));
+                
+                document.querySelectorAll('.checkbox-option').forEach((opt, i) => {
+                    if (correctSet.has(i) && userSet.has(i)) {
+                        opt.classList.add('correct');
+                    } else if (correctSet.has(i) && !userSet.has(i)) {
+                        opt.classList.add('missed');
+                    } else if (!correctSet.has(i) && userSet.has(i)) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            } else if (currentQuestion.type === 'tf') {
+                isCorrect = userAnswer === currentQuestion.correct;
+                
+                document.querySelectorAll('.tf-option').forEach(opt => {
+                    const val = opt.dataset.value === 'true';
+                    if (val === currentQuestion.correct) {
+                        opt.classList.add('correct');
+                    } else if (val === userAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            }
+            
+            // 记录结果
+            studentData.topicStats[topic.id].total++;
+            if (isCorrect) {
+                studentData.topicStats[topic.id].correct++;
+            }
+            studentData.topicStats[topic.id].questions.push({
+                question: currentQuestion.question,
+                correct: isCorrect
+            });
+            
+            // 显示反馈
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+            feedback.innerHTML = `
+                <strong>${isCorrect ? '✓ 回答正确!' : '✗ 回答错误'}</strong><br>
+                <span style="color: #333; font-weight: normal;">${currentQuestion.explanation}</span>
+            `;
+            
+            // 触发MathJax渲染
+            if (window.MathJax) {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, feedback]);
+            }
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            studentData.currentTopicIndex++;
+            
+            if (studentData.currentTopicIndex >= topics.length) {
+                showResults();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((studentData.currentTopicIndex) / topics.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressFill').textContent = Math.round(progress) + '%';
+            
+            // 更新知识点进度
+            let html = '';
+            topics.forEach((topic, i) => {
+                let status = 'pending';
+                if (i < studentData.currentTopicIndex) status = 'completed';
+                else if (i === studentData.currentTopicIndex) status = 'current';
+                html += `<span class="topic-badge ${status}">${topic.name}</span>`;
+            });
+            document.getElementById('topicProgress').innerHTML = html;
+        }
+
+        function showResults() {
+            document.querySelector('.quiz-section').classList.remove('active');
+            document.querySelector('.result-section').classList.add('active');
+            
+            let totalCorrect = 0;
+            let totalQuestions = 0;
+            
+            let tableHtml = `
+                <div class="screenshot-area" id="screenshotArea">
+                    <h2>👤 ${studentData.name} (${studentData.id})</h2>
+                    <p style="color: #666;">测验时间: ${new Date().toLocaleString()}</p>
+                    
+                    <table class="stats-table">
+                        <tr>
+                            <th>知识点</th>
+                            <th>正确/总数</th>
+                            <th>正确率</th>
+                            <th>掌握程度</th>
+                        </tr>
+            `;
+            
+            topics.forEach(topic => {
+                const stats = studentData.topicStats[topic.id];
+                totalCorrect += stats.correct;
+                totalQuestions += stats.total;
+                
+                const rate = stats.total > 0 ? (stats.correct / stats.total * 100) : 0;
+                let mastery = '';
+                let masteryClass = '';
+                
+                if (rate >= 80) {
+                    mastery = '优秀';
+                    masteryClass = 'mastery-excellent';
+                } else if (rate >= 60) {
+                    mastery = '良好';
+                    masteryClass = 'mastery-good';
+                } else if (rate >= 40) {
+                    mastery = '一般';
+                    masteryClass = 'mastery-fair';
+                } else {
+                    mastery = '需加强';
+                    masteryClass = 'mastery-poor';
+                }
+                
+                tableHtml += `
+                    <tr>
+                        <td><strong>${topic.name}</strong><br><small style="color:#666">${topic.description}</small></td>
+                        <td>${stats.correct} / ${stats.total}</td>
+                        <td>${rate.toFixed(0)}%</td>
+                        <td class="${masteryClass}">${mastery}</td>
+                    </tr>
+                `;
+            });
+            
+            const overallRate = totalQuestions > 0 ? (totalCorrect / totalQuestions * 100) : 0;
+            
+            tableHtml += `
+                    <tr style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+                        <td><strong>总计</strong></td>
+                        <td><strong>${totalCorrect} / ${totalQuestions}</strong></td>
+                        <td><strong>${overallRate.toFixed(0)}%</strong></td>
+                        <td><strong>${overallRate >= 80 ? '优秀' : overallRate >= 60 ? '良好' : overallRate >= 40 ? '一般' : '需加强'}</strong></td>
+                    </tr>
+                </table>
+                
+                <div class="info-box" style="margin-top: 20px;">
+                    <strong>📝 学习建议:</strong><br>
+            `;
+            
+            topics.forEach(topic => {
+                const stats = studentData.topicStats[topic.id];
+                const rate = stats.total > 0 ? (stats.correct / stats.total * 100) : 0;
+                if (rate < 60) {
+                    tableHtml += `• <strong>${topic.name}</strong>: ${topic.description}，建议复习相关内容<br>`;
+                }
+            });
+            
+            if (overallRate >= 80) {
+                tableHtml += '• 整体掌握良好，可以进行实验编程<br>';
+            }
+            
+            tableHtml += '</div></div>';
+            
+            document.getElementById('finalReport').innerHTML = tableHtml;
+            
+            // 截图保存按钮
+            document.getElementById('saveBtn').onclick = function() {
+                html2canvas(document.getElementById('screenshotArea'), {
+                    backgroundColor: '#ffffff',
+                    scale: 2
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `DSP-Proj4-Quiz-${studentData.id}-${studentData.name}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            };
+        }
+
+        // ==================== 初始化 ====================
+        
+        // MathJax加载检测
+        window.addEventListener('load', function() {
+            const statusEl = document.getElementById('mathjax-status');
+            
+            // 动态加载MathJax
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+            script.async = true;
+            
+            script.onload = function() {
+                // 等待MathJax初始化
+                if (window.MathJax) {
+                    MathJax.Hub.Queue(function() {
+                        statusEl.textContent = '✓ 公式已就绪';
+                        statusEl.classList.remove('loading');
+                        statusEl.classList.add('success');
+                    });
+                }
+            };
+            
+            script.onerror = function() {
+                statusEl.textContent = '⚠ 公式加载失败(不影响答题)';
+            };
+            
+            document.head.appendChild(script);
+        });
+    </script>
+</body>
+</html>

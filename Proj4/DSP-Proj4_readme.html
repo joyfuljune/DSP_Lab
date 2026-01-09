@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 4: DTW孤立词语音识别 - 实验指导</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #0ea5e9; --primary-dark: #0284c7; --secondary: #06b6d4;
+            --accent: #f97316; --dark: #0f172a; --dark-soft: #1e293b;
+            --light: #f8fafc; --gray: #64748b; --success: #10b981; --warning: #f59e0b;
+        }
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.8; color: var(--dark); background: var(--light);
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 30px; }
+        header {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-soft) 100%);
+            color: white; padding: 50px 40px; text-align: center; position: relative;
+        }
+        header::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        header .subtitle { font-size: 1.1em; opacity: 0.9; }
+        .badge {
+            display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 0.85em;
+            font-weight: 600; margin: 3px;
+        }
+        .badge-primary { background: var(--primary); color: white; }
+        .badge-success { background: var(--success); color: white; }
+        .badge-warning { background: var(--warning); color: white; }
+        .badge-accent { background: var(--accent); color: white; }
+        h2 {
+            font-size: 1.8em; color: var(--dark); margin: 40px 0 20px; padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary); display: flex; align-items: center; gap: 10px;
+        }
+        h3 { font-size: 1.4em; color: var(--primary-dark); margin: 30px 0 15px; }
+        h4 { font-size: 1.15em; color: var(--dark-soft); margin: 20px 0 10px; }
+        p { margin-bottom: 15px; }
+        code {
+            background: #e0f2fe; color: var(--primary-dark); padding: 2px 8px; border-radius: 5px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9em;
+        }
+        pre {
+            background: var(--dark); color: #e2e8f0; padding: 20px; border-radius: 12px;
+            overflow-x: auto; margin: 15px 0; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88em; line-height: 1.6;
+        }
+        pre code { background: transparent; color: inherit; padding: 0; }
+        table {
+            width: 100%; border-collapse: collapse; margin: 20px 0; border-radius: 12px;
+            overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: linear-gradient(135deg, var(--dark), var(--dark-soft)); color: white; font-weight: 600; }
+        tr:hover { background: rgba(14, 165, 233, 0.05); }
+        tr:nth-child(even) { background: #f8fafc; }
+        .file-tree {
+            background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9em; margin: 20px 0;
+        }
+        .file-tree .folder { color: var(--primary); font-weight: 600; }
+        .file-tree .file-m { color: #f97316; }
+        .file-tree .file-mat { color: #8b5cf6; }
+        .file-tree .file-wav { color: #22c55e; }
+        .file-tree .file-txt { color: #64748b; }
+        .info-box {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-left: 5px solid var(--primary);
+            padding: 18px 22px; margin: 20px 0; border-radius: 0 12px 12px 0;
+        }
+        .info-box strong { color: var(--primary-dark); }
+        .warning-box {
+            background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 5px solid var(--warning);
+            padding: 18px 22px; margin: 20px 0; border-radius: 0 12px 12px 0;
+        }
+        .warning-box strong { color: #b45309; }
+        .success-box {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-left: 5px solid var(--success);
+            padding: 18px 22px; margin: 20px 0; border-radius: 0 12px 12px 0;
+        }
+        .success-box strong { color: #047857; }
+        .tip-box {
+            background: linear-gradient(135deg, #fff7ed, #ffedd5); border-left: 5px solid var(--accent);
+            padding: 18px 22px; margin: 20px 0; border-radius: 0 12px 12px 0;
+        }
+        .tip-box strong { color: #c2410c; }
+        .checklist { list-style: none; margin: 15px 0; padding: 0; }
+        .checklist li {
+            padding: 12px 15px; margin: 8px 0; background: white; border-radius: 10px;
+            border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px;
+            transition: all 0.2s;
+        }
+        .checklist li:hover { border-color: var(--primary); box-shadow: 0 4px 15px rgba(14, 165, 233, 0.1); }
+        .checklist .checkbox {
+            width: 22px; height: 22px; border: 2px solid var(--primary); border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .checklist .checkbox.done { background: var(--success); border-color: var(--success); color: white; }
+        ul, ol { margin: 15px 0 15px 25px; }
+        li { margin: 8px 0; }
+        .faq-item {
+            background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+            margin: 15px 0; overflow: hidden;
+        }
+        .faq-question {
+            padding: 18px 22px; font-weight: 600; color: var(--dark);
+            background: linear-gradient(135deg, #f8fafc, #fff); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .faq-question:hover { background: #f0f9ff; }
+        .faq-answer { padding: 0 22px 18px; color: var(--gray); display: none; }
+        .faq-item.open .faq-answer { display: block; }
+        .faq-item.open .faq-question::after { transform: rotate(180deg); }
+        .faq-question::after { content: '▼'; font-size: 0.8em; transition: transform 0.3s; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+        .card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 25px;
+            transition: all 0.3s;
+        }
+        .card:hover { border-color: var(--primary); box-shadow: 0 10px 30px rgba(14, 165, 233, 0.15); transform: translateY(-3px); }
+        .card h4 { margin-top: 0; color: var(--primary-dark); }
+        footer {
+            background: var(--dark); color: white; padding: 30px; text-align: center; margin-top: 50px;
+        }
+        footer p { color: rgba(255,255,255,0.8); margin: 5px 0; }
+        .blank-num { 
+            display: inline-block; background: var(--accent); color: white; 
+            width: 24px; height: 24px; border-radius: 50%; text-align: center; 
+            line-height: 24px; font-size: 0.8em; font-weight: bold; margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎤 Project 4: DTW孤立词语音识别</h1>
+        <p class="subtitle">Isolated Word Recognition Based on Dynamic Time Warping</p>
+        <div style="margin-top: 20px;">
+            <span class="badge badge-primary">MATLAB</span>
+            <span class="badge badge-success">语音处理</span>
+            <span class="badge badge-warning">16道填空</span>
+            <span class="badge badge-accent">DTW算法</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>📁 项目结构</h2>
+        <div class="file-tree">
+<pre>Project4_DTW/
+├── <span class="folder">📂 audio/</span>           # 待识别的测试音频
+│   ├── <span class="file-wav">0_1.wav</span>        # 数字0的测试样本1
+│   ├── <span class="file-wav">0_2.wav</span>        # 数字0的测试样本2
+│   ├── <span class="file-wav">1_1.wav</span>        # 数字1的测试样本1
+│   ├── ...
+│   └── <span class="file-wav">9_2.wav</span>        # 数字9的测试样本2
+├── <span class="file-mat">template.mat</span>      # 模板库（数字0-9的MFCC特征）
+├── <span class="file-m">ex0_all.m</span>         # ⭐ 主程序（批量识别）
+├── <span class="file-m">ex1_preemphasis.m</span> # 预加重滤波器
+├── <span class="file-m">ex2_enframe.m</span>     # 分帧函数
+├── <span class="file-m">ex3_mfcc.m</span>        # MFCC特征提取
+├── <span class="file-m">ex4_dtw.m</span>         # DTW距离计算
+├── <span class="file-m">ex5_recognize.m</span>   # 识别决策
+├── <span class="file-m">ex6_vad.m</span>         # 端点检测(VAD)
+└── <span class="file-m">test_Project4.m</span>   # 🔍 自动评测程序</pre>
+        </div>
+
+        <h2>📝 函数说明</h2>
+
+        <h3>ex1_preemphasis.m - 预加重</h3>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+            <tr><td>x</td><td>输入</td><td>原始语音信号 (N×1)</td></tr>
+            <tr><td>alpha</td><td>输入</td><td>预加重系数，典型值 0.97</td></tr>
+            <tr><td>y</td><td>输出</td><td>预加重后的信号 (N×1)</td></tr>
+        </table>
+        <div class="info-box">
+            <strong>💡 公式：</strong> <code>y[n] = x[n] - alpha * x[n-1]</code>
+        </div>
+
+        <h3>ex2_enframe.m - 分帧</h3>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+            <tr><td>x</td><td>输入</td><td>语音信号</td></tr>
+            <tr><td>frame_len</td><td>输入</td><td>帧长（采样点数）</td></tr>
+            <tr><td>frame_shift</td><td>输入</td><td>帧移（采样点数）</td></tr>
+            <tr><td>frames</td><td>输出</td><td>分帧矩阵 (frame_len × num_frames)</td></tr>
+        </table>
+        <div class="tip-box">
+            <strong>🎯 提示：</strong> 帧数计算公式：<code>num_frames = floor((L - frame_len) / frame_shift) + 1</code>
+        </div>
+
+        <h3>ex3_mfcc.m - MFCC特征提取</h3>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+            <tr><td>x</td><td>输入</td><td>语音信号</td></tr>
+            <tr><td>fs</td><td>输入</td><td>采样率</td></tr>
+            <tr><td>mfcc_feat</td><td>输出</td><td>MFCC特征矩阵 (36 × num_frames)</td></tr>
+        </table>
+        <div class="success-box">
+            <strong>✅ 特征维度：</strong> 12维MFCC + 12维Δ + 12维ΔΔ = <strong>36维</strong>
+        </div>
+
+        <h3>ex4_dtw.m - DTW距离计算</h3>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+            <tr><td>template</td><td>输入</td><td>模板特征矩阵 (D × n)</td></tr>
+            <tr><td>test</td><td>输入</td><td>测试特征矩阵 (D × m)</td></tr>
+            <tr><td>dist</td><td>输出</td><td>DTW累积距离</td></tr>
+        </table>
+        <div class="info-box">
+            <strong>💡 递推公式：</strong> <code>D(i,j) = d(i,j) + min{D(i-1,j), D(i,j-1), D(i-1,j-1)}</code>
+        </div>
+
+        <h3>ex5_recognize.m - 识别决策</h3>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+            <tr><td>templates</td><td>输入</td><td>模板库 (cell数组，10个模板)</td></tr>
+            <tr><td>test_mfcc</td><td>输入</td><td>测试音频的MFCC特征</td></tr>
+            <tr><td>result</td><td>输出</td><td>识别结果 (0-9)</td></tr>
+        </table>
+
+        <h3>ex6_vad.m - 端点检测</h3>
+        <table>
+            <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+            <tr><td>x</td><td>输入</td><td>原始语音信号</td></tr>
+            <tr><td>fs</td><td>输入</td><td>采样率</td></tr>
+            <tr><td>y</td><td>输出</td><td>截取后的有效语音段</td></tr>
+        </table>
+
+        <h2>🔢 填空位置指南</h2>
+        
+        <div class="warning-box">
+            <strong>⚠️ 重要提示：</strong> 本项目共有 <strong>16道</strong> 填空题，分布在各个函数文件中。请仔细阅读代码注释，在标记为 <code>% 【填空X】</code> 的位置填写代码。
+        </div>
+
+        <h3>ex1_preemphasis.m (2题)</h3>
+        <table>
+            <tr><th>编号</th><th>位置</th><th>提示</th></tr>
+            <tr><td><span class="blank-num">1</span></td><td>滤波器系数b</td><td>预加重的分子系数 [1, -alpha]</td></tr>
+            <tr><td><span class="blank-num">2</span></td><td>滤波器系数a</td><td>预加重的分母系数 [1]</td></tr>
+        </table>
+
+        <h3>ex2_enframe.m (2题)</h3>
+        <table>
+            <tr><th>编号</th><th>位置</th><th>提示</th></tr>
+            <tr><td><span class="blank-num">3</span></td><td>帧数计算</td><td>使用floor函数计算总帧数</td></tr>
+            <tr><td><span class="blank-num">4</span></td><td>帧起始索引</td><td>第i帧的起始位置</td></tr>
+        </table>
+
+        <h3>ex3_mfcc.m (5题)</h3>
+        <table>
+            <tr><th>编号</th><th>位置</th><th>提示</th></tr>
+            <tr><td><span class="blank-num">5</span></td><td>预加重调用</td><td>调用ex1_preemphasis函数</td></tr>
+            <tr><td><span class="blank-num">6</span></td><td>分帧调用</td><td>调用ex2_enframe函数</td></tr>
+            <tr><td><span class="blank-num">7</span></td><td>FFT计算</td><td>对加窗后的帧做FFT</td></tr>
+            <tr><td><span class="blank-num">8</span></td><td>Hz转Mel</td><td>使用公式 2595*log10(1+f/700)</td></tr>
+            <tr><td><span class="blank-num">9</span></td><td>DCT变换</td><td>提取前num_ceps个系数</td></tr>
+        </table>
+
+        <h3>ex4_dtw.m (4题)</h3>
+        <table>
+            <tr><th>编号</th><th>位置</th><th>提示</th></tr>
+            <tr><td><span class="blank-num">10</span></td><td>均值计算</td><td>计算模板序列的均值</td></tr>
+            <tr><td><span class="blank-num">11</span></td><td>局部距离</td><td>计算欧氏距离</td></tr>
+            <tr><td><span class="blank-num">12</span></td><td>递推公式</td><td>动态规划填表</td></tr>
+            <tr><td><span class="blank-num">13</span></td><td>最终距离</td><td>返回D(n,m)</td></tr>
+        </table>
+
+        <h3>ex5_recognize.m (1题)</h3>
+        <table>
+            <tr><th>编号</th><th>位置</th><th>提示</th></tr>
+            <tr><td><span class="blank-num">14</span></td><td>DTW调用</td><td>调用ex4_dtw计算距离</td></tr>
+        </table>
+
+        <h3>ex6_vad.m (2题)</h3>
+        <table>
+            <tr><th>编号</th><th>位置</th><th>提示</th></tr>
+            <tr><td><span class="blank-num">15</span></td><td>能量计算</td><td>计算每帧的短时能量</td></tr>
+            <tr><td><span class="blank-num">16</span></td><td>信号截取</td><td>根据检测到的边界截取信号</td></tr>
+        </table>
+
+        <h2>🚀 运行指南</h2>
+
+        <h3>Step 1: 完成代码填空</h3>
+        <p>按照上述指南，在各个函数文件中完成16处填空。</p>
+
+        <h3>Step 2: 运行自动评测</h3>
+        <pre><code>>> test_Project4</code></pre>
+        <p>评测程序会自动检查你的代码，并给出得分和反馈。</p>
+
+        <h3>Step 3: 运行完整识别</h3>
+        <pre><code>>> ex0_all</code></pre>
+        <p>主程序会对audio文件夹中的所有测试音频进行识别，并输出：</p>
+        <ul>
+            <li>每个文件的识别结果</li>
+            <li>总体识别准确率</li>
+            <li>混淆矩阵（可选）</li>
+        </ul>
+
+        <h2>✅ 提交清单</h2>
+        <ul class="checklist">
+            <li><div class="checkbox"></div>ex1_preemphasis.m - 预加重函数已完成</li>
+            <li><div class="checkbox"></div>ex2_enframe.m - 分帧函数已完成</li>
+            <li><div class="checkbox"></div>ex3_mfcc.m - MFCC提取已完成</li>
+            <li><div class="checkbox"></div>ex4_dtw.m - DTW距离计算已完成</li>
+            <li><div class="checkbox"></div>ex5_recognize.m - 识别决策已完成</li>
+            <li><div class="checkbox"></div>ex6_vad.m - 端点检测已完成</li>
+            <li><div class="checkbox"></div>test_Project4评测通过（≥80分）</li>
+            <li><div class="checkbox"></div>ex0_all运行成功，识别率≥70%</li>
+        </ul>
+
+        <h2>❓ 常见问题</h2>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Q1: 运行时提示"函数未定义"怎么办？
+            </div>
+            <div class="faq-answer">
+                确保所有.m文件都在当前工作目录中。在MATLAB中使用 <code>cd</code> 命令切换到项目文件夹，或者将项目文件夹添加到MATLAB路径中。
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Q2: DTW距离计算结果为Inf怎么办？
+            </div>
+            <div class="faq-answer">
+                检查D矩阵的初始化。确保 <code>D(1,1) = 0</code>（或按照具体实现），其余边界设为Inf。同时检查递推公式是否正确实现。
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Q3: MFCC维度不对怎么办？
+            </div>
+            <div class="faq-answer">
+                最终MFCC应该是36维（12维静态 + 12维一阶差分 + 12维二阶差分）。检查DCT系数提取是否正确（取2-13，共12个），以及差分计算是否正确拼接。
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Q4: 识别率很低怎么办？
+            </div>
+            <div class="faq-answer">
+                <ul>
+                    <li>检查VAD端点检测是否正确截取了语音段</li>
+                    <li>确认DTW中是否做了均值归一化</li>
+                    <li>检查MFCC提取的各个步骤是否正确</li>
+                    <li>用plot可视化中间结果进行调试</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                Q5: 如何理解模板库template.mat的结构？
+            </div>
+            <div class="faq-answer">
+                <code>template.mat</code> 包含一个cell数组，每个cell存储一个数字的MFCC特征矩阵。<br>
+                <code>templates{1}</code> → 数字0的特征 (36 × T0)<br>
+                <code>templates{2}</code> → 数字1的特征 (36 × T1)<br>
+                ... 以此类推到 <code>templates{10}</code>（数字9）
+            </div>
+        </div>
+
+        <h2>📊 参数参考</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h4>🎛️ 分帧参数</h4>
+                <p>帧长：25ms (400点@16kHz)</p>
+                <p>帧移：10ms (160点@16kHz)</p>
+                <p>窗函数：汉宁窗</p>
+            </div>
+            <div class="card">
+                <h4>📈 MFCC参数</h4>
+                <p>FFT点数：2048</p>
+                <p>Mel滤波器：32个</p>
+                <p>MFCC系数：12维</p>
+                <p>差分窗口：N=2</p>
+            </div>
+            <div class="card">
+                <h4>🔊 预处理参数</h4>
+                <p>预加重系数：α=0.97</p>
+                <p>采样率：16kHz</p>
+                <p>量化位数：16bit</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p><strong>南京工业大学浦江学院 | 计算机与通信工程专业 | 通信工程 | DSP课程实践</strong></p>
+        <p>Project 4: DTW孤立词语音识别 - 实验指导文档</p>
+    </footer>
+</body>
+</html>
