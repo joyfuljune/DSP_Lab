@@ -1,0 +1,227 @@
+/* 讲义精简版 v3（对比用），参考 react.dev、cn.vuejs.org 的文档风格。只作用于 body.refined。
+   要点：Inter + 系统中文字体；代码块是无边框的白色卡片（柔和阴影）；例题是浅灰卡片；要点是浅蓝提示框；
+   少用边框，多用留白和阴影分层；正文 16.5px / 1.8，深灰字；只保留一种强调色。 */
+
+html { scroll-behavior: smooth; }
+body.refined {
+  --r-text: #23272f; --r-body: #3b414b; --r-muted: #6b7280; --r-faint: #7d8593;
+  --r-line: #eceef2; --r-soft: #f7f8fa; --r-accent: #2f6fde; --r-accent-soft: #eef4ff; --r-accent-line: #d4e2fb;
+  --r-shadow: 0 1px 2px rgba(15,23,42,.04), 0 6px 24px rgba(15,23,42,.06);
+  --r-bg: #fff; --r-panel: #fff; --r-card: #fff; --r-code-bg: #fff; --r-fig-bg: #fff;
+  --r-topbar: rgba(255,255,255,.86); --r-on-accent: #fff; --r-accent-hover: #255fc6;
+  --r-inline-bg: #f1f3f6; --r-inline-text: #2b3036; --r-out-text: #4b5563; --r-input-line: #dcdfe5;
+  --r-hard-text: #c2410c; --r-hard-bg: #fff4ed; --r-warn-bg: #fff8f1; --r-warn-line: #fde2c8;
+  --syn-text: #000; --syn-kw: #0e00ff; --syn-cm: #228b22; --syn-st: #a709f5;
+  --mono: Consolas, "Cascadia Mono", "Courier New", "Microsoft YaHei", monospace;
+  font-family: Inter, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--r-bg); color: var(--r-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 顶栏：半透明 + 模糊，细分隔线 */
+body.refined .topbar { background: var(--r-topbar); backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--r-line); box-shadow: none; }
+
+/* 阅读进度条 */
+body.refined .read-progress { position: fixed; left: 0; top: 0; height: 2px; width: 0; background: var(--r-accent); z-index: 60; transition: width .1s linear; }
+
+/* 左栏、右侧目录 */
+body.refined .sidebar { background: var(--r-panel); border-right: 1px solid var(--r-line); }
+body.refined .sidebar a { font-size: 14.5px; color: var(--r-body); padding: 7px 12px; border-radius: 10px; }
+body.refined .sidebar a:hover { background: var(--r-soft); }
+body.refined .sidebar a.on { background: var(--r-accent-soft); color: var(--r-accent); font-weight: 600; }
+body.refined .toc h4 { color: var(--r-faint); font-size: 12px; font-weight: 600; letter-spacing: .12em; }
+body.refined .toc a { color: var(--r-muted) !important; font-weight: 500; font-size: 13.5px; background: none !important; border-left: 2px solid transparent !important; padding: 4px 0 4px 14px; transition: color .15s, border-color .15s; }
+body.refined .toc a.sub { color: var(--r-faint) !important; font-weight: 400; font-size: 13px; padding-left: 26px; }
+body.refined .toc a:hover { color: var(--r-text) !important; }
+body.refined .toc a.on { color: var(--r-accent) !important; border-left-color: var(--r-accent) !important; }
+body.refined .toc [data-page-toc] { border-left: 1px solid var(--r-line); }
+
+/* 正文栏 */
+body.refined main article.content { max-width: 740px; margin: 0 auto; padding: 24px 8px 120px; }
+body.refined .content p, body.refined .content li { font-size: 16.5px; line-height: 1.8; color: var(--r-body); }
+body.refined .content p { margin: 0 0 18px; }
+body.refined .content strong, body.refined .content b { color: var(--r-text); }
+body.refined .content h1 { font-size: 34px; line-height: 1.25; margin: 8px 0 24px; font-weight: 700; letter-spacing: -.01em; color: var(--r-text); }
+body.refined .content h2 { font-size: 26px; font-weight: 700; margin: 80px 0 28px; padding: 0; border: 0; color: var(--r-text); letter-spacing: -.005em; }
+body.refined .content h2 .tag { display: none; }
+body.refined section#theory > h3 { background: none !important; border: 0 !important; border-radius: 0; padding: 0 !important; margin: 0 0 18px !important; font-size: 21px; font-weight: 700; color: var(--r-text); }
+body.refined .content h2, body.refined .content h3 { scroll-margin-top: 80px; }
+
+/* 分隔线：只在知识点之间 */
+body.refined hr.sep-major { border: 0; border-top: 1px solid var(--r-line); margin: 64px 0 48px; }
+body.refined hr.sep { display: none; }
+
+/* 页首实验信息 */
+body.refined .lab-card { border: 0; border-radius: 16px; padding: 18px 22px; margin: 0 0 8px; background: var(--r-soft); }
+body.refined .lab-card .row { display: flex; gap: 18px; font-size: 15px; line-height: 1.75; margin: 4px 0; color: var(--r-body); }
+body.refined .lab-card .k { flex: 0 0 64px; color: var(--r-faint); }
+body.refined .lab-card a { color: var(--r-accent); text-decoration: none; }
+body.refined .lab-card .jumps { display: flex; flex-wrap: wrap; gap: 8px; }
+body.refined .lab-card .jumps a { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 14px; background: var(--r-card); color: var(--r-text); box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 0 0 1px var(--r-line); transition: box-shadow .15s, color .15s; }
+body.refined .lab-card .jumps a:hover { color: var(--r-accent); box-shadow: 0 2px 8px rgba(47,111,222,.15), 0 0 0 1px var(--r-accent-line); }
+
+/* 实验目的 */
+body.refined ol.goals { padding-left: 22px; margin: 0; }
+body.refined ol.goals > li { margin: 6px 0; padding-left: 4px; }
+body.refined ol.goals > li::marker { color: var(--r-faint); font-weight: 600; }
+body.refined .hard { color: var(--r-hard-text); background: var(--r-hard-bg); font-weight: 600; font-size: 12px; padding: 1px 8px; border-radius: 999px; margin-left: 8px; }
+
+/* 例题：浅灰卡片，标题是小号强调色标签 + 粗体题名 */
+body.refined .example-box { border: 0; border-radius: 18px; background: var(--r-soft); box-shadow: none; padding: 24px 28px 8px; margin: 32px 0; }
+body.refined .example-box > h4 { margin: 0 0 14px; padding: 0; background: none; border: 0; border-radius: 0; color: var(--r-text); font-size: 17px; font-weight: 700; }
+body.refined .example-box > h4::first-letter { color: inherit; }
+body.refined .example-box > p > b:first-child { display: inline-block; color: var(--r-accent); font-weight: 600; font-size: 14px; margin-right: 8px; }
+
+/* 要点：浅蓝提示框 */
+body.refined .point-box { background: var(--r-accent-soft); border: 1px solid var(--r-accent-line); border-radius: 16px; padding: 18px 24px 12px; margin: 32px 0 0; }
+body.refined .point-box > h4 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--r-accent); letter-spacing: .04em; }
+body.refined .point-box ul { list-style: none; padding-left: 0; margin: 0; }
+body.refined .point-box li { position: relative; padding-left: 20px; margin: 4px 0 8px; font-size: 15.5px; }
+body.refined .point-box li::before { content: ""; position: absolute; left: 4px; top: .78em; width: 6px; height: 6px; border-radius: 50%; background: var(--r-accent); }
+
+/* 结论句 */
+body.refined .key-statement { background: var(--r-card); border: 1px solid var(--r-line); border-radius: 12px; box-shadow: var(--r-shadow); color: var(--r-text); font-weight: 600; padding: 14px 20px; margin: 8px 0 22px; }
+
+/* 表格 */
+body.refined table.map-table { font-size: 15px; border-collapse: separate; border-spacing: 0; width: 100%; margin: 8px 0 20px; border: 1px solid var(--r-line); border-radius: 12px; overflow: hidden; }
+body.refined table.map-table th, body.refined table.map-table td { border: 0; border-bottom: 1px solid var(--r-line); padding: 10px 14px; background: var(--r-card); }
+body.refined table.map-table tr:last-child td { border-bottom: 0; }
+body.refined table.map-table th { background: var(--r-soft); color: var(--r-muted); font-weight: 600; font-size: 13.5px; }
+
+/* 代码块：无边框白色卡片，柔和阴影；语言标签和复制按钮淡显在右上角 */
+body.refined .code-block.code, body.refined .code { border: 0 !important; border-radius: 14px; background: var(--r-code-bg) !important; box-shadow: var(--r-shadow) !important; margin: 16px 0; position: relative; }
+body.refined .code .bar { position: absolute; top: 8px; right: 10px; background: none !important; border: 0 !important; padding: 0 !important; height: auto; display: flex; gap: 8px; align-items: center; }
+body.refined .code .bar > span { font-size: 11px !important; letter-spacing: .08em; color: var(--r-faint) !important; text-transform: none; }
+body.refined .code .bar button { font-size: 12px !important; padding: 2px 8px !important; border-radius: 6px !important; border: 1px solid var(--r-line) !important; background: var(--r-card) !important; color: var(--r-muted) !important; opacity: 0; transition: opacity .15s; }
+body.refined .code:hover .bar button { opacity: 1; }
+body.refined .code pre, body.refined .code-block pre code { font-size: 14px !important; line-height: 1.65 !important; }
+body.refined .code pre { padding: 18px 22px !important; margin: 0; background: transparent !important; border: 0 !important; }
+body.refined pre.cmd-output { background: var(--r-code-bg) !important; border: 0 !important; border-left: 0 !important; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--r-line) !important; font-size: 13.5px !important; color: var(--r-out-text) !important; padding: 12px 22px !important; margin: -4px 0 18px !important; }
+body.refined pre.cmd-output::before { content: "输出"; display: block; font-family: Inter, "Microsoft YaHei", sans-serif; font-size: 11px; letter-spacing: .08em; color: var(--r-faint); margin-bottom: 4px; }
+
+/* 行内代码 */
+body.refined .content :not(pre) > code { background: var(--r-inline-bg) !important; color: var(--r-inline-text) !important; border: 0 !important; border-radius: 5px; padding: 1px 6px !important; font-size: .87em !important; }
+
+/* 插图：白色卡片 */
+body.refined figure.fig { margin: 16px 0 18px; padding: 14px; background: var(--r-fig-bg); border-radius: 14px; box-shadow: var(--r-shadow); }
+body.refined figure.fig img { border: 0; border-radius: 0; display: block; margin: 0 auto; }
+body.refined figure.fig-small { max-width: 460px; margin-left: auto; margin-right: auto; }
+
+/* 练习卡片 */
+body.refined .exercise-box { border: 1px solid var(--r-line); border-radius: 18px; box-shadow: var(--r-shadow); padding: 26px 30px 12px; margin: 0 0 32px; background: var(--r-card); overflow: visible; }
+body.refined .exercise-box > h3 { margin: 0 0 6px !important; padding: 0 !important; background: none !important; border: 0 !important; color: var(--r-text) !important; font-size: 21px; font-weight: 700; }
+body.refined .exercise-box p.tpl { color: var(--r-faint); font-size: 13.5px; margin: 0 0 16px; }
+body.refined .exercise-box h5 { color: var(--r-text); font-size: 15px; font-weight: 700; margin: 20px 0 8px; padding-top: 16px; border-top: 1px solid var(--r-line); }
+body.refined .exercise-box ol[type="a"] > li::marker { color: var(--r-accent); font-weight: 600; }
+
+/* 交互演示 */
+body.refined .interactive-demo { border: 0; border-radius: 18px; background: var(--r-soft); box-shadow: none; padding: 20px; }
+body.refined .interactive-demo .canvas-container { border: 0 !important; border-radius: 14px; background: var(--r-fig-bg); box-shadow: var(--r-shadow); }
+body.refined .interactive-demo .tip-box { border: 0; border-radius: 12px; background: var(--r-card); box-shadow: inset 0 0 0 1px var(--r-line); }
+
+/* 夹缝按钮 */
+body.refined .seam-btn { border: 0; box-shadow: var(--r-shadow), 0 0 0 1px var(--r-line); color: var(--r-muted); }
+body.refined .seam-btn:hover { color: var(--r-accent); background: var(--r-card); }
+
+/* ===== 简洁风：其他页面与旧部件（测验、代码模板、评分页、首页、尚未重写的讲义） ===== */
+body.refined .content { color: var(--r-body); }
+body.refined .content h1 { font-size: 34px; }
+body.refined .eyebrow { background: var(--r-accent-soft); color: var(--r-accent); font-weight: 600; letter-spacing: .06em; }
+body.refined .lead { color: var(--r-muted); font-size: 17px; }
+
+/* 各类提示框：去掉粗左边线，改成柔和底色 + 细边 + 大圆角 */
+body.refined .note, body.refined .tip-box, body.refined .info-box, body.refined .success-box,
+body.refined .note-box, body.refined .analysis-box, body.refined .data-box, body.refined .prereq, body.refined .appendix {
+  border: 1px solid var(--r-accent-line) !important; border-left-width: 1px !important; border-radius: 16px; background: var(--r-accent-soft); padding: 16px 22px; margin: 20px 0; color: var(--r-body);
+}
+body.refined .note.key, body.refined .note-box, body.refined .analysis-box, body.refined .data-box, body.refined .prereq, body.refined .appendix { border-color: var(--r-line) !important; background: var(--r-soft); }
+body.refined .note .t { color: var(--r-text) !important; }
+body.refined .warning-box, body.refined .warning-banner, body.refined .note.warn {
+  border: 1px solid var(--r-warn-line) !important; border-left-width: 1px !important; border-radius: 16px; background: var(--r-warn-bg); padding: 16px 22px; margin: 20px 0; color: var(--r-body);
+}
+body.refined .formula-box { border: 0 !important; background: none !important; padding: 4px 0 !important; margin: 12px 0 !important; box-shadow: none !important; }
+
+/* 首页单元卡片 */
+body.refined .unit-grid { gap: 16px; }
+body.refined .unit-card { border: 1px solid var(--r-line); border-left-width: 1px; border-radius: 18px; padding: 22px 24px; box-shadow: var(--r-shadow); transition: box-shadow .2s, transform .2s; }
+body.refined .unit-card:hover { box-shadow: 0 2px 6px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.10); transform: translateY(-1px); }
+body.refined .unit-card h2 { font-size: 20px !important; line-height: 1.35; }
+body.refined .unit-card p { color: var(--r-muted); font-size: 14.5px; line-height: 1.7; }
+body.refined .unit-card .open-link { border-radius: 999px; padding: 4px 14px; background: var(--r-accent-soft); color: var(--r-accent); font-weight: 500; }
+
+/* 测验 */
+body.refined.site-quiz input[type=text], body.refined.site-quiz input[type=number] { border: 1px solid var(--r-input-line); background: var(--r-card); color: var(--r-text); border-radius: 10px; padding: 10px 14px; transition: border-color .15s, box-shadow .15s; }
+body.refined.site-quiz input[type=text]:focus, body.refined.site-quiz input[type=number]:focus { outline: 0; border-color: var(--r-accent); box-shadow: 0 0 0 3px rgba(47,111,222,.15); }
+body.refined.site-quiz .content button, body.refined.site-guide .content button { border: 0; border-radius: 10px; padding: 9px 18px; background: var(--r-accent); color: var(--r-on-accent); font-weight: 600; transition: background .15s, box-shadow .15s; }
+body.refined.site-quiz .content button:hover, body.refined.site-guide .content button:hover { background: var(--r-accent-hover); box-shadow: 0 4px 14px rgba(47,111,222,.25); }
+body.refined.site-quiz .content button:disabled { background: #c9d3e6; box-shadow: none; }
+body.refined .question-card { border: 1px solid var(--r-line); border-radius: 18px; padding: 24px 28px; box-shadow: var(--r-shadow); }
+body.refined .options label, body.refined .options > div { border-radius: 12px; }
+body.refined .feedback { border-radius: 12px; padding: 12px 16px; }
+
+/* 代码模板页 */
+body.refined.site-template .file-block { border: 1px solid var(--r-line); border-radius: 16px; box-shadow: var(--r-shadow); margin: 18px 0; overflow: hidden; }
+body.refined.site-template .file-header { background: var(--r-card); color: var(--r-text); padding: 14px 18px; border-bottom: 1px solid var(--r-line); }
+body.refined.site-template .file-block.collapsed .file-header { border-bottom: 0; }
+body.refined.site-template .file-header:hover { background: var(--r-soft); }
+body.refined.site-template .file-header .arrow-icon { color: var(--r-faint); font-size: 12px; }
+body.refined.site-template .file-content pre { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: var(--r-code-bg) !important; padding: 18px 22px !important; }
+body.refined.site-template .copy-btn, body.refined.site-template .control-btn { border: 1px solid var(--r-line); border-radius: 8px; background: var(--r-card); color: var(--r-muted); }
+body.refined.site-template .copy-btn:hover, body.refined.site-template .control-btn:hover { color: var(--r-accent); border-color: var(--r-accent-line); }
+
+/* 表格（通用） */
+body.refined .content table:not(.map-table) { border-collapse: separate; border-spacing: 0; border: 1px solid var(--r-line); border-radius: 12px; overflow: hidden; }
+body.refined .content table:not(.map-table) th { background: var(--r-soft); color: var(--r-muted); font-weight: 600; }
+body.refined .content table:not(.map-table) th, body.refined .content table:not(.map-table) td { border: 0; border-bottom: 1px solid var(--r-line); }
+
+/* 旧讲义的宽表格：不挤压列宽，必要时横向滚动 */
+body.refined .content table:not(.map-table) { display: block; overflow-x: auto; max-width: 100%; }
+body.refined .content table:not(.map-table) th, body.refined .content table:not(.map-table) td { min-width: 4.5em; }
+
+/* 讲义交互演示的控件 */
+body.refined .interactive-demo button, body.refined .interactive-demo select, body.refined .interactive-demo input[type=number] { font: inherit; font-size: 14px; border: 1px solid var(--r-input-line); border-radius: 8px; padding: 5px 10px; background: var(--r-card); color: var(--r-text); }
+body.refined .interactive-demo button { background: var(--r-accent); color: var(--r-on-accent); border: 0; font-weight: 600; padding: 6px 14px; }
+body.refined .interactive-demo button:hover { background: var(--r-accent-hover); }
+
+/* 代码块角标会压住长注释：隐藏“MATLAB”字样，复制按钮悬停时才出现且带底色 */
+body.refined .code .bar > span { display: none !important; }
+body.refined .code .bar button { box-shadow: 0 1px 4px rgba(15,23,42,.12); }
+
+body.refined .demo-note { text-align: center; color: var(--r-muted); font-size: 13.5px; margin: 8px 0 0; }
+
+/* 项目一的压缩演示 */
+body.refined .demo-container { background: var(--r-soft); border: 0; border-radius: 18px; padding: 20px; margin: 16px 0 24px; }
+body.refined .demo-controls { display: grid; gap: 8px; margin-bottom: 14px; }
+body.refined .demo-controls .control-group label { font-size: 15px; color: var(--r-body); margin-right: 10px; }
+body.refined .demo-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+body.refined .stat-card { background: var(--r-card); border: 0; border-radius: 14px; box-shadow: var(--r-shadow); padding: 12px 16px; }
+body.refined .stat-card h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--r-muted); }
+body.refined .stat-value { font-size: 22px; font-weight: 700; color: var(--r-accent); }
+body.refined .charts-side-by-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+body.refined .chart-container { background: var(--r-fig-bg); border: 0 !important; border-radius: 14px; box-shadow: var(--r-shadow); padding: 12px; }
+body.refined .chart-container h4 { margin: 0 0 6px; font-size: 14px; color: var(--r-text); }
+body.refined .chart-container canvas { width: 100%; height: auto; }
+@media (max-width: 700px) { body.refined .demo-stats, body.refined .charts-side-by-side { grid-template-columns: 1fr; } }
+
+/* 讲义里的 canvas 示意图居中、随宽度缩放 */
+body.refined figure.fig canvas { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+/* 项目4 DTW 演示：按钮间距、次要按钮、状态栏 */
+body.refined .interactive-demo .control-panel { gap: 10px; margin-bottom: 14px; }
+body.refined .interactive-demo .dtw-btn-secondary { background: var(--r-card); color: var(--r-accent); box-shadow: inset 0 0 0 1px #c9d6ee; }
+body.refined .interactive-demo .dtw-btn-secondary:hover { background: var(--r-accent-soft); }
+body.refined .interactive-demo .dtw-status { padding: 10px 14px; margin: 0 0 10px; font-size: 14px; line-height: 1.7; }
+
+/* 代码文字与 MATLAB 着色走变量，主题可整体换色 */
+body.refined .code pre, body.refined .code-block pre code, body.refined.site-page pre:not(.cmd-output), body.refined.site-template .file-content pre { color: var(--syn-text) !important; }
+body.refined .m-kw, body.refined .code .kw, body.refined .code-block .kw, body.refined.site-page pre .kw, body.refined .code-block .code-keyword { color: var(--syn-kw) !important; }
+body.refined .m-cm, body.refined .code .cm, body.refined .code-block .cm, body.refined.site-page pre .cm, body.refined .code-block .code-comment { color: var(--syn-cm) !important; }
+body.refined .m-st, body.refined .code .st, body.refined .code-block .st, body.refined.site-page pre .st, body.refined .code-block .code-string { color: var(--syn-st) !important; }
+
+/* 表格本身的底色、浅色图框里的文字走变量：深色主题下表头半透明底不再透出白色，图框里的标题和图注保持深色字 */
+body.refined { --r-fig-text: #23272f; --r-fig-muted: #4b5563; }
+body.refined table.map-table, body.refined .site-page table.map-table, body.refined .key-box table { background: var(--r-card); }
+body.refined figure.fig, body.refined .canvas-container, body.refined .chart-container { color: var(--r-fig-text); }
+body.refined figure.fig :is(h4, p, span, figcaption, label), body.refined .canvas-container :is(h4, p, span, label),
+body.refined .chart-container :is(h4, p, span, label) { color: var(--r-fig-text) !important; text-shadow: none !important; }
+body.refined .chart-container .demo-note, body.refined .canvas-container .demo-note, body.refined figure.fig figcaption { color: var(--r-fig-muted) !important; }
