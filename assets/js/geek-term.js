@@ -79,7 +79,9 @@
     }
 
     function start() {
-        if (root) return;
+        // 解锁页用 document.write 换掉整个页面时 window 会保留，旧的 root 已不在新页面里
+        if (root && root.isConnected) return;
+        if (root) stop();
         state = load();
         root = document.createElement("div");
         root.className = "gt-root" + (state.open ? " is-open" : "");
