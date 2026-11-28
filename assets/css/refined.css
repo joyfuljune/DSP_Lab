@@ -225,3 +225,11 @@ body.refined figure.fig, body.refined .canvas-container, body.refined .chart-con
 body.refined figure.fig :is(h4, p, span, figcaption, label), body.refined .canvas-container :is(h4, p, span, label),
 body.refined .chart-container :is(h4, p, span, label) { color: var(--r-fig-text) !important; text-shadow: none !important; }
 body.refined .chart-container .demo-note, body.refined .canvas-container .demo-note, body.refined figure.fig figcaption { color: var(--r-fig-muted) !important; }
+
+/* 代码模板页页首的三种说明框：与讲义的提示框统一（11-28） */
+body.refined .info-banner { border: 1px solid var(--r-accent-line) !important; border-left-width: 1px !important; border-radius: 16px; background: var(--r-accent-soft); padding: 16px 22px; margin: 20px 0; color: var(--r-body); }
+body.refined .success-banner { border: 1px solid var(--r-line) !important; border-left-width: 1px !important; border-radius: 16px; background: var(--r-soft); padding: 16px 22px; margin: 20px 0; color: var(--r-body); }
+body.refined .info-banner ol, body.refined .info-banner ul, body.refined .success-banner ol { margin: 6px 0 0 20px !important; padding: 0 !important; }
+/* 实验4、项目4 模板页的文件标题是按钮：铺满标题栏，点标题栏任意处都能展开、折叠 */
+body.refined.site-template .file-header .file-title { flex: 1 1 auto; display: flex; }
+body.refined.site-template .file-header .file-toggle { flex: 1 1 auto; text-align: left; padding: 4px 0; cursor: var(--cur-hand); }
